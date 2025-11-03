@@ -135,6 +135,60 @@
             letter-spacing: 0.5px;
         }
 
+        /* VIEW MODE TOGGLE */
+        .view-mode-section {
+            padding: 20px;
+            border-bottom: 1px solid #2d3748;
+            background: #1f2531;
+        }
+
+        .view-mode-toggle {
+            display: inline-flex;
+            background: #2d3748;
+            border-radius: 8px;
+            padding: 3px;
+            width: 100%;
+        }
+
+        .view-mode-option {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: #a0aec0;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .view-mode-option:hover {
+            color: #e1e8ed;
+        }
+
+        .view-mode-option.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .view-mode-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .view-mode-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+
+        /* TOOLS GRID - 2x2 layout for 4 tools */
         .mode-selector {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -142,34 +196,47 @@
         }
 
         .mode-btn {
-            padding: 10px;
+            padding: 14px 10px;
             background: #2d3748;
             border: 2px solid transparent;
             border-radius: 8px;
             color: #a0aec0;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            position: relative;
         }
 
         .mode-btn:hover {
             background: #3d4758;
+            transform: translateY(-1px);
             color: #e1e8ed;
         }
 
         .mode-btn.active {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
         .mode-icon {
-            font-size: 20px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mode-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
         }
 
         .brush-controls {
@@ -464,33 +531,64 @@
 
         <div class="main">
             <div class="sidebar-left">
-                <!-- Mode Selector -->
-                <div class="tool-section">
-                    <h3>Mode</h3>
+                <!-- View Mode Toggle -->
+                <div class="view-mode-section">
+                    <h3 style="margin-bottom: 12px;">View Mode</h3>
+                    <div class="view-mode-toggle">
+                        <button class="view-mode-option active" onclick="setViewMode('builder')" data-view-mode="builder">
+                            <div class="view-mode-icon">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </div>
+                            Builder
+                        </button>
+                        <button class="view-mode-option" onclick="setViewMode('explorer')" data-view-mode="explorer">
+                            <div class="view-mode-icon">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                </svg>
+                            </div>
+                            Explorer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tools Section (Builder Mode Only) -->
+                <div class="tool-section" id="toolsSection">
+                    <h3>Tools</h3>
                     <div class="mode-selector">
                         <button class="mode-btn active" onclick="setHexMode('paint')" data-mode="paint">
-                            <span class="mode-icon">🖌️</span>
-                            Paint
-                        </button>
-                        <button class="mode-btn" onclick="setHexMode('fill')" data-mode="fill">
-                            <span class="mode-icon">🪣</span>
-                            Fill
-                        </button>
-                        <button class="mode-btn" onclick="setHexMode('select')" data-mode="select">
-                            <span class="mode-icon">👆</span>
-                            Select
-                        </button>
-                        <button class="mode-btn" onclick="setHexMode('erase')" data-mode="erase">
-                            <span class="mode-icon">🗑️</span>
-                            Erase
+                            <div class="mode-icon">
+                                <svg viewBox="0 0 512 512" fill="currentColor">
+                                    <path d="M490.3 40.4C512.2 62.27 512.2 97.73 490.3 119.6L460.3 149.7L362.3 51.72L392.4 21.66C414.3-.2135 449.7-.2135 471.6 21.66L490.3 40.4zM172.4 241.7L339.7 74.34L437.7 172.3L270.3 339.6C264.2 345.8 256.7 350.4 248.4 353.2L159.6 382.8C150.1 385.6 141.5 383.4 135 376.1C128.6 370.5 126.4 361 129.2 352.4L158.8 263.6C161.6 255.3 166.2 247.8 172.4 241.7V241.7zM192 63.1C209.7 63.1 224 78.33 224 95.1C224 113.7 209.7 127.1 192 127.1H96C78.33 127.1 64 142.3 64 159.1V416C64 433.7 78.33 448 96 448H352C369.7 448 384 433.7 384 416V319.1C384 302.3 398.3 287.1 416 287.1C433.7 287.1 448 302.3 448 319.1V416C448 469 405 512 352 512H96C42.98 512 0 469 0 416V159.1C0 106.1 42.98 63.1 96 63.1H192z"/>
+                                </svg>
+                            </div>
+                            Terrain
                         </button>
                         <button class="mode-btn" onclick="setHexMode('token')" data-mode="token">
-                            <span class="mode-icon">🎭</span>
+                            <div class="mode-icon">
+                                <svg viewBox="0 0 512 512" fill="currentColor">
+                                    <path d="M256 0c-70.7 0-128 57.3-128 128 0 70.7 103.8 206.4 119.4 226.4 3.1 4 7.9 6.3 13.1 6.3s10-2.3 13.1-6.3C289.2 334.4 384 198.7 384 128 384 57.3 326.7 0 256 0zm0 192c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"/>
+                                </svg>
+                            </div>
                             Token
                         </button>
                         <button class="mode-btn" onclick="setHexMode('path')" data-mode="path">
-                            <span class="mode-icon">🛤️</span>
+                            <div class="mode-icon">
+                                <svg viewBox="0 0 512 512" fill="currentColor">
+                                    <g><circle cx="80" cy="80" r="32"/><circle cx="432" cy="80" r="32"/><circle cx="432" cy="432" r="32"/><circle cx="80" cy="432" r="32"/><circle cx="256" cy="160" r="24"/><circle cx="352" cy="256" r="24"/><circle cx="256" cy="352" r="24"/><circle cx="160" cy="256" r="24"/></g>
+                                </svg>
+                            </div>
                             Path
+                        </button>
+                        <button class="mode-btn" onclick="setHexMode('landmark')" data-mode="landmark">
+                            <div class="mode-icon">
+                                <svg viewBox="0 0 512 512" fill="currentColor">
+                                    <path d="M256 32C132.3 32 32 132.3 32 256s100.3 224 224 224 224-100.3 224-224S379.7 32 256 32zm0 400c-97.2 0-176-78.8-176-176S158.8 80 256 80s176 78.8 176 176-78.8 176-176 176zm0-288c-61.9 0-112 50.1-112 112s50.1 112 112 112 112-50.1 112-112-50.1-112-112-112zm0 176c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"/>
+                                </svg>
+                            </div>
+                            Landmark
                         </button>
                     </div>
                 </div>
@@ -499,6 +597,14 @@
                 <div class="tool-section" id="brushSettingsSection">
                     <h3>Brush Settings</h3>
                     <div class="brush-controls">
+                        <div class="brush-control">
+                            <label>
+                                <input type="checkbox" id="fillMode" onchange="toggleFillMode(this.checked)" style="margin-right: 8px;">
+                                Fill Connected Area
+                            </label>
+                            <div style="font-size: 11px; color: #718096; margin-top: 4px;">Paint all connected hexes at once</div>
+                        </div>
+                        
                         <div class="brush-control">
                             <label>Brush Size</label>
                             <div class="slider-container">
@@ -543,21 +649,46 @@
                     </div>
                 </div>
 
+                <!-- Landmark Creator -->
+                <div class="tool-section" id="landmarkCreatorSection" style="display: none;">
+                    <h3>Create Landmark</h3>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="btn btn-primary" style="width: 100%;" onclick="showLandmarkCreator()">
+                            ➕ New Landmark
+                        </button>
+                        <div style="font-size: 11px; color: #718096; line-height: 1.5;">
+                            <strong>Landmark Mode:</strong><br>
+                            • Click hex to place landmark<br>
+                            • Shift+Click landmark to select<br>
+                            • Landmarks appear on hex terrain<br>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Path Creator -->
                 <div class="tool-section" id="pathCreatorSection" style="display: none;">
                     <h3>Path Type</h3>
                     <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
-                        <button class="btn btn-secondary" style="width: 100%; justify-content: center;" 
+                        <button class="btn btn-secondary" style="width: 100%; justify-content: center; gap: 8px;" 
                                 onclick="selectPathType('road')" id="pathType_road">
-                            🛤️ Road
+                            <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 512 512">
+                                <path d="M416 96c0-17.7-14.3-32-32-32s-32 14.3-32 32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16zm-96 48c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32zm-96 64c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32zm-96 64c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32zm288-176c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32z"/>
+                            </svg>
+                            Road
                         </button>
-                        <button class="btn btn-secondary" style="width: 100%; justify-content: center;" 
+                        <button class="btn btn-secondary" style="width: 100%; justify-content: center; gap: 8px;" 
                                 onclick="selectPathType('river')" id="pathType_river">
-                            🌊 River
+                            <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 512 512">
+                                <path d="M96 32c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32zm160 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32zm160 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32zM96 192c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32zm160 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32zm160 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32zM96 352c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32zm160 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32zm160 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32z"/>
+                            </svg>
+                            River
                         </button>
-                        <button class="btn btn-secondary" style="width: 100%; justify-content: center;" 
+                        <button class="btn btn-secondary" style="width: 100%; justify-content: center; gap: 8px;" 
                                 onclick="selectPathType('trail')" id="pathType_trail">
-                            👣 Trail
+                            <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 512 512">
+                                <path d="M192 96c0-17.7-14.3-32-32-32h-32c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32h32c17.7 0 32-14.3 32-32V96zm96 64h32c17.7 0 32-14.3 32-32V96c0-17.7-14.3-32-32-32h-32c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32zm-96 64c0-17.7-14.3-32-32-32h-32c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32h32c17.7 0 32-14.3 32-32v-32zm96 64h32c17.7 0 32-14.3 32-32v-32c0-17.7-14.3-32-32-32h-32c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32zm-96 64c0-17.7-14.3-32-32-32h-32c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32h32c17.7 0 32-14.3 32-32v-32z"/>
+                            </svg>
+                            Trail
                         </button>
                     </div>
                     
@@ -686,11 +817,14 @@
 
         const state = {
             hexMap: {
+                viewMode: 'builder', // 'builder' or 'explorer'
                 mode: 'paint',
+                fillMode: false, // NEW: fill connected areas
                 selectedTerrain: 'plains',
                 selectedHex: null,
                 hexes: new Map(),
                 tokens: new Map(),
+                landmarks: new Map(), // NEW: Landmarks/locations on hexes
                 paths: [],
                 selectedPath: null,
                 hoveredPath: null,
@@ -698,8 +832,10 @@
                 draggingPathPoint: null,
                 hoveredPathPoint: null,
                 selectedToken: null,
+                selectedLandmark: null, // NEW
                 draggingToken: null,
                 pendingToken: null,
+                pendingLandmark: null, // NEW
                 currentPath: null,
                 pathType: 'road',
                 pathStyle: 'straight',
@@ -718,7 +854,8 @@
             },
             dungeonEditor: null,
             nextTokenId: 1,
-            nextPathId: 1
+            nextPathId: 1,
+            nextLandmarkId: 1 // NEW
         };
 
         const canvas = document.getElementById('hexCanvas');
@@ -821,8 +958,9 @@
             const count = state.hexMap.hexes.size;
             const dungeonCount = Array.from(state.hexMap.hexes.values()).filter(h => h.dungeon).length;
             const tokenCount = state.hexMap.tokens.size;
+            const landmarkCount = state.hexMap.landmarks.size;
             const pathCount = state.hexMap.paths.length;
-            document.getElementById('viewName').textContent = `Hex Map (${count} hexes, ${dungeonCount} dungeons, ${tokenCount} tokens, ${pathCount} paths)`;
+            document.getElementById('viewName').textContent = `Hex Map (${count} hexes, ${dungeonCount} dungeons, ${landmarkCount} landmarks, ${tokenCount} tokens, ${pathCount} paths)`;
         }
 
         // ============================================================================
@@ -1085,9 +1223,9 @@
                     <div class="form-group">
                         <label class="form-label">Path Type</label>
                         <select class="form-select" onchange="updatePathType('${path.id}', this.value)">
-                            <option value="road" ${path.type === 'road' ? 'selected' : ''}>🛤️ Road</option>
-                            <option value="river" ${path.type === 'river' ? 'selected' : ''}>🌊 River</option>
-                            <option value="trail" ${path.type === 'trail' ? 'selected' : ''}>👣 Trail</option>
+                            <option value="road" ${path.type === 'road' ? 'selected' : ''}>Road</option>
+                            <option value="river" ${path.type === 'river' ? 'selected' : ''}>River</option>
+                            <option value="trail" ${path.type === 'trail' ? 'selected' : ''}>Trail</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1550,6 +1688,67 @@
             animate();
         }
         
+        // ============================================================================
+        // LANDMARK SYSTEM
+        // ============================================================================
+        
+        function createLandmark(q, r, data = {}) {
+            const key = `${q},${r}`;
+            const landmarkId = `landmark_${state.nextLandmarkId++}`;
+            const landmark = {
+                id: landmarkId,
+                q, r,
+                name: data.name || 'New Landmark',
+                type: data.type || 'custom',
+                style: data.style || 'circle', // 'icon', 'circle', 'badge'
+                icon: data.icon || '',
+                color: data.color || '#FFD700',
+                showLabel: data.showLabel !== false,
+                labelPosition: data.labelPosition || 'above',
+                size: data.size || 1.0,
+                attributes: data.attributes || {},
+                notes: data.notes || '',
+                visible: data.visible !== false,
+                created: new Date().toISOString()
+            };
+            state.hexMap.landmarks.set(key, landmark);
+            updateHexCount();
+            return landmark;
+        }
+        
+        function getLandmark(q, r) {
+            return state.hexMap.landmarks.get(`${q},${r}`);
+        }
+        
+        function getLandmarkById(landmarkId) {
+            for (const landmark of state.hexMap.landmarks.values()) {
+                if (landmark.id === landmarkId) return landmark;
+            }
+            return null;
+        }
+        
+        function deleteLandmark(q, r) {
+            state.hexMap.landmarks.delete(`${q},${r}`);
+            updateHexCount();
+            renderHex();
+        }
+        
+        function deleteLandmarkById(landmarkId) {
+            for (const [key, landmark] of state.hexMap.landmarks.entries()) {
+                if (landmark.id === landmarkId) {
+                    state.hexMap.landmarks.delete(key);
+                    updateHexCount();
+                    renderHex();
+                    return;
+                }
+            }
+        }
+        
+        function findLandmarkAtPixel(x, y) {
+            const hex = pixelToHex(x, y);
+            return getLandmark(hex.q, hex.r);
+        }
+        
         function showTokenCreator() {
             const panel = document.getElementById('hexDetailsPanel');
             panel.innerHTML = `
@@ -1643,6 +1842,7 @@
         function showTokenDetails(token) {
             const panel = document.getElementById('hexDetailsPanel');
             const attributesJson = JSON.stringify(token.attributes, null, 2);
+            const hasPathfinding = token.attributes?.pathfinding === true;
             
             panel.innerHTML = `
                 <div class="details-header">
@@ -1653,6 +1853,18 @@
                     <div class="coords">${token.type.charAt(0).toUpperCase() + token.type.slice(1)} · Hex (${token.q}, ${token.r})</div>
                 </div>
                 <div class="details-content">
+                    ${hasPathfinding ? `
+                    <div class="form-group" style="background: #667eea; padding: 12px; border-radius: 8px;">
+                        <label class="form-label" style="color: white; margin-bottom: 8px;">🗺️ Pathfinding Active</label>
+                        <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="selectPathfindingDestination('${token.id}')">
+                            📍 Select Destination Hex
+                        </button>
+                        <button class="btn btn-danger" style="width: 100%;" onclick="stopPathfinding('${token.id}')">
+                            ⏹️ Stop Pathfinding
+                        </button>
+                        ${token.pathfindingRoute ? `<div style="color: white; font-size: 11px; margin-top: 8px;">Route: ${token.pathfindingRoute.length} hexes</div>` : ''}
+                    </div>
+                    ` : ''}
                     <div class="form-group">
                         <label class="form-label">Token Name</label>
                         <input type="text" class="form-input" value="${token.name}" onchange="updateTokenField('${token.id}', 'name', this.value)">
@@ -1683,8 +1895,11 @@
                         <input type="color" class="form-input" value="${token.color}" style="height: 50px; cursor: pointer;" onchange="updateTokenField('${token.id}', 'color', this.value); renderHex();">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Attributes</label>
+                        <label class="form-label">Attributes (JSON)</label>
                         <textarea class="form-input" id="tokenAttributes_${token.id}" style="min-height: 120px; font-family: monospace; font-size: 12px;" onchange="updateTokenAttributes('${token.id}', this.value)">${attributesJson}</textarea>
+                        <div style="font-size: 11px; color: #718096; margin-top: 4px;">
+                            💡 Set <strong>"pathfinding": true</strong> to enable pathfinding
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Notes</label>
@@ -1716,7 +1931,14 @@
             const token = getToken(tokenId);
             if (!token) return;
             try {
+                const oldPathfinding = token.attributes?.pathfinding;
                 token.attributes = JSON.parse(jsonText);
+                const newPathfinding = token.attributes?.pathfinding;
+                
+                // Refresh panel if pathfinding state changed
+                if (oldPathfinding !== newPathfinding) {
+                    showTokenDetails(token);
+                }
             } catch (e) {
                 alert('Invalid JSON format. Changes not saved.');
                 document.getElementById(`tokenAttributes_${tokenId}`).value = JSON.stringify(token.attributes, null, 2);
@@ -1733,6 +1955,511 @@
                 deleteToken(state.hexMap.selectedToken.id);
                 deselectToken();
             }
+        }
+
+        // ============================================================================
+        // LANDMARK UI FUNCTIONS
+        // ============================================================================
+        
+        function showLandmarkCreator() {
+            const panel = document.getElementById('hexDetailsPanel');
+            panel.innerHTML = `
+                <div class="details-header">
+                    <h2>Create New Landmark</h2>
+                </div>
+                <div class="details-content">
+                    <div class="form-group">
+                        <label class="form-label">Landmark Name</label>
+                        <input type="text" class="form-input" id="newLandmarkName" placeholder="e.g., Rivendell, Dragon's Lair">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Style</label>
+                        <select class="form-select" id="newLandmarkStyle" onchange="updateLandmarkStylePreview()">
+                            <option value="circle">Circle</option>
+                            <option value="icon">Icon (URL)</option>
+                            <option value="badge">Badge</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="landmarkIconGroup" style="display: none;">
+                        <label class="form-label">Icon URL</label>
+                        <input type="text" class="form-input" id="newLandmarkIcon" placeholder="https://game-icons.net/...">
+                        <div style="font-size: 11px; color: #718096; margin-top: 4px;">Use game-icons.net URLs</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Color</label>
+                        <input type="color" class="form-input" id="newLandmarkColor" value="#FFD700" style="height: 50px; cursor: pointer;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Size</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="newLandmarkSize" min="0.5" max="2.5" step="0.1" value="1.0"
+                                   oninput="document.getElementById('newLandmarkSizeValue').textContent = parseFloat(this.value).toFixed(1)">
+                            <span class="slider-value" id="newLandmarkSizeValue">1.0</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="newLandmarkShowLabel" checked style="margin-right: 8px;">
+                            Show Name Label
+                        </label>
+                    </div>
+                    <div class="form-group" id="landmarkLabelPosGroup">
+                        <label class="form-label">Label Position</label>
+                        <select class="form-select" id="newLandmarkLabelPos">
+                            <option value="above">Above</option>
+                            <option value="below">Below</option>
+                            <option value="inside">Inside</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Attributes (JSON)</label>
+                        <textarea class="form-input" id="newLandmarkAttributes" placeholder='{"type": "town", "population": 5000}' style="min-height: 80px; font-family: monospace; font-size: 12px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-input" id="newLandmarkNotes" placeholder="Additional notes..."></textarea>
+                    </div>
+                </div>
+                <div class="details-actions">
+                    <button class="btn btn-secondary" style="flex: 1" onclick="cancelLandmarkCreator()">Cancel</button>
+                    <button class="btn btn-primary" style="flex: 1" onclick="confirmLandmarkCreator()">Create & Place</button>
+                </div>
+            `;
+            document.getElementById('newLandmarkName').focus();
+            updateLandmarkStylePreview();
+        }
+        
+        function updateLandmarkStylePreview() {
+            const style = document.getElementById('newLandmarkStyle').value;
+            const iconGroup = document.getElementById('landmarkIconGroup');
+            
+            iconGroup.style.display = (style === 'icon') ? 'block' : 'none';
+        }
+        
+        function cancelLandmarkCreator() {
+            deselectHex();
+        }
+        
+        function confirmLandmarkCreator() {
+            const name = document.getElementById('newLandmarkName').value.trim();
+            const style = document.getElementById('newLandmarkStyle').value;
+            const icon = document.getElementById('newLandmarkIcon').value.trim();
+            const color = document.getElementById('newLandmarkColor').value;
+            const size = parseFloat(document.getElementById('newLandmarkSize').value);
+            const showLabel = document.getElementById('newLandmarkShowLabel').checked;
+            const labelPosition = document.getElementById('newLandmarkLabelPos').value;
+            const attributesText = document.getElementById('newLandmarkAttributes').value.trim();
+            const notes = document.getElementById('newLandmarkNotes').value.trim();
+            
+            let attributes = {};
+            if (attributesText) {
+                try {
+                    attributes = JSON.parse(attributesText);
+                } catch (e) {
+                    alert('Invalid JSON in attributes field. Please fix and try again.');
+                    return;
+                }
+            }
+            
+            if (!name) {
+                alert('Please enter a landmark name.');
+                return;
+            }
+            
+            if (style === 'icon' && !icon) {
+                alert('Please enter an icon URL for icon style.');
+                return;
+            }
+            
+            state.hexMap.pendingLandmark = { 
+                name, 
+                style, 
+                icon, 
+                color, 
+                size, 
+                showLabel, 
+                labelPosition,
+                attributes, 
+                notes 
+            };
+            deselectHex();
+            document.getElementById('instructionText').textContent = 'Click any hex to place landmark';
+            document.getElementById('modeText').textContent = 'Landmark Placement';
+        }
+        
+        function showLandmarkDetails(landmark) {
+            const panel = document.getElementById('hexDetailsPanel');
+            const attributesJson = JSON.stringify(landmark.attributes, null, 2);
+            
+            panel.innerHTML = `
+                <div class="details-header">
+                    <h2>${landmark.name}</h2>
+                    <div class="coords">Landmark · Hex (${landmark.q}, ${landmark.r})</div>
+                </div>
+                <div class="details-content">
+                    <div class="form-group">
+                        <label class="form-label">Landmark Name</label>
+                        <input type="text" class="form-input" value="${landmark.name}" onchange="updateLandmarkField('${landmark.id}', 'name', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Style</label>
+                        <select class="form-select" onchange="updateLandmarkField('${landmark.id}', 'style', this.value); renderHex();">
+                            <option value="circle" ${landmark.style === 'circle' ? 'selected' : ''}>Circle</option>
+                            <option value="icon" ${landmark.style === 'icon' ? 'selected' : ''}>Icon</option>
+                            <option value="badge" ${landmark.style === 'badge' ? 'selected' : ''}>Badge</option>
+                        </select>
+                    </div>
+                    ${landmark.style === 'icon' ? `
+                    <div class="form-group">
+                        <label class="form-label">Icon URL</label>
+                        <input type="text" class="form-input" value="${landmark.icon || ''}" onchange="updateLandmarkField('${landmark.id}', 'icon', this.value); renderHex();">
+                    </div>
+                    ` : ''}
+                    <div class="form-group">
+                        <label class="form-label">Color</label>
+                        <input type="color" class="form-input" value="${landmark.color}" style="height: 50px; cursor: pointer;" onchange="updateLandmarkField('${landmark.id}', 'color', this.value); renderHex();">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Size</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="landmarkSize_${landmark.id}" min="0.5" max="2.5" step="0.1" value="${landmark.size}" oninput="updateLandmarkSize('${landmark.id}', this.value)">
+                            <span class="slider-value" id="landmarkSizeValue_${landmark.id}">${landmark.size.toFixed(1)}</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" ${landmark.showLabel ? 'checked' : ''} onchange="updateLandmarkField('${landmark.id}', 'showLabel', this.checked); renderHex();" style="margin-right: 8px;">
+                            Show Name Label
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Label Position</label>
+                        <select class="form-select" onchange="updateLandmarkField('${landmark.id}', 'labelPosition', this.value); renderHex();">
+                            <option value="above" ${landmark.labelPosition === 'above' ? 'selected' : ''}>Above</option>
+                            <option value="below" ${landmark.labelPosition === 'below' ? 'selected' : ''}>Below</option>
+                            <option value="inside" ${landmark.labelPosition === 'inside' ? 'selected' : ''}>Inside</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Attributes (JSON)</label>
+                        <textarea class="form-input" id="landmarkAttributes_${landmark.id}" style="min-height: 120px; font-family: monospace; font-size: 12px;" onchange="updateLandmarkAttributes('${landmark.id}', this.value)">${attributesJson}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-input" onchange="updateLandmarkField('${landmark.id}', 'notes', this.value)">${landmark.notes}</textarea>
+                    </div>
+                </div>
+                <div class="details-actions">
+                    <button class="btn btn-secondary" style="flex: 1" onclick="deselectLandmark()">Close</button>
+                    <button class="btn btn-danger" style="flex: 1" onclick="deleteCurrentLandmark()">Delete Landmark</button>
+                </div>
+            `;
+        }
+        
+        function updateLandmarkField(landmarkId, field, value) {
+            const landmark = getLandmarkById(landmarkId);
+            if (landmark) landmark[field] = value;
+        }
+        
+        function updateLandmarkSize(landmarkId, value) {
+            const landmark = getLandmarkById(landmarkId);
+            if (landmark) {
+                landmark.size = parseFloat(value);
+                document.getElementById(`landmarkSizeValue_${landmarkId}`).textContent = parseFloat(value).toFixed(1);
+                renderHex();
+            }
+        }
+        
+        function updateLandmarkAttributes(landmarkId, jsonText) {
+            const landmark = getLandmarkById(landmarkId);
+            if (!landmark) return;
+            
+            try {
+                landmark.attributes = JSON.parse(jsonText);
+            } catch (e) {
+                alert('Invalid JSON in attributes field.');
+            }
+        }
+        
+        function deselectLandmark() {
+            state.hexMap.selectedLandmark = null;
+            deselectHex();
+        }
+        
+        function deleteCurrentLandmark() {
+            if (state.hexMap.selectedLandmark && confirm('Delete this landmark? This cannot be undone.')) {
+                deleteLandmarkById(state.hexMap.selectedLandmark.id);
+                deselectLandmark();
+            }
+        }
+
+        // ============================================================================
+        // PATHFINDING SYSTEM
+        // ============================================================================
+        
+        let pathfindingState = {
+            selectingDestination: false,
+            tokenId: null
+        };
+        
+        function selectPathfindingDestination(tokenId) {
+            pathfindingState.selectingDestination = true;
+            pathfindingState.tokenId = tokenId;
+            
+            // Close the panel temporarily
+            const token = getToken(tokenId);
+            if (token) {
+                state.hexMap.selectedToken = null;
+                document.getElementById('hexDetailsPanel').innerHTML = `
+                    <div class="no-selection">
+                        <div class="no-selection-icon">📍</div>
+                        <p style="font-size: 16px; font-weight: 600;">Click destination hex</p>
+                        <p style="margin-top: 8px; font-size: 12px;">The token will pathfind to this location</p>
+                        <button class="btn btn-secondary" style="margin-top: 16px;" onclick="cancelPathfindingSelection()">Cancel</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function cancelPathfindingSelection() {
+            pathfindingState.selectingDestination = false;
+            const token = getToken(pathfindingState.tokenId);
+            pathfindingState.tokenId = null;
+            if (token) {
+                state.hexMap.selectedToken = token;
+                showTokenDetails(token);
+            }
+        }
+        
+        function stopPathfinding(tokenId) {
+            const token = getToken(tokenId);
+            if (token) {
+                token.pathfindingRoute = null;
+                token.pathfindingIndex = 0;
+                showTokenDetails(token);
+                renderHex();
+            }
+        }
+        
+        // Build a graph of all hexes connected by paths
+        function buildRoadNetwork() {
+            const network = new Map(); // key: "q,r", value: Set of neighbor "q,r" strings
+            
+            state.hexMap.paths.forEach(path => {
+                const hexes = getPathHexes(path);
+                
+                // Connect consecutive hexes along the path
+                for (let i = 0; i < hexes.length - 1; i++) {
+                    const h1 = `${hexes[i].q},${hexes[i].r}`;
+                    const h2 = `${hexes[i + 1].q},${hexes[i + 1].r}`;
+                    
+                    if (!network.has(h1)) network.set(h1, new Set());
+                    if (!network.has(h2)) network.set(h2, new Set());
+                    
+                    network.get(h1).add(h2);
+                    network.get(h2).add(h1);
+                }
+            });
+            
+            console.log(`Road network built: ${network.size} hexes with paths, ${state.hexMap.paths.length} paths total`);
+            return network;
+        }
+        
+        // A* pathfinding algorithm
+        function findPath(startQ, startR, endQ, endR) {
+            const network = buildRoadNetwork();
+            const startKey = `${startQ},${startR}`;
+            const endKey = `${endQ},${endR}`;
+            
+            // Check if start and end are on the road network
+            if (!network.has(startKey)) {
+                console.log('Start hex is not on any path');
+                return null;
+            }
+            if (!network.has(endKey)) {
+                console.log('End hex is not on any path');
+                return null;
+            }
+            
+            const openSet = new Set([startKey]);
+            const cameFrom = new Map();
+            const gScore = new Map();
+            const fScore = new Map();
+            
+            gScore.set(startKey, 0);
+            fScore.set(startKey, heuristic(startQ, startR, endQ, endR));
+            
+            while (openSet.size > 0) {
+                // Find node in openSet with lowest fScore
+                let current = null;
+                let lowestF = Infinity;
+                openSet.forEach(key => {
+                    const f = fScore.get(key) || Infinity;
+                    if (f < lowestF) {
+                        lowestF = f;
+                        current = key;
+                    }
+                });
+                
+                if (current === endKey) {
+                    // Reconstruct path
+                    return reconstructPath(cameFrom, current);
+                }
+                
+                openSet.delete(current);
+                
+                const neighbors = network.get(current) || new Set();
+                neighbors.forEach(neighborKey => {
+                    const tentativeG = (gScore.get(current) || Infinity) + 1;
+                    
+                    if (tentativeG < (gScore.get(neighborKey) || Infinity)) {
+                        cameFrom.set(neighborKey, current);
+                        gScore.set(neighborKey, tentativeG);
+                        
+                        const [nq, nr] = neighborKey.split(',').map(Number);
+                        fScore.set(neighborKey, tentativeG + heuristic(nq, nr, endQ, endR));
+                        
+                        openSet.add(neighborKey);
+                    }
+                });
+            }
+            
+            // No path found
+            return null;
+        }
+        
+        function heuristic(q1, r1, q2, r2) {
+            // Hex distance
+            return Math.max(
+                Math.abs(q1 - q2),
+                Math.abs(r1 - r2),
+                Math.abs((-q1 - r1) - (-q2 - r2))
+            );
+        }
+        
+        function reconstructPath(cameFrom, current) {
+            const path = [current];
+            while (cameFrom.has(current)) {
+                current = cameFrom.get(current);
+                path.unshift(current);
+            }
+            return path.map(key => {
+                const [q, r] = key.split(',').map(Number);
+                return { q, r };
+            });
+        }
+        
+        function startTokenPathfinding(tokenId, destQ, destR) {
+            const token = getToken(tokenId);
+            if (!token) {
+                alert('Token not found!');
+                return;
+            }
+            
+            // Build network to check what's available
+            const network = buildRoadNetwork();
+            
+            if (network.size === 0) {
+                alert('No paths on the map! Draw some roads first.');
+                return;
+            }
+            
+            // Find nearest path hex to start position
+            const startKey = `${token.q},${token.r}`;
+            let actualStartQ = token.q;
+            let actualStartR = token.r;
+            
+            if (!network.has(startKey)) {
+                // Token is not on a path, find nearest path hex
+                const nearestStart = findNearestPathHex(token.q, token.r, network);
+                if (!nearestStart) {
+                    alert('Token is not near any path! Place the token on or near a road first.');
+                    return;
+                }
+                actualStartQ = nearestStart.q;
+                actualStartR = nearestStart.r;
+                console.log(`Token moved from (${token.q},${token.r}) to nearest path at (${actualStartQ},${actualStartR})`);
+            }
+            
+            // Find nearest path hex to destination
+            const destKey = `${destQ},${destR}`;
+            let actualDestQ = destQ;
+            let actualDestR = destR;
+            
+            if (!network.has(destKey)) {
+                const nearestDest = findNearestPathHex(destQ, destR, network);
+                if (!nearestDest) {
+                    alert('Destination is not near any path! Click on or near a road.');
+                    return;
+                }
+                actualDestQ = nearestDest.q;
+                actualDestR = nearestDest.r;
+                console.log(`Destination moved from (${destQ},${destR}) to nearest path at (${actualDestQ},${actualDestR})`);
+            }
+            
+            const path = findPath(actualStartQ, actualStartR, actualDestQ, actualDestR);
+            
+            if (!path) {
+                alert('No route found! Make sure the roads are connected between start and destination.');
+                return;
+            }
+            
+            console.log(`Path found with ${path.length} hexes`);
+            
+            token.pathfindingRoute = path;
+            token.pathfindingIndex = 0;
+            
+            // Start the movement animation
+            animateTokenAlongPath(tokenId);
+            
+            // Update UI
+            state.hexMap.selectedToken = token;
+            showTokenDetails(token);
+            renderHex();
+        }
+        
+        function findNearestPathHex(q, r, network) {
+            let nearestHex = null;
+            let nearestDist = Infinity;
+            
+            network.forEach((neighbors, key) => {
+                const [hq, hr] = key.split(',').map(Number);
+                const dist = heuristic(q, r, hq, hr);
+                if (dist < nearestDist) {
+                    nearestDist = dist;
+                    nearestHex = { q: hq, r: hr };
+                }
+            });
+            
+            // Only return if within reasonable distance (5 hexes)
+            return nearestDist <= 5 ? nearestHex : null;
+        }
+        
+        function animateTokenAlongPath(tokenId) {
+            const token = getToken(tokenId);
+            if (!token || !token.pathfindingRoute) return;
+            
+            // Move to next hex
+            token.pathfindingIndex++;
+            
+            if (token.pathfindingIndex >= token.pathfindingRoute.length) {
+                // Reached destination
+                token.pathfindingRoute = null;
+                token.pathfindingIndex = 0;
+                if (state.hexMap.selectedToken?.id === tokenId) {
+                    showTokenDetails(token);
+                }
+                renderHex();
+                return;
+            }
+            
+            const nextHex = token.pathfindingRoute[token.pathfindingIndex];
+            token.q = nextHex.q;
+            token.r = nextHex.r;
+            renderHex();
+            
+            // Continue animation
+            setTimeout(() => animateTokenAlongPath(tokenId), 500); // Move every 500ms
         }
 
         // Painting Functions
@@ -1919,6 +2646,11 @@
                 drawPathHighlight(state.hexMap.selectedPath);
             }
             
+            // Draw landmarks
+            state.hexMap.landmarks.forEach(landmark => {
+                if (landmark.visible) drawLandmark(landmark);
+            });
+            
             // Draw tokens
             state.hexMap.tokens.forEach(token => {
                 if (token.visible) drawToken(token);
@@ -1957,10 +2689,54 @@
                 ctx.setLineDash([]);
             }
             
+            // Draw pathfinding routes for tokens
+            state.hexMap.tokens.forEach(token => {
+                if (token.pathfindingRoute && token.pathfindingRoute.length > 0) {
+                    drawPathfindingRoute(token);
+                }
+            });
+            
             // Draw path points when in edit mode
             if (state.hexMap.pathEditMode && state.hexMap.selectedPath) {
                 drawPathPoints(state.hexMap.selectedPath);
             }
+        }
+        
+        function drawPathfindingRoute(token) {
+            if (!token.pathfindingRoute || token.pathfindingRoute.length < 2) return;
+            
+            ctx.save();
+            ctx.strokeStyle = token.color;
+            ctx.lineWidth = 6 * state.hexMap.viewport.scale;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.globalAlpha = 0.6;
+            ctx.setLineDash([10, 5]);
+            
+            ctx.beginPath();
+            token.pathfindingRoute.forEach((point, index) => {
+                const { x, y } = hexToPixel(point.q, point.r);
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+            
+            // Draw destination marker
+            const dest = token.pathfindingRoute[token.pathfindingRoute.length - 1];
+            const { x, y } = hexToPixel(dest.q, dest.r);
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = token.color;
+            ctx.beginPath();
+            ctx.arc(x, y, 8 * state.hexMap.viewport.scale, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            ctx.restore();
         }
         
         function drawPathPoints(path) {
@@ -2039,22 +2815,27 @@
         function drawToken(token) {
             const { x, y } = hexToPixel(token.q, token.r);
             const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
-            const tokenSize = size * 0.7 * token.size * token.scale;
+            const tokenSize = size * 0.85 * token.size * token.scale;
+            
+            // Safety check: don't render if too small
+            if (tokenSize <= 0 || size <= 0) return;
+            
+            const radius = Math.max(1, tokenSize / 2); // Ensure minimum radius of 1
             
             ctx.save();
             // Shadow
             ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             ctx.beginPath();
-            ctx.arc(x + 2, y + 2, tokenSize / 2, 0, Math.PI * 2);
+            ctx.arc(x + 2, y + 2, radius, 0, Math.PI * 2);
             ctx.fill();
             
             // Token circle
             ctx.fillStyle = token.color;
             ctx.beginPath();
-            ctx.arc(x, y, tokenSize / 2, 0, Math.PI * 2);
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 2 * token.scale;
+            ctx.lineWidth = Math.max(1, 2 * token.scale);
             ctx.stroke();
             
             // Display text based on size
@@ -2072,23 +2853,219 @@
                 displayText = token.label.length > 10 ? token.label.slice(0, 10) : token.label;
             }
             
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            const fontSize = Math.max(10, tokenSize * 0.35);
-            ctx.font = `bold ${fontSize}px Arial`;
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-            ctx.shadowBlur = 3;
-            ctx.shadowOffsetX = 1;
-            ctx.shadowOffsetY = 1;
-            ctx.fillText(displayText, x, y);
+            // Only render text if token is large enough
+            if (tokenSize > 10) {
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const fontSize = Math.max(10, tokenSize * 0.35);
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 3;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
+                ctx.fillText(displayText, x, y);
+            }
             ctx.restore();
         }
 
+        function drawLandmark(landmark) {
+            const { x, y } = hexToPixel(landmark.q, landmark.r);
+            const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
+            const landmarkSize = size * 0.75 * landmark.size;
+            
+            // Safety check: don't render if too small
+            if (landmarkSize <= 0 || size <= 0) return;
+            
+            const radius = Math.max(1, landmarkSize / 2); // Ensure minimum radius of 1
+            
+            ctx.save();
+            
+            if (landmark.style === 'circle') {
+                // Outer glow
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius + 8);
+                gradient.addColorStop(0, landmark.color);
+                gradient.addColorStop(0.7, landmark.color);
+                gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = gradient;
+                ctx.globalAlpha = 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, radius + 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Main circle with gradient
+                ctx.globalAlpha = 0.85;
+                const mainGradient = ctx.createRadialGradient(
+                    x - landmarkSize * 0.2, 
+                    y - landmarkSize * 0.2, 
+                    0, 
+                    x, 
+                    y, 
+                    radius
+                );
+                mainGradient.addColorStop(0, lightenColor(landmark.color, 30));
+                mainGradient.addColorStop(1, landmark.color);
+                ctx.fillStyle = mainGradient;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Border
+                ctx.globalAlpha = 1;
+                ctx.strokeStyle = darkenColor(landmark.color, 30);
+                ctx.lineWidth = Math.max(1, 3);
+                ctx.stroke();
+                
+                // Inner highlight (only if large enough)
+                if (radius > 5) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(x - landmarkSize * 0.15, y - landmarkSize * 0.15, radius - 5, Math.PI, Math.PI * 1.5);
+                    ctx.stroke();
+                }
+                
+            } else if (landmark.style === 'icon' && landmark.icon) {
+                // Icon style - draw placeholder for now
+                ctx.fillStyle = landmark.color;
+                ctx.globalAlpha = 0.9;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = Math.max(1, 2);
+                ctx.stroke();
+                
+                // Icon placeholder (only if large enough)
+                if (landmarkSize > 10) {
+                    ctx.fillStyle = '#000000';
+                    ctx.font = `bold ${landmarkSize * 0.5}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('🏛️', x, y);
+                }
+            } else if (landmark.style === 'badge') {
+                // Badge style - small corner indicator
+                const badgeSize = size * 0.4 * landmark.size;
+                const badgeRadius = Math.max(1, badgeSize / 2);
+                const offsetX = size * 0.3;
+                const offsetY = -size * 0.3;
+                
+                // Glow
+                ctx.globalAlpha = 0.3;
+                ctx.fillStyle = landmark.color;
+                ctx.beginPath();
+                ctx.arc(x + offsetX, y + offsetY, badgeRadius + 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Main badge
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = landmark.color;
+                ctx.beginPath();
+                ctx.arc(x + offsetX, y + offsetY, badgeRadius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = Math.max(1, 2);
+                ctx.stroke();
+            }
+            
+            // Draw label if enabled (only if landmark is large enough)
+            if (landmark.showLabel && landmark.name && landmarkSize > 10) {
+                const fontSize = Math.max(11, size * 0.28);
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.textAlign = 'center';
+                
+                let labelY = y;
+                if (landmark.labelPosition === 'above') {
+                    labelY = y - radius - fontSize / 2 - 4;
+                    ctx.textBaseline = 'bottom';
+                } else if (landmark.labelPosition === 'below') {
+                    labelY = y + radius + fontSize / 2 + 4;
+                    ctx.textBaseline = 'top';
+                } else { // inside
+                    labelY = y;
+                    ctx.textBaseline = 'middle';
+                }
+                
+                // Text outline (thicker for better visibility)
+                ctx.globalAlpha = 1;
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 4;
+                ctx.strokeText(landmark.name, x, labelY);
+                
+                // Text fill
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(landmark.name, x, labelY);
+            }
+            
+            ctx.restore();
+        }
+        
+        // Helper functions for color manipulation
+        function lightenColor(color, percent) {
+            const num = parseInt(color.replace("#",""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.min(255, (num >> 16) + amt);
+            const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
+            const B = Math.min(255, (num & 0x0000FF) + amt);
+            return "#" + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+        }
+        
+        function darkenColor(color, percent) {
+            const num = parseInt(color.replace("#",""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.max(0, (num >> 16) - amt);
+            const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
+            const B = Math.max(0, (num & 0x0000FF) - amt);
+            return "#" + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+        }
+
         // Mode Management
+        function setViewMode(viewMode) {
+            state.hexMap.viewMode = viewMode;
+            
+            // Update view mode buttons
+            document.querySelectorAll('.view-mode-option').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.viewMode === viewMode);
+            });
+            
+            // Show/hide tools section based on view mode
+            const toolsSection = document.getElementById('toolsSection');
+            const brushSection = document.getElementById('brushSettingsSection');
+            const terrainSection = document.getElementById('terrainPaletteSection');
+            const tokenSection = document.getElementById('tokenCreatorSection');
+            const pathSection = document.getElementById('pathCreatorSection');
+            
+            if (viewMode === 'explorer') {
+                // Hide all builder tools
+                toolsSection.style.display = 'none';
+                brushSection.style.display = 'none';
+                terrainSection.style.display = 'none';
+                tokenSection.style.display = 'none';
+                pathSection.style.display = 'none';
+                
+                // Cancel any in-progress actions
+                state.hexMap.isPainting = false;
+                state.hexMap.pendingToken = null;
+                if (state.hexMap.currentPath) {
+                    cancelPath();
+                }
+            } else {
+                // Show builder tools
+                toolsSection.style.display = 'block';
+                // Let setHexMode handle which sections to show
+                setHexMode(state.hexMap.mode);
+            }
+            
+            updateUI();
+            renderHex();
+        }
+
         function setHexMode(mode) {
             state.hexMap.mode = mode;
             state.hexMap.pendingToken = null;
+            state.hexMap.pendingLandmark = null;
             state.hexMap.hoveredPath = null;
             
             // Cancel any in-progress path
@@ -2101,22 +3078,26 @@
             });
             
             const tokenSection = document.getElementById('tokenCreatorSection');
+            const landmarkSection = document.getElementById('landmarkCreatorSection');
             const brushSection = document.getElementById('brushSettingsSection');
             const terrainSection = document.getElementById('terrainPaletteSection');
             const pathSection = document.getElementById('pathCreatorSection');
             
             tokenSection.style.display = 'none';
+            landmarkSection.style.display = 'none';
             brushSection.style.display = 'none';
             terrainSection.style.display = 'none';
             pathSection.style.display = 'none';
             
             if (mode === 'token') {
                 tokenSection.style.display = 'block';
+            } else if (mode === 'landmark') {
+                landmarkSection.style.display = 'block';
             } else if (mode === 'path') {
                 pathSection.style.display = 'block';
                 selectPathType(state.hexMap.pathType);
                 selectPathStyle(state.hexMap.pathStyle);
-            } else {
+            } else if (mode === 'paint') {
                 brushSection.style.display = 'block';
                 terrainSection.style.display = 'block';
             }
@@ -2124,6 +3105,15 @@
         }
 
         function selectTerrain(terrain) {
+            if (terrain === 'clear') {
+                state.hexMap.selectedTerrain = 'clear';
+                document.querySelectorAll('.terrain-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.terrain === 'clear');
+                });
+                document.getElementById('terrainText').textContent = 'Clear Hex';
+                return;
+            }
+            
             state.hexMap.selectedTerrain = terrain;
             document.querySelectorAll('.terrain-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.terrain === terrain);
@@ -2140,33 +3130,41 @@
             state.hexMap.paintSpeed = parseInt(value);
             document.getElementById('paintSpeedValue').textContent = value;
         }
+        
+        function toggleFillMode(enabled) {
+            state.hexMap.fillMode = enabled;
+        }
 
         function updateUI() {
             const modeText = document.getElementById('modeText');
             const instructionText = document.getElementById('instructionText');
             
+            // If in Explorer mode, show different instructions
+            if (state.hexMap.viewMode === 'explorer') {
+                modeText.textContent = 'Explorer Mode';
+                instructionText.textContent = 'Click hexes/tokens/landmarks to view info · Drag tokens to move · Right-click drag to pan';
+                canvas.style.cursor = 'default';
+                return;
+            }
+            
             const cursorMap = {
                 paint: 'crosshair',
-                fill: 'cell',
-                select: 'pointer',
-                erase: 'not-allowed',
                 token: 'crosshair',
-                path: 'crosshair'
+                path: 'crosshair',
+                landmark: 'crosshair'
             };
             
             const instructions = {
-                paint: 'Click to paint · Drag for continuous painting · Right-click drag to pan',
-                fill: 'Click to fill connected area · Right-click drag to pan',
-                select: 'Click any hex or token to view details · Right-click drag to pan',
-                erase: 'Click to erase · Drag for continuous erasing · Right-click drag to pan',
-                token: state.hexMap.pendingToken ? 'Click a hex to place token · ESC to cancel' : 'Click to create token · Click token to select · Drag token to move',
+                paint: 'Click to paint · Shift+Click to select hex · Drag for continuous painting · Right-click drag to pan',
+                token: state.hexMap.pendingToken ? 'Click a hex to place token · ESC to cancel' : 'Click to place token · Shift+Click token to select · Drag token to move',
+                landmark: state.hexMap.pendingLandmark ? 'Click a hex to place landmark · ESC to cancel' : 'Click to create landmark · Shift+Click landmark to select',
                 path: state.hexMap.pathEditMode ? 'Drag points to move · Click + to insert · Click × to delete · Right-click to pan' : 
                       state.hexMap.currentPath ? 'Click to add waypoints · Double-click to finish · ESC to cancel' : 
-                      'Click to draw new path or select existing path to edit'
+                      'Click to draw new path · Shift+Click path to select/edit'
             };
             
-            canvas.style.cursor = cursorMap[state.hexMap.mode];
-            modeText.textContent = state.hexMap.mode.charAt(0).toUpperCase() + state.hexMap.mode.slice(1) + ' Mode';
+            canvas.style.cursor = cursorMap[state.hexMap.mode] || 'default';
+            modeText.textContent = state.hexMap.mode.charAt(0).toUpperCase() + state.hexMap.mode.slice(1) + ' Tool';
             instructionText.textContent = instructions[state.hexMap.mode];
         }
 
@@ -2186,6 +3184,84 @@
             }
             
             if (e.button === 0) {
+                // EXPLORER MODE - simple click to view, drag tokens to move
+                if (state.hexMap.viewMode === 'explorer') {
+                    const clickedToken = findTokenAtPixel(x, y);
+                    if (clickedToken) {
+                        // Check if clicking to drag or to select
+                        state.hexMap.draggingToken = clickedToken;
+                        state.hexMap.selectedToken = clickedToken;
+                        state.hexMap.selectedHex = null;
+                        animateTokenScale(clickedToken.id, 1.3, 150);
+                        showTokenDetails(clickedToken);
+                        canvas.style.cursor = 'grabbing';
+                    } else {
+                        // Click on hex to view info
+                        const existingHex = getHex(hex.q, hex.r);
+                        if (existingHex) {
+                            state.hexMap.selectedToken = null;
+                            selectHex(existingHex);
+                        }
+                    }
+                    return;
+                }
+                
+                // BUILDER MODE - rest of the logic
+                // Check if we're selecting a pathfinding destination (works in any mode)
+                if (pathfindingState.selectingDestination) {
+                    pathfindingState.selectingDestination = false;
+                    startTokenPathfinding(pathfindingState.tokenId, hex.q, hex.r);
+                    pathfindingState.tokenId = null;
+                    return;
+                }
+                
+                // SHIFT+CLICK SELECTION (tool-specific)
+                if (e.shiftKey) {
+                    if (state.hexMap.mode === 'paint') {
+                        // Select hex in terrain mode
+                        const existingHex = getHex(hex.q, hex.r);
+                        if (existingHex) {
+                            state.hexMap.selectedToken = null;
+                            selectHex(existingHex);
+                        }
+                        return;
+                    } else if (state.hexMap.mode === 'token') {
+                        // Select token in token mode
+                        const clickedToken = findTokenAtPixel(x, y);
+                        if (clickedToken) {
+                            state.hexMap.selectedToken = clickedToken;
+                            state.hexMap.selectedHex = null;
+                            animateTokenScale(clickedToken.id, 1.2, 200);
+                            setTimeout(() => animateTokenScale(clickedToken.id, 1.0, 200), 200);
+                            showTokenDetails(clickedToken);
+                            renderHex();
+                        }
+                        return;
+                    } else if (state.hexMap.mode === 'landmark') {
+                        // Select landmark in landmark mode
+                        const clickedLandmark = findLandmarkAtPixel(x, y);
+                        if (clickedLandmark) {
+                            state.hexMap.selectedLandmark = clickedLandmark;
+                            state.hexMap.selectedHex = null;
+                            state.hexMap.selectedToken = null;
+                            showLandmarkDetails(clickedLandmark);
+                            renderHex();
+                        }
+                        return;
+                    } else if (state.hexMap.mode === 'path') {
+                        // Select path in path mode
+                        const clickedPath = findPathAtPixel(x, y);
+                        if (clickedPath) {
+                            state.hexMap.selectedPath = clickedPath;
+                            state.hexMap.selectedHex = null;
+                            state.hexMap.selectedToken = null;
+                            showPathDetails(clickedPath);
+                            renderHex();
+                        }
+                        return;
+                    }
+                }
+                
                 // Path mode
                 if (state.hexMap.mode === 'path') {
                     // Check if in edit mode and clicking on a path point
@@ -2196,31 +3272,51 @@
                             canvas.style.cursor = 'grabbing';
                             return;
                         }
-                    }
-                    
-                    if (e.detail === 2) { // Double-click
-                        // Check if double-clicking on a selected path to insert a point
-                        if (state.hexMap.selectedPath && !state.hexMap.currentPath) {
+                        
+                        // Check for double-click on path line in edit mode to insert point
+                        if (e.detail === 2) {
                             const segmentIndex = findPathSegmentAtPixel(x, y, state.hexMap.selectedPath);
                             if (segmentIndex !== null) {
-                                // Insert point on this segment
                                 insertPointAfter(state.hexMap.selectedPath.id, segmentIndex);
                                 return;
                             }
                         }
-                        // Otherwise finish the current path being drawn
-                        finishPath();
+                        // In edit mode but didn't click a point - do nothing (don't add points)
+                        return;
+                    }
+                    
+                    if (e.detail === 2) { // Double-click
+                        // If we're currently drawing a path, finish it
+                        if (state.hexMap.currentPath) {
+                            finishPath();
+                            return;
+                        }
+                        
+                        // If we have a selected path (not in edit mode), double-click to insert point
+                        if (state.hexMap.selectedPath) {
+                            const segmentIndex = findPathSegmentAtPixel(x, y, state.hexMap.selectedPath);
+                            if (segmentIndex !== null) {
+                                insertPointAfter(state.hexMap.selectedPath.id, segmentIndex);
+                                return;
+                            }
+                        }
                     } else {
-                        // Check if clicking on existing path first
-                        const clickedPath = findPathAtPixel(x, y);
-                        if (clickedPath && !state.hexMap.currentPath) {
-                            state.hexMap.selectedPath = clickedPath;
-                            state.hexMap.selectedHex = null;
-                            state.hexMap.selectedToken = null;
-                            showPathDetails(clickedPath);
-                            renderHex();
-                        } else {
-                            // Add point to current path
+                        // Single click (non-shift)
+                        // Check if clicking on existing path first (only when not drawing)
+                        if (!state.hexMap.currentPath && !e.shiftKey) {
+                            const clickedPath = findPathAtPixel(x, y);
+                            if (clickedPath) {
+                                state.hexMap.selectedPath = clickedPath;
+                                state.hexMap.selectedHex = null;
+                                state.hexMap.selectedToken = null;
+                                showPathDetails(clickedPath);
+                                renderHex();
+                                return; // Don't add point after selecting
+                            }
+                        }
+                        
+                        // Only add points if we're actively drawing (currentPath exists) or starting new
+                        if (state.hexMap.currentPath || !state.hexMap.selectedPath) {
                             addPathPoint(hex.q, hex.r);
                         }
                     }
@@ -2230,7 +3326,7 @@
                 // Token mode
                 if (state.hexMap.mode === 'token') {
                     const clickedToken = findTokenAtPixel(x, y);
-                    if (clickedToken) {
+                    if (clickedToken && !e.shiftKey) {
                         state.hexMap.draggingToken = clickedToken;
                         animateTokenScale(clickedToken.id, 1.3, 150);
                         canvas.style.cursor = 'grabbing';
@@ -2241,42 +3337,57 @@
                         animateTokenScale(newToken.id, 1, 300);
                         renderHex();
                         updateUI();
-                    } else {
+                    } else if (!e.shiftKey) {
                         showTokenCreator();
                     }
                     return;
                 }
                 
-                if (state.hexMap.mode === 'paint') {
-                    state.hexMap.isPainting = true;
-                    paintHex(hex.q, hex.r);
-                    state.hexMap.lastPaintPos = hex;
-                    state.hexMap.paintThrottle = 0;
-                    renderHex();
-                } else if (state.hexMap.mode === 'erase') {
-                    state.hexMap.isPainting = true;
-                    eraseHex(hex.q, hex.r);
-                    state.hexMap.lastPaintPos = hex;
-                    state.hexMap.paintThrottle = 0;
-                    renderHex();
-                } else if (state.hexMap.mode === 'fill') {
-                    floodFill(hex.q, hex.r, state.hexMap.selectedTerrain);
-                } else if (state.hexMap.mode === 'select') {
-                    const clickedToken = findTokenAtPixel(x, y);
-                    if (clickedToken) {
-                        state.hexMap.selectedToken = clickedToken;
-                        state.hexMap.selectedHex = null;
-                        animateTokenScale(clickedToken.id, 1.2, 200);
-                        setTimeout(() => animateTokenScale(clickedToken.id, 1.0, 200), 200);
-                        showTokenDetails(clickedToken);
+                // Landmark mode
+                if (state.hexMap.mode === 'landmark') {
+                    if (state.hexMap.pendingLandmark) {
+                        // Place the landmark
+                        const newLandmark = createLandmark(hex.q, hex.r, state.hexMap.pendingLandmark);
+                        state.hexMap.pendingLandmark = null;
                         renderHex();
-                    } else {
-                        const existingHex = getHex(hex.q, hex.r);
-                        if (existingHex) {
+                        updateUI();
+                    } else if (!e.shiftKey) {
+                        // Check if clicking on existing landmark first
+                        const clickedLandmark = findLandmarkAtPixel(x, y);
+                        if (clickedLandmark) {
+                            // Show landmark details  (not implemented with shift - just select it)
+                            state.hexMap.selectedLandmark = clickedLandmark;
+                            state.hexMap.selectedHex = null;
                             state.hexMap.selectedToken = null;
-                            selectHex(existingHex);
+                            showLandmarkDetails(clickedLandmark);
+                            renderHex();
+                        } else {
+                            // No landmark, show creator
+                            showLandmarkCreator();
                         }
                     }
+                    return;
+                }
+                
+                if (state.hexMap.mode === 'paint') {
+                    // Check if fill mode is enabled
+                    if (state.hexMap.fillMode && state.hexMap.selectedTerrain !== 'clear') {
+                        floodFill(hex.q, hex.r, state.hexMap.selectedTerrain);
+                    } else {
+                        state.hexMap.isPainting = true;
+                        
+                        // Handle clear terrain
+                        if (state.hexMap.selectedTerrain === 'clear') {
+                            const hexesToClear = getHexesInRadius(hex.q, hex.r, state.hexMap.brushSize - 1);
+                            hexesToClear.forEach(h => deleteHex(h.q, h.r));
+                        } else {
+                            paintHex(hex.q, hex.r);
+                        }
+                        
+                        state.hexMap.lastPaintPos = hex;
+                        state.hexMap.paintThrottle = 0;
+                    }
+                    renderHex();
                 }
             }
         });
@@ -2307,7 +3418,15 @@
                 return;
             }
             
-            // Path point dragging
+            // Prevent all other editing actions in Explorer mode
+            if (state.hexMap.viewMode === 'explorer') {
+                // Only show hover cursor for tokens
+                const hoverToken = findTokenAtPixel(x, y);
+                canvas.style.cursor = hoverToken ? 'pointer' : 'default';
+                return;
+            }
+            
+            // Path point dragging (Builder mode only)
             if (state.hexMap.draggingPathPoint) {
                 const targetHex = pixelToHex(x, y);
                 const point = state.hexMap.selectedPath.points[state.hexMap.draggingPathPoint.pointIndex];
@@ -2340,7 +3459,7 @@
                 }
             }
             
-            if (state.hexMap.mode === 'paint' || state.hexMap.mode === 'erase') {
+            if (state.hexMap.mode === 'paint') {
                 state.hexMap.brushPreviewHexes = getHexesInRadius(hex.q, hex.r, state.hexMap.brushSize - 1);
                 if (!state.hexMap.isPainting) {
                     renderHex();
@@ -2362,9 +3481,12 @@
                     
                     if (shouldPaint) {
                         if (state.hexMap.mode === 'paint') {
-                            paintHex(hex.q, hex.r);
-                        } else if (state.hexMap.mode === 'erase') {
-                            eraseHex(hex.q, hex.r);
+                            if (state.hexMap.selectedTerrain === 'clear') {
+                                const hexesToClear = getHexesInRadius(hex.q, hex.r, state.hexMap.brushSize - 1);
+                                hexesToClear.forEach(h => deleteHex(h.q, h.r));
+                            } else {
+                                paintHex(hex.q, hex.r);
+                            }
                         }
                         state.hexMap.lastPaintPos = hex;
                         renderHex();
@@ -2390,15 +3512,17 @@
             state.hexMap.isPainting = false;
             state.hexMap.isPanning = false;
             
-            const cursorMap = {
-                paint: 'crosshair',
-                fill: 'cell',
-                select: 'pointer',
-                erase: 'not-allowed',
-                token: 'crosshair',
-                path: 'crosshair'
-            };
-            canvas.style.cursor = cursorMap[state.hexMap.mode];
+            // Set cursor based on mode
+            if (state.hexMap.viewMode === 'explorer') {
+                canvas.style.cursor = 'default';
+            } else {
+                const cursorMap = {
+                    paint: 'crosshair',
+                    token: 'crosshair',
+                    path: 'crosshair'
+                };
+                canvas.style.cursor = cursorMap[state.hexMap.mode] || 'default';
+            }
         });
 
         canvas.addEventListener('mouseleave', () => {
@@ -2548,15 +3672,17 @@
 
         function exportHexMap() {
             const worldData = {
-                version: '1.1',
+                version: '1.2',
                 exportDate: new Date().toISOString(),
                 metadata: {
                     totalHexes: state.hexMap.hexes.size,
+                    totalLandmarks: state.hexMap.landmarks.size,
                     totalTokens: state.hexMap.tokens.size,
                     totalPaths: state.hexMap.paths.length
                 },
                 viewport: state.hexMap.viewport,
                 hexes: [],
+                landmarks: [],
                 tokens: [],
                 paths: []
             };
@@ -2570,6 +3696,26 @@
                     description: hex.description || ''
                 };
                 worldData.hexes.push(hexData);
+            });
+            
+            Array.from(state.hexMap.landmarks.values()).forEach(landmark => {
+                worldData.landmarks.push({
+                    id: landmark.id,
+                    q: landmark.q,
+                    r: landmark.r,
+                    name: landmark.name,
+                    type: landmark.type,
+                    style: landmark.style,
+                    icon: landmark.icon,
+                    color: landmark.color,
+                    showLabel: landmark.showLabel,
+                    labelPosition: landmark.labelPosition,
+                    size: landmark.size,
+                    attributes: landmark.attributes,
+                    notes: landmark.notes,
+                    visible: landmark.visible,
+                    created: landmark.created
+                });
             });
             
             Array.from(state.hexMap.tokens.values()).forEach(token => {
@@ -2613,7 +3759,7 @@
             a.click();
             URL.revokeObjectURL(url);
             
-            alert(`World exported successfully!\n\n${worldData.metadata.totalHexes} hexes\n${worldData.metadata.totalTokens} tokens\n${worldData.metadata.totalPaths} paths`);
+            alert(`World exported successfully!\n\n${worldData.metadata.totalHexes} hexes\n${worldData.metadata.totalLandmarks} landmarks\n${worldData.metadata.totalTokens} tokens\n${worldData.metadata.totalPaths} paths`);
         }
 
         function importHexMap() {
@@ -2634,9 +3780,11 @@
                     }
                     
                     state.hexMap.hexes.clear();
+                    state.hexMap.landmarks.clear();
                     state.hexMap.tokens.clear();
                     state.hexMap.paths = [];
                     state.hexMap.selectedHex = null;
+                    state.hexMap.selectedLandmark = null;
                     state.hexMap.selectedToken = null;
                     state.hexMap.currentPath = null;
                     
@@ -2650,6 +3798,33 @@
                             description: hexData.description || ''
                         });
                     });
+                    
+                    if (data.landmarks && Array.isArray(data.landmarks)) {
+                        data.landmarks.forEach(landmarkData => {
+                            const key = `${landmarkData.q},${landmarkData.r}`;
+                            state.hexMap.landmarks.set(key, {
+                                id: landmarkData.id,
+                                q: landmarkData.q,
+                                r: landmarkData.r,
+                                name: landmarkData.name,
+                                type: landmarkData.type,
+                                style: landmarkData.style,
+                                icon: landmarkData.icon,
+                                color: landmarkData.color,
+                                showLabel: landmarkData.showLabel !== false,
+                                labelPosition: landmarkData.labelPosition || 'above',
+                                size: landmarkData.size || 1.0,
+                                attributes: landmarkData.attributes || {},
+                                notes: landmarkData.notes || '',
+                                visible: landmarkData.visible !== false,
+                                created: landmarkData.created
+                            });
+                            const idNum = parseInt(landmarkData.id.split('_')[1]);
+                            if (idNum >= state.nextLandmarkId) {
+                                state.nextLandmarkId = idNum + 1;
+                            }
+                        });
+                    }
                     
                     if (data.tokens && Array.isArray(data.tokens)) {
                         data.tokens.forEach(tokenData => {
@@ -2701,9 +3876,10 @@
                     deselectHex();
                     renderHex();
                     
+                    const landmarkCount = data.landmarks ? data.landmarks.length : 0;
                     const tokenCount = data.tokens ? data.tokens.length : 0;
                     const pathCount = data.paths ? data.paths.length : 0;
-                    alert(`World imported successfully!\n\n${data.hexes.length} hexes\n${tokenCount} tokens\n${pathCount} paths`);
+                    alert(`World imported successfully!\n\n${data.hexes.length} hexes\n${landmarkCount} landmarks\n${tokenCount} tokens\n${pathCount} paths`);
                     
                 } catch (error) {
                     console.error('Import error:', error);
@@ -2806,6 +3982,21 @@
                 `;
                 terrainPalette.appendChild(btn);
             });
+            
+            // Add Clear Hex button
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'terrain-btn';
+            clearBtn.dataset.terrain = 'clear';
+            clearBtn.onclick = () => selectTerrain('clear');
+            clearBtn.innerHTML = `
+                <div class="terrain-icon" style="background: #2d3748; border: 2px dashed #4a5568;">
+                    <svg style="width: 24px; height: 24px; fill: #a0aec0;" viewBox="0 0 24 24">
+                        <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+                    </svg>
+                </div>
+                <span class="terrain-name">Clear Hex</span>
+            `;
+            terrainPalette.appendChild(clearBtn);
             
             createStarterMap();
             preloadHexIcons();

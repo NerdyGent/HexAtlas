@@ -456,8 +456,6 @@
             <div class="topbar-left">
                 <div class="logo">⬡ HexWorlds</div>
                 <div class="breadcrumb">
-                    <strong>Frontier Campaign</strong>
-                    <span style="color: #4a5568;">›</span>
                     <span id="viewName">Hex Map</span>
                 </div>
             </div>
@@ -585,6 +583,17 @@
                         </div>
                     </div>
                     
+                    <div class="brush-control">
+                        <label>Path Color</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="color" id="pathColor" value="#8B7355" 
+                                   onchange="updatePathColor(this.value)"
+                                   style="width: 50px; height: 30px; border: 2px solid #3d4758; border-radius: 6px; background: transparent; cursor: pointer;">
+                            <button class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px;" 
+                                    onclick="resetPathColorToDefault()">Reset to Default</button>
+                        </div>
+                    </div>
+                    
                     <div style="font-size: 11px; color: #718096; line-height: 1.5; margin-top: 16px;">
                         <strong>Path Mode:</strong><br>
                         • Click hexes to draw path<br>
@@ -626,52 +635,52 @@
             plains: {
                 name: 'Plains',
                 color: '#90EE90',
-                icon: 'https://game-icons.net/icons/000000/transparent/1x1/delapouite/wheat.svg'
+                icon: 'https://api.iconify.design/mdi/wheat.svg?color=%23000000'
             },
             forest: {
                 name: 'Forest',
                 color: '#228B22',
-                icon: 'https://game-icons.net/icons/ffffff/transparent/1x1/delapouite/pine-tree.svg'
+                icon: 'https://api.iconify.design/mdi/pine-tree.svg?color=%23ffffff'
             },
             mountain: {
                 name: 'Mountain',
                 color: '#8B7355',
-                icon: 'https://game-icons.net/icons/000000/transparent/1x1/lorc/mountain-cave.svg'
+                icon: 'https://api.iconify.design/mdi/image-filter-hdr.svg?color=%23000000'
             },
             desert: {
                 name: 'Desert',
                 color: '#F4A460',
-                icon: 'https://game-icons.net/icons/000000/transparent/1x1/delapouite/cactus.svg'
+                icon: 'https://api.iconify.design/mdi/cactus.svg?color=%23000000'
             },
             water: {
                 name: 'Water',
                 color: '#4682B4',
-                icon: 'https://game-icons.net/icons/ffffff/transparent/1x1/lorc/wave-crest.svg'
+                icon: 'https://api.iconify.design/mdi/waves.svg?color=%23ffffff'
             },
             swamp: {
                 name: 'Swamp',
                 color: '#556B2F',
-                icon: 'https://game-icons.net/icons/ffffff/transparent/1x1/lorc/swamp.svg'
+                icon: 'https://api.iconify.design/mdi/water.svg?color=%23ffffff'
             },
             hills: {
                 name: 'Hills',
                 color: '#9ACD32',
-                icon: 'https://game-icons.net/icons/000000/transparent/1x1/lorc/rolling-dunes.svg'
+                icon: 'https://api.iconify.design/mdi/terrain.svg?color=%23000000'
             },
             tundra: {
                 name: 'Tundra',
                 color: '#E0FFFF',
-                icon: 'https://game-icons.net/icons/000000/transparent/1x1/lorc/snowflake-1.svg'
+                icon: 'https://api.iconify.design/mdi/snowflake.svg?color=%23000000'
             },
             grassland: {
                 name: 'Grassland',
                 color: '#7CFC00',
-                icon: 'https://game-icons.net/icons/000000/transparent/1x1/delapouite/grass.svg'
+                icon: 'https://api.iconify.design/mdi/grass.svg?color=%23000000'
             },
             jungle: {
                 name: 'Jungle',
                 color: '#006400',
-                icon: 'https://game-icons.net/icons/ffffff/transparent/1x1/delapouite/palm-tree.svg'
+                icon: 'https://api.iconify.design/mdi/palm-tree.svg?color=%23ffffff'
             }
         };
 
@@ -684,6 +693,10 @@
                 tokens: new Map(),
                 paths: [],
                 selectedPath: null,
+                hoveredPath: null,
+                pathEditMode: false,
+                draggingPathPoint: null,
+                hoveredPathPoint: null,
                 selectedToken: null,
                 draggingToken: null,
                 pendingToken: null,
@@ -691,6 +704,7 @@
                 pathType: 'road',
                 pathStyle: 'straight',
                 pathWidth: 4,
+                pathColor: '#8B7355',
                 viewport: { offsetX: 0, offsetY: 0, scale: 1 },
                 isPanning: false,
                 isPainting: false,
@@ -827,6 +841,10 @@
                 btn.classList.toggle('btn-primary', btn.id === `pathType_${type}`);
                 btn.classList.toggle('btn-secondary', btn.id !== `pathType_${type}`);
             });
+            // Update color to match the path type default
+            const defaultColor = PATH_STYLES[type].color;
+            state.hexMap.pathColor = defaultColor;
+            document.getElementById('pathColor').value = defaultColor;
         }
         
         function selectPathStyle(style) {
@@ -842,12 +860,32 @@
             document.getElementById('pathWidthValue').textContent = value;
         }
         
+        function updatePathColor(color) {
+            state.hexMap.pathColor = color;
+            // If currently drawing a path, update its color
+            if (state.hexMap.currentPath) {
+                state.hexMap.currentPath.color = color;
+                renderHex();
+            }
+        }
+        
+        function resetPathColorToDefault() {
+            const defaultColor = PATH_STYLES[state.hexMap.pathType].color;
+            state.hexMap.pathColor = defaultColor;
+            document.getElementById('pathColor').value = defaultColor;
+            if (state.hexMap.currentPath) {
+                state.hexMap.currentPath.color = defaultColor;
+                renderHex();
+            }
+        }
+        
         function startPath(q, r) {
             state.hexMap.currentPath = {
                 id: `path_${state.nextPathId++}`,
                 type: state.hexMap.pathType,
                 style: state.hexMap.pathStyle,
                 width: state.hexMap.pathWidth,
+                color: state.hexMap.pathColor,
                 points: [{ q, r }],
                 created: new Date().toISOString()
             };
@@ -896,18 +934,131 @@
         }
         
         function findPathAtPixel(x, y) {
-            const hex = pixelToHex(x, y);
+            const clickTolerance = 15; // pixels
+            let closestPath = null;
+            let closestDistance = clickTolerance;
             
-            // Check all paths to see if they pass through this hex
+            // Check all paths to see if click is near any path segment
             for (let i = state.hexMap.paths.length - 1; i >= 0; i--) {
                 const path = state.hexMap.paths[i];
-                for (let point of path.points) {
-                    if (point.q === hex.q && point.r === hex.r) {
-                        return path;
+                
+                // Check each segment of the path
+                for (let j = 0; j < path.points.length - 1; j++) {
+                    const p1 = hexToPixel(path.points[j].q, path.points[j].r);
+                    const p2 = hexToPixel(path.points[j + 1].q, path.points[j + 1].r);
+                    
+                    // Calculate distance from click point to line segment
+                    const distance = distanceToLineSegment(x, y, p1.x, p1.y, p2.x, p2.y);
+                    
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestPath = path;
                     }
                 }
             }
-            return null;
+            
+            return closestPath;
+        }
+        
+        // Helper function to calculate distance from point to line segment
+        function distanceToLineSegment(px, py, x1, y1, x2, y2) {
+            const A = px - x1;
+            const B = py - y1;
+            const C = x2 - x1;
+            const D = y2 - y1;
+            
+            const dot = A * C + B * D;
+            const lenSq = C * C + D * D;
+            let param = -1;
+            
+            if (lenSq !== 0) {
+                param = dot / lenSq;
+            }
+            
+            let xx, yy;
+            
+            if (param < 0) {
+                xx = x1;
+                yy = y1;
+            } else if (param > 1) {
+                xx = x2;
+                yy = y2;
+            } else {
+                xx = x1 + param * C;
+                yy = y1 + param * D;
+            }
+            
+            const dx = px - xx;
+            const dy = py - yy;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+        
+        function findPathSegmentAtPixel(x, y, path) {
+            if (!path || path.points.length < 2) return null;
+            
+            const clickTolerance = 15;
+            let closestSegment = null;
+            let closestDistance = clickTolerance;
+            
+            for (let i = 0; i < path.points.length - 1; i++) {
+                const p1 = hexToPixel(path.points[i].q, path.points[i].r);
+                const p2 = hexToPixel(path.points[i + 1].q, path.points[i + 1].r);
+                
+                const distance = distanceToLineSegment(x, y, p1.x, p1.y, p2.x, p2.y);
+                
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestSegment = i;
+                }
+            }
+            
+            return closestSegment;
+        }
+        
+        // Get all hexes between two hex coordinates using hex line algorithm
+        function getHexLine(q0, r0, q1, r1) {
+            const distance = Math.max(
+                Math.abs(q0 - q1),
+                Math.abs(r0 - r1),
+                Math.abs((-q0 - r0) - (-q1 - r1))
+            );
+            
+            if (distance === 0) return [{ q: q0, r: r0 }];
+            
+            const hexes = [];
+            for (let i = 0; i <= distance; i++) {
+                const t = i / distance;
+                const q = q0 * (1 - t) + q1 * t;
+                const r = r0 * (1 - t) + r1 * t;
+                const rounded = axialRound(q, r);
+                hexes.push(rounded);
+            }
+            
+            return hexes;
+        }
+        
+        // Get all hexes that a path passes through
+        function getPathHexes(path) {
+            if (!path || path.points.length < 2) return [];
+            
+            const hexSet = new Set();
+            
+            // Get hexes for each segment
+            for (let i = 0; i < path.points.length - 1; i++) {
+                const p1 = path.points[i];
+                const p2 = path.points[i + 1];
+                const lineHexes = getHexLine(p1.q, p1.r, p2.q, p2.r);
+                
+                lineHexes.forEach(hex => {
+                    hexSet.add(`${hex.q},${hex.r}`);
+                });
+            }
+            
+            // Convert back to array of {q, r} objects
+            return Array.from(hexSet).map(key => {
+                const [q, r] = key.split(',').map(Number);
+                return { q, r };
+            });
         }
         
         function showPathDetails(path) {
@@ -918,12 +1069,19 @@
                 trail: 'Trail'
             };
             
+            const editModeButton = state.hexMap.pathEditMode 
+                ? '<button class="btn btn-primary" style="width: 100%;" onclick="togglePathEditMode()">✓ Done Editing</button>'
+                : '<button class="btn btn-secondary" style="width: 100%;" onclick="togglePathEditMode()">✏️ Edit Points</button>';
+            
             panel.innerHTML = `
                 <div class="details-header">
                     <h2>${pathTypeNames[path.type]} Path</h2>
                     <div class="coords">${path.points.length} waypoints · ${path.style} style</div>
                 </div>
                 <div class="details-content">
+                    <div class="form-group">
+                        ${editModeButton}
+                    </div>
                     <div class="form-group">
                         <label class="form-label">Path Type</label>
                         <select class="form-select" onchange="updatePathType('${path.id}', this.value)">
@@ -948,20 +1106,48 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Waypoints</label>
+                        <label class="form-label">Path Color</label>
+                        <input type="color" id="pathColorEdit_${path.id}" value="${path.color || PATH_STYLES[path.type].color}" 
+                               onchange="updatePathColorField('${path.id}', this.value)"
+                               style="width: 100%; height: 40px; border: 2px solid #3d4758; border-radius: 6px; background: transparent; cursor: pointer;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Waypoints ${state.hexMap.pathEditMode ? '<span style="color: #f59e0b;">(Edit Mode)</span>' : ''}</label>
                         <div style="max-height: 200px; overflow-y: auto; background: #2d3748; border-radius: 6px; padding: 8px;">
                             ${path.points.map((p, i) => `
-                                <div style="padding: 4px 8px; font-size: 12px; color: #e1e8ed; border-bottom: 1px solid #3d4758;">
-                                    ${i === 0 ? '🟢' : i === path.points.length - 1 ? '🔴' : '🔵'} Point ${i + 1}: (${p.q}, ${p.r})
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; font-size: 12px; color: #e1e8ed; border-bottom: 1px solid #3d4758; background: #2d3748; border-radius: 4px; margin-bottom: 4px;">
+                                    <span>${i === 0 ? '🟢' : i === path.points.length - 1 ? '🔴' : '🔵'} Point ${i + 1}: (${p.q}, ${p.r})</span>
+                                    <div style="display: flex; gap: 4px;">
+                                        ${i < path.points.length - 1 ? `<button onclick="insertPointAfter('${path.id}', ${i})" style="padding: 2px 6px; font-size: 10px; background: #667eea; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Add point after">+</button>` : ''}
+                                        ${path.points.length > 2 ? `<button onclick="deletePathPoint('${path.id}', ${i})" style="padding: 2px 6px; font-size: 10px; background: #f56565; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Delete point">×</button>` : ''}
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Split Path (Create Branch)</label>
+                        <div style="max-height: 150px; overflow-y: auto; background: #2d3748; border-radius: 6px; padding: 8px;">
+                            <p style="font-size: 11px; color: #a0aec0; margin-bottom: 8px;">Click a point below to split the path there:</p>
+                            ${path.points.map((p, i) => {
+                                if (i === 0 || i === path.points.length - 1) return '';
+                                return `
+                                    <button onclick="splitPathAt('${path.id}', ${i})" 
+                                            style="width: 100%; padding: 8px; margin-bottom: 4px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; text-align: left;"
+                                            onmouseover="this.style.background='#5568d3'" 
+                                            onmouseout="this.style.background='#667eea'">
+                                        ✂️ Split at Point ${i + 1} (${p.q}, ${p.r})
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
                     <div style="font-size: 11px; color: #718096; line-height: 1.5; padding: 12px; background: #2d3748; border-radius: 6px;">
-                        <strong>Path Info:</strong><br>
-                        • Paths connect automatically at shared hexes<br>
-                        • Create intersections by overlapping points<br>
-                        • Multiple paths can share waypoints<br>
+                        <strong>${state.hexMap.pathEditMode ? 'Edit Mode Tips:' : 'Path Info:'}</strong><br>
+                        ${state.hexMap.pathEditMode ? 
+                            '• Drag points on the map to move them<br>• Click + to add points between segments<br>• Click × to remove points<br>• Double-click path line to insert point' :
+                            '• Click "Edit Points" to modify path<br>• Use + buttons to add waypoints<br>• Split to create Y/T intersections<br>• Double-click path to insert point'
+                        }
                     </div>
                 </div>
                 <div class="details-actions">
@@ -997,15 +1183,115 @@
             }
         }
         
+        function updatePathColorField(pathId, color) {
+            const path = state.hexMap.paths.find(p => p.id === pathId);
+            if (path) {
+                path.color = color;
+                renderHex();
+            }
+        }
+        
         function deselectPath() {
             state.hexMap.selectedPath = null;
+            state.hexMap.pathEditMode = false;
+            state.hexMap.draggingPathPoint = null;
+            state.hexMap.hoveredPathPoint = null;
             deselectHex();
+        }
+        
+        function togglePathEditMode() {
+            state.hexMap.pathEditMode = !state.hexMap.pathEditMode;
+            if (state.hexMap.selectedPath) {
+                showPathDetails(state.hexMap.selectedPath);
+            }
+            renderHex();
+        }
+        
+        function insertPointAfter(pathId, pointIndex) {
+            const path = state.hexMap.paths.find(p => p.id === pathId);
+            if (!path || pointIndex >= path.points.length - 1) return;
+            
+            // Calculate midpoint between this point and the next
+            const p1 = path.points[pointIndex];
+            const p2 = path.points[pointIndex + 1];
+            const midQ = Math.round((p1.q + p2.q) / 2);
+            const midR = Math.round((p1.r + p2.r) / 2);
+            
+            // Insert the new point
+            path.points.splice(pointIndex + 1, 0, { q: midQ, r: midR });
+            
+            showPathDetails(path);
+            renderHex();
+        }
+        
+        function deletePathPoint(pathId, pointIndex) {
+            const path = state.hexMap.paths.find(p => p.id === pathId);
+            if (!path || path.points.length <= 2) {
+                alert('Cannot delete point - paths must have at least 2 points');
+                return;
+            }
+            
+            path.points.splice(pointIndex, 1);
+            showPathDetails(path);
+            renderHex();
+        }
+        
+        function splitPathAt(pathId, pointIndex) {
+            const path = state.hexMap.paths.find(p => p.id === pathId);
+            if (!path) return;
+            
+            // Create new path from split point to end
+            const newPath = {
+                id: `path_${state.nextPathId++}`,
+                type: path.type,
+                style: path.style,
+                width: path.width,
+                color: path.color || PATH_STYLES[path.type].color,
+                points: path.points.slice(pointIndex),
+                created: new Date().toISOString()
+            };
+            
+            // Truncate original path at split point
+            path.points = path.points.slice(0, pointIndex + 1);
+            
+            // Add the new path
+            state.hexMap.paths.push(newPath);
+            
+            // Select the new path
+            state.hexMap.selectedPath = newPath;
+            showPathDetails(newPath);
+            renderHex();
+            
+            alert(`Path split! Original path has ${path.points.length} points, new branch has ${newPath.points.length} points.`);
+        }
+        
+        function findPathPointAtPixel(x, y, path) {
+            if (!path) return null;
+            
+            const clickRadius = 20; // pixels
+            
+            for (let i = 0; i < path.points.length; i++) {
+                const point = path.points[i];
+                const pos = hexToPixel(point.q, point.r);
+                const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
+                
+                if (distance <= clickRadius) {
+                    return { pointIndex: i, point: point };
+                }
+            }
+            
+            return null;
         }
         
         function deleteCurrentPath() {
             if (state.hexMap.selectedPath && confirm('Delete this path? This cannot be undone.')) {
                 deletePath(state.hexMap.selectedPath.id);
-                deselectPath();
+                state.hexMap.selectedPath = null;
+                state.hexMap.pathEditMode = false;
+                state.hexMap.draggingPathPoint = null;
+                state.hexMap.hoveredPathPoint = null;
+                deselectHex();
+                renderHex();
             }
         }
         
@@ -1016,7 +1302,7 @@
             const width = (path.width || style.width) * state.hexMap.viewport.scale;
             
             ctx.save();
-            ctx.strokeStyle = style.color;
+            ctx.strokeStyle = path.color || style.color;
             ctx.lineWidth = width;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
@@ -1096,6 +1382,58 @@
             ctx.lineJoin = 'round';
             ctx.globalAlpha = 0.5;
             ctx.setLineDash([8, 4]);
+            
+            ctx.beginPath();
+            
+            if (path.style === 'curved' && path.points.length > 2) {
+                const firstPoint = hexToPixel(path.points[0].q, path.points[0].r);
+                ctx.moveTo(firstPoint.x, firstPoint.y);
+                
+                for (let i = 1; i < path.points.length - 1; i++) {
+                    const p0 = hexToPixel(path.points[i - 1].q, path.points[i - 1].r);
+                    const p1 = hexToPixel(path.points[i].q, path.points[i].r);
+                    const p2 = hexToPixel(path.points[i + 1].q, path.points[i + 1].r);
+                    
+                    const cp1x = p1.x - (p2.x - p0.x) * 0.15;
+                    const cp1y = p1.y - (p2.y - p0.y) * 0.15;
+                    const cp2x = p1.x + (p2.x - p0.x) * 0.15;
+                    const cp2y = p1.y + (p2.y - p0.y) * 0.15;
+                    
+                    ctx.quadraticCurveTo(cp1x, cp1y, p1.x, p1.y);
+                    
+                    if (i === path.points.length - 2) {
+                        ctx.quadraticCurveTo(cp2x, cp2y, p2.x, p2.y);
+                    }
+                }
+                
+                if (path.points.length === 2) {
+                    const p1 = hexToPixel(path.points[1].q, path.points[1].r);
+                    ctx.lineTo(p1.x, p1.y);
+                }
+            } else {
+                path.points.forEach((point, index) => {
+                    const { x, y } = hexToPixel(point.q, point.r);
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+            }
+            
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        function drawPathHoverHighlight(path) {
+            if (path.points.length < 2) return;
+            
+            ctx.save();
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = (path.width + 3) * state.hexMap.viewport.scale;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.globalAlpha = 0.3;
             
             ctx.beginPath();
             
@@ -1571,7 +1909,12 @@
                 drawPath(state.hexMap.currentPath);
             }
             
-            // Draw selected path highlight
+            // Draw hovered path highlight (lighter)
+            if (state.hexMap.hoveredPath && state.hexMap.hoveredPath !== state.hexMap.selectedPath) {
+                drawPathHoverHighlight(state.hexMap.hoveredPath);
+            }
+            
+            // Draw selected path highlight (brighter)
             if (state.hexMap.selectedPath) {
                 drawPathHighlight(state.hexMap.selectedPath);
             }
@@ -1613,6 +1956,58 @@
                 ctx.stroke();
                 ctx.setLineDash([]);
             }
+            
+            // Draw path points when in edit mode
+            if (state.hexMap.pathEditMode && state.hexMap.selectedPath) {
+                drawPathPoints(state.hexMap.selectedPath);
+            }
+        }
+        
+        function drawPathPoints(path) {
+            path.points.forEach((point, index) => {
+                const { x, y } = hexToPixel(point.q, point.r);
+                const isHovered = state.hexMap.hoveredPathPoint?.pointIndex === index;
+                const isDragging = state.hexMap.draggingPathPoint?.pointIndex === index;
+                
+                // Point circle
+                ctx.save();
+                ctx.fillStyle = isDragging ? '#f59e0b' : isHovered ? '#667eea' : '#ffffff';
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                
+                const radius = isDragging ? 10 : isHovered ? 9 : 7;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Point number
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText((index + 1).toString(), x, y);
+                
+                // Start/End indicators
+                if (index === 0) {
+                    ctx.fillStyle = '#10b981';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 12, 0, Math.PI * 2);
+                    ctx.globalAlpha = 0.3;
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                } else if (index === path.points.length - 1) {
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 12, 0, Math.PI * 2);
+                    ctx.globalAlpha = 0.3;
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+                
+                ctx.restore();
+            });
         }
 
         function drawHexTile(hex) {
@@ -1694,6 +2089,7 @@
         function setHexMode(mode) {
             state.hexMap.mode = mode;
             state.hexMap.pendingToken = null;
+            state.hexMap.hoveredPath = null;
             
             // Cancel any in-progress path
             if (state.hexMap.currentPath) {
@@ -1764,7 +2160,9 @@
                 select: 'Click any hex or token to view details · Right-click drag to pan',
                 erase: 'Click to erase · Drag for continuous erasing · Right-click drag to pan',
                 token: state.hexMap.pendingToken ? 'Click a hex to place token · ESC to cancel' : 'Click to create token · Click token to select · Drag token to move',
-                path: state.hexMap.currentPath ? 'Click to add waypoints · Double-click to finish · ESC to cancel' : 'Click to draw new path or select existing path to edit'
+                path: state.hexMap.pathEditMode ? 'Drag points to move · Click + to insert · Click × to delete · Right-click to pan' : 
+                      state.hexMap.currentPath ? 'Click to add waypoints · Double-click to finish · ESC to cancel' : 
+                      'Click to draw new path or select existing path to edit'
             };
             
             canvas.style.cursor = cursorMap[state.hexMap.mode];
@@ -1790,7 +2188,27 @@
             if (e.button === 0) {
                 // Path mode
                 if (state.hexMap.mode === 'path') {
+                    // Check if in edit mode and clicking on a path point
+                    if (state.hexMap.pathEditMode && state.hexMap.selectedPath) {
+                        const clickedPoint = findPathPointAtPixel(x, y, state.hexMap.selectedPath);
+                        if (clickedPoint) {
+                            state.hexMap.draggingPathPoint = clickedPoint;
+                            canvas.style.cursor = 'grabbing';
+                            return;
+                        }
+                    }
+                    
                     if (e.detail === 2) { // Double-click
+                        // Check if double-clicking on a selected path to insert a point
+                        if (state.hexMap.selectedPath && !state.hexMap.currentPath) {
+                            const segmentIndex = findPathSegmentAtPixel(x, y, state.hexMap.selectedPath);
+                            if (segmentIndex !== null) {
+                                // Insert point on this segment
+                                insertPointAfter(state.hexMap.selectedPath.id, segmentIndex);
+                                return;
+                            }
+                        }
+                        // Otherwise finish the current path being drawn
                         finishPath();
                     } else {
                         // Check if clicking on existing path first
@@ -1889,6 +2307,39 @@
                 return;
             }
             
+            // Path point dragging
+            if (state.hexMap.draggingPathPoint) {
+                const targetHex = pixelToHex(x, y);
+                const point = state.hexMap.selectedPath.points[state.hexMap.draggingPathPoint.pointIndex];
+                if (point.q !== targetHex.q || point.r !== targetHex.r) {
+                    point.q = targetHex.q;
+                    point.r = targetHex.r;
+                    renderHex();
+                }
+                return;
+            }
+            
+            // Path mode hover detection
+            if (state.hexMap.mode === 'path') {
+                // Check for path point hover in edit mode
+                if (state.hexMap.pathEditMode && state.hexMap.selectedPath) {
+                    const hoveredPoint = findPathPointAtPixel(x, y, state.hexMap.selectedPath);
+                    if (hoveredPoint !== state.hexMap.hoveredPathPoint) {
+                        state.hexMap.hoveredPathPoint = hoveredPoint;
+                        canvas.style.cursor = hoveredPoint ? 'move' : 'crosshair';
+                        renderHex();
+                    }
+                } else if (!state.hexMap.currentPath) {
+                    // Regular path hover when not in edit mode
+                    const hoveredPath = findPathAtPixel(x, y);
+                    if (hoveredPath !== state.hexMap.hoveredPath) {
+                        state.hexMap.hoveredPath = hoveredPath;
+                        canvas.style.cursor = hoveredPath ? 'pointer' : 'crosshair';
+                        renderHex();
+                    }
+                }
+            }
+            
             if (state.hexMap.mode === 'paint' || state.hexMap.mode === 'erase') {
                 state.hexMap.brushPreviewHexes = getHexesInRadius(hex.q, hex.r, state.hexMap.brushSize - 1);
                 if (!state.hexMap.isPainting) {
@@ -1930,6 +2381,12 @@
                 animateTokenScale(state.hexMap.draggingToken.id, 1.0, 200);
                 state.hexMap.draggingToken = null;
             }
+            if (state.hexMap.draggingPathPoint) {
+                state.hexMap.draggingPathPoint = null;
+                if (state.hexMap.selectedPath) {
+                    showPathDetails(state.hexMap.selectedPath);
+                }
+            }
             state.hexMap.isPainting = false;
             state.hexMap.isPanning = false;
             
@@ -1948,6 +2405,9 @@
             state.hexMap.isPainting = false;
             state.hexMap.isPanning = false;
             state.hexMap.brushPreviewHexes = [];
+            state.hexMap.hoveredPath = null;
+            state.hexMap.hoveredPathPoint = null;
+            state.hexMap.draggingPathPoint = null;
             if (state.hexMap.draggingToken) {
                 animateTokenScale(state.hexMap.draggingToken.id, 1.0, 200);
                 state.hexMap.draggingToken = null;
@@ -1966,6 +2426,13 @@
         });
 
         document.addEventListener('keydown', (e) => {
+            // Don't trigger shortcuts when typing in input fields
+            const isTyping = document.activeElement.tagName === 'INPUT' || 
+                           document.activeElement.tagName === 'TEXTAREA' ||
+                           document.activeElement.isContentEditable;
+            
+            if (isTyping) return;
+            
             if (e.key === 'Escape') {
                 if (state.hexMap.currentPath) {
                     cancelPath();
@@ -2123,12 +2590,15 @@
             });
             
             state.hexMap.paths.forEach(path => {
+                const pathHexes = getPathHexes(path);
                 worldData.paths.push({
                     id: path.id,
                     type: path.type,
                     style: path.style,
                     width: path.width,
+                    color: path.color || PATH_STYLES[path.type].color,
                     points: path.points,
+                    hexes: pathHexes, // All hexes this path passes through
                     created: path.created
                 });
             });
@@ -2212,6 +2682,7 @@
                                 type: pathData.type,
                                 style: pathData.style,
                                 width: pathData.width,
+                                color: pathData.color || PATH_STYLES[pathData.type].color,
                                 points: pathData.points,
                                 created: pathData.created
                             });

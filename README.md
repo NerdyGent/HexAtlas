@@ -2,7 +2,7 @@
 
 > Create beautiful hex maps for your tabletop RPG campaigns
 
-[![Try HexWorld](https://img.shields.io/badge/🎮_Try_It_Now-Live_Demo-brightgreen?style=for-the-badge)](https://nerdygent.github.io/hexworld)
+[![Try HexWorld](https://img.shields.io/badge/🎮_Try_It_Now-Live_Demo-brightgreen?style=for-the-badge)](https://nerdygent.github.io/HexWorld)
 
 
 ---

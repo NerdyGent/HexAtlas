@@ -1715,18 +1715,8 @@ const TERRAINS = {
 
         function floodFill(startQ, startR, targetTerrain) {
             const startHex = getHex(startQ, startR);
+            const startTerrain = startHex ? startHex.terrain : null;
             
-            // Don't flood fill empty space - only fill if there's an existing hex
-            if (!startHex) {
-                // Just paint the single hex if it's empty space
-                setHex(startQ, startR, targetTerrain);
-                renderHex();
-                return;
-            }
-            
-            const startTerrain = startHex.terrain;
-            
-            // Don't fill if already the target terrain
             if (startTerrain === targetTerrain) return;
             
             const queue = [{ q: startQ, r: startR }];
@@ -1742,9 +1732,9 @@ const TERRAINS = {
                 visited.add(key);
                 
                 const hex = getHex(q, r);
+                const currentTerrain = hex ? hex.terrain : null;
                 
-                // Only fill hexes that exist and match the start terrain
-                if (!hex || hex.terrain !== startTerrain) continue;
+                if (currentTerrain !== startTerrain) continue;
                 
                 setHex(q, r, targetTerrain);
                 filled++;
@@ -1763,10 +1753,6 @@ const TERRAINS = {
                         queue.push(n);
                     }
                 });
-            }
-            
-            if (filled >= maxFill) {
-                console.warn(`Fill stopped at ${maxFill} hexes limit`);
             }
             
             renderHex();
@@ -3256,253 +3242,12 @@ const TERRAINS = {
 
         function updateHexTopBar() {
             const actions = document.getElementById('topbarActions');
-            // Keep empty or add other action buttons here later
-            actions.innerHTML = ``;
+            actions.innerHTML = `
+                <button class="btn btn-secondary" onclick="importHexMap()">📥 Import World</button>
+                <button class="btn btn-secondary" onclick="exportHexMap()">💾 Export World</button>
+                <button class="btn btn-danger" onclick="clearHexMap()">Clear Map</button>
+            `;
         }
-
-        // ============================================================================
-        // DROPDOWN MENU SYSTEM
-        // ============================================================================
-        
-        window.toggleMenu = function(menuId) {
-            const menu = document.getElementById(menuId);
-            const button = menu.previousElementSibling;
-            const isOpen = menu.classList.contains('show');
-            
-            // Close all menus first
-            closeAllMenus();
-            
-            // Toggle current menu
-            if (!isOpen) {
-                menu.classList.add('show');
-                button.classList.add('active');
-            }
-        };
-        
-        window.closeAllMenus = function() {
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                menu.classList.remove('show');
-            });
-            document.querySelectorAll('.menu-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-        };
-        
-        // Close menus when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.menu-item')) {
-                closeAllMenus();
-            }
-        });
-        
-        // New Map function
-        window.newMap = function() {
-            closeAllMenus();
-            if (confirm('Create a new map? Your current map will be saved to cache, but any unsaved exports will be lost.')) {
-                clearCache();
-                state.hexMap.hexes.clear();
-                state.hexMap.landmarks.clear();
-                state.hexMap.tokens.clear();
-                state.hexMap.paths = [];
-                state.hexMap.selectedHex = null;
-                state.hexMap.selectedLandmark = null;
-                state.hexMap.selectedToken = null;
-                state.hexMap.currentPath = null;
-                createStarterMap();
-                autoSaveToCache();
-            }
-        };
-        
-        // Clear Selection function
-        window.clearSelection = function() {
-            deselectHex();
-            state.hexMap.selectedToken = null;
-            state.hexMap.selectedLandmark = null;
-            state.hexMap.selectedPath = null;
-            state.hexMap.currentPath = null;
-            renderHex();
-        };
-        
-        // Reset Zoom function
-        window.resetZoom = function() {
-            state.hexMap.viewport.scale = 1;
-            state.hexMap.viewport.offsetX = 0;
-            state.hexMap.viewport.offsetY = 0;
-            document.getElementById('zoomLevel').textContent = '100%';
-            renderHex();
-        };
-        
-        // Toggle All Layers
-        window.toggleAllLayers = function(show) {
-            state.hexMap.showTerrain = show;
-            state.hexMap.showGrid = show;
-            state.hexMap.showCoords = show;
-            state.hexMap.showLandmarks = show;
-            state.hexMap.showTokens = show;
-            state.hexMap.showPaths = show;
-            
-            // Update checkboxes
-            const checkboxes = document.querySelectorAll('.layer-item input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = show);
-            
-            renderHex();
-        };
-        
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            // Ctrl/Cmd + N - New Map
-            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-                e.preventDefault();
-                newMap();
-            }
-            // Ctrl/Cmd + O - Import
-            if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
-                e.preventDefault();
-                importHexMap();
-            }
-            // Ctrl/Cmd + S - Export
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                exportHexMap();
-            }
-            // Escape - Clear Selection
-            if (e.key === 'Escape') {
-                clearSelection();
-            }
-            // 0 - Reset Zoom
-            if (e.key === '0' && !e.ctrlKey && !e.metaKey) {
-                resetZoom();
-            }
-        });
-
-        // ============================================================================
-        // MINIMAP SYSTEM
-        // ============================================================================
-        
-        const minimapCanvas = document.getElementById('minimapCanvas');
-        const minimapCtx = minimapCanvas.getContext('2d');
-        let minimapOpen = false;
-        
-        window.toggleMinimap = function() {
-            minimapOpen = !minimapOpen;
-            const panel = document.getElementById('minimapPanel');
-            const toggle = document.getElementById('minimapToggle');
-            
-            if (minimapOpen) {
-                panel.classList.add('open');
-                toggle.classList.add('active');
-                updateMinimap();
-            } else {
-                panel.classList.remove('open');
-                toggle.classList.remove('active');
-            }
-        };
-        
-        function updateMinimap() {
-            if (!minimapOpen) return;
-            
-            // Clear minimap
-            minimapCtx.fillStyle = '#0f1419';
-            minimapCtx.fillRect(0, 0, minimapCanvas.width, minimapCanvas.height);
-            
-            // Calculate bounds of all hexes
-            if (state.hexMap.hexes.size === 0) return;
-            
-            let minQ = Infinity, maxQ = -Infinity;
-            let minR = Infinity, maxR = -Infinity;
-            
-            state.hexMap.hexes.forEach((hex) => {
-                minQ = Math.min(minQ, hex.q);
-                maxQ = Math.max(maxQ, hex.q);
-                minR = Math.min(minR, hex.r);
-                maxR = Math.max(maxR, hex.r);
-            });
-            
-            const rangeQ = maxQ - minQ + 1;
-            const rangeR = maxR - minR + 1;
-            const maxRange = Math.max(rangeQ, rangeR);
-            
-            // Calculate scale to fit in minimap
-            const padding = 20;
-            const availableSize = minimapCanvas.width - padding * 2;
-            const minimapHexSize = availableSize / maxRange / 2;
-            
-            // Draw hexes
-            state.hexMap.hexes.forEach((hex) => {
-                const relQ = hex.q - minQ - rangeQ / 2;
-                const relR = hex.r - minR - rangeR / 2;
-                
-                const x = minimapCanvas.width / 2 + minimapHexSize * (3/2 * relQ);
-                const y = minimapCanvas.height / 2 + minimapHexSize * (Math.sqrt(3)/2 * relQ + Math.sqrt(3) * relR);
-                
-                const terrain = TERRAINS[hex.terrain];
-                if (terrain) {
-                    minimapCtx.fillStyle = terrain.color;
-                    minimapCtx.beginPath();
-                    for (let i = 0; i < 6; i++) {
-                        const angle = (Math.PI / 3) * i;
-                        const hx = x + minimapHexSize * 0.9 * Math.cos(angle);
-                        const hy = y + minimapHexSize * 0.9 * Math.sin(angle);
-                        if (i === 0) {
-                            minimapCtx.moveTo(hx, hy);
-                        } else {
-                            minimapCtx.lineTo(hx, hy);
-                        }
-                    }
-                    minimapCtx.closePath();
-                    minimapCtx.fill();
-                }
-            });
-            
-            // Draw viewport rectangle (approximate)
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-            const viewScale = state.hexMap.viewport.scale;
-            
-            // Simplified viewport visualization
-            minimapCtx.strokeStyle = '#667eea';
-            minimapCtx.lineWidth = 2;
-            minimapCtx.strokeRect(
-                minimapCanvas.width / 2 - 30,
-                minimapCanvas.height / 2 - 30,
-                60,
-                60
-            );
-            
-            // Update stats
-            document.getElementById('minimapHexCount').textContent = state.hexMap.hexes.size;
-            document.getElementById('minimapLandmarkCount').textContent = state.hexMap.landmarks.size;
-            document.getElementById('minimapTokenCount').textContent = state.hexMap.tokens.size;
-            document.getElementById('minimapPathCount').textContent = state.hexMap.paths.length;
-            document.getElementById('minimapZoom').textContent = Math.round(state.hexMap.viewport.scale * 100) + '%';
-        }
-        
-        // Click on minimap to jump to location
-        minimapCanvas.addEventListener('click', (e) => {
-            const rect = minimapCanvas.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
-            
-            // Calculate offset from center
-            const offsetX = (clickX - minimapCanvas.width / 2) * 5;
-            const offsetY = (clickY - minimapCanvas.height / 2) * 5;
-            
-            // Jump viewport
-            state.hexMap.viewport.offsetX = -offsetX;
-            state.hexMap.viewport.offsetY = -offsetY;
-            
-            renderHex();
-            updateMinimap();
-        });
-        
-        // Update minimap when rendering main canvas
-        const originalRenderHex = renderHex;
-        renderHex = function() {
-            originalRenderHex();
-            if (minimapOpen) {
-                updateMinimap();
-            }
-        };
 
         function resizeCanvas() {
             canvas.width = canvas.parentElement.offsetWidth;

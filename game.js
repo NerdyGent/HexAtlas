@@ -3250,7 +3250,7 @@ const TERRAINS = {
         // DROPDOWN MENU SYSTEM
         // ============================================================================
         
-        function toggleMenu(menuId) {
+        window.toggleMenu = function(menuId) {
             const menu = document.getElementById(menuId);
             const button = menu.previousElementSibling;
             const isOpen = menu.classList.contains('show');
@@ -3263,16 +3263,16 @@ const TERRAINS = {
                 menu.classList.add('show');
                 button.classList.add('active');
             }
-        }
+        };
         
-        function closeAllMenus() {
+        window.closeAllMenus = function() {
             document.querySelectorAll('.dropdown-menu').forEach(menu => {
                 menu.classList.remove('show');
             });
             document.querySelectorAll('.menu-button').forEach(btn => {
                 btn.classList.remove('active');
             });
-        }
+        };
         
         // Close menus when clicking outside
         document.addEventListener('click', (e) => {
@@ -3282,7 +3282,7 @@ const TERRAINS = {
         });
         
         // New Map function
-        function newMap() {
+        window.newMap = function() {
             closeAllMenus();
             if (confirm('Create a new map? Your current map will be saved to cache, but any unsaved exports will be lost.')) {
                 clearCache();
@@ -3297,29 +3297,29 @@ const TERRAINS = {
                 createStarterMap();
                 autoSaveToCache();
             }
-        }
+        };
         
         // Clear Selection function
-        function clearSelection() {
+        window.clearSelection = function() {
             deselectHex();
             state.hexMap.selectedToken = null;
             state.hexMap.selectedLandmark = null;
             state.hexMap.selectedPath = null;
             state.hexMap.currentPath = null;
             renderHex();
-        }
+        };
         
         // Reset Zoom function
-        function resetZoom() {
+        window.resetZoom = function() {
             state.hexMap.viewport.scale = 1;
             state.hexMap.viewport.offsetX = 0;
             state.hexMap.viewport.offsetY = 0;
             document.getElementById('zoomLevel').textContent = '100%';
             renderHex();
-        }
+        };
         
         // Toggle All Layers
-        function toggleAllLayers(show) {
+        window.toggleAllLayers = function(show) {
             state.hexMap.showTerrain = show;
             state.hexMap.showGrid = show;
             state.hexMap.showCoords = show;
@@ -3332,7 +3332,7 @@ const TERRAINS = {
             checkboxes.forEach(cb => cb.checked = show);
             
             renderHex();
-        }
+        };
         
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {

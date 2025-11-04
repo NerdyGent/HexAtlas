@@ -359,46 +359,6 @@
                     <button class="zoom-btn zoom-level" id="zoomLevel">100%</button>
                     <button class="zoom-btn" onclick="zoomOut()">−</button>
                 </div>
-
-                <!-- Minimap Toggle Button -->
-                <button class="minimap-toggle" onclick="toggleMinimap()" id="minimapToggle">
-                    🗺️
-                </button>
-            </div>
-
-            <!-- Minimap Panel -->
-            <div class="minimap-panel" id="minimapPanel">
-                <div class="minimap-header">
-                    <h3>🗺️ Minimap</h3>
-                    <button class="minimap-close" onclick="toggleMinimap()">×</button>
-                </div>
-                <div class="minimap-content">
-                    <div class="minimap-canvas-container">
-                        <canvas id="minimapCanvas" width="250" height="250"></canvas>
-                    </div>
-                    <div class="minimap-stats">
-                        <div class="minimap-stat">
-                            <span class="minimap-stat-label">Total Hexes</span>
-                            <span class="minimap-stat-value" id="minimapHexCount">0</span>
-                        </div>
-                        <div class="minimap-stat">
-                            <span class="minimap-stat-label">Landmarks</span>
-                            <span class="minimap-stat-value" id="minimapLandmarkCount">0</span>
-                        </div>
-                        <div class="minimap-stat">
-                            <span class="minimap-stat-label">Tokens</span>
-                            <span class="minimap-stat-value" id="minimapTokenCount">0</span>
-                        </div>
-                        <div class="minimap-stat">
-                            <span class="minimap-stat-label">Paths</span>
-                            <span class="minimap-stat-value" id="minimapPathCount">0</span>
-                        </div>
-                        <div class="minimap-stat">
-                            <span class="minimap-stat-label">Zoom Level</span>
-                            <span class="minimap-stat-value" id="minimapZoom">100%</span>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div class="sidebar-right" id="hexDetailsPanel">

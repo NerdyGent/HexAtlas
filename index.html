@@ -11,6 +11,127 @@
         <div class="topbar">
             <div class="topbar-left">
                 <div class="logo">⬡ HexWorlds</div>
+                
+                <!-- Dropdown Menu Bar -->
+                <div class="menu-bar">
+                    <div class="menu-item">
+                        <button class="menu-button" onclick="toggleMenu('fileMenu')">File</button>
+                        <div class="dropdown-menu" id="fileMenu">
+                            <div class="menu-option" onclick="newMap()">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">📄</span>
+                                    New Map
+                                </span>
+                                <span class="menu-option-shortcut">Ctrl+N</span>
+                            </div>
+                            <div class="menu-option disabled">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">📂</span>
+                                    Open Recent
+                                </span>
+                                <span class="menu-option-shortcut">Soon</span>
+                            </div>
+                            <div class="menu-separator"></div>
+                            <div class="menu-option" onclick="importHexMap(); closeAllMenus();">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">📥</span>
+                                    Import World
+                                </span>
+                                <span class="menu-option-shortcut">Ctrl+O</span>
+                            </div>
+                            <div class="menu-option" onclick="exportHexMap(); closeAllMenus();">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">💾</span>
+                                    Export World
+                                </span>
+                                <span class="menu-option-shortcut">Ctrl+S</span>
+                            </div>
+                            <div class="menu-separator"></div>
+                            <div class="menu-option disabled">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">👤</span>
+                                    Account
+                                </span>
+                                <span class="menu-option-shortcut">Soon</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="menu-item">
+                        <button class="menu-button" onclick="toggleMenu('editMenu')">Edit</button>
+                        <div class="dropdown-menu" id="editMenu">
+                            <div class="menu-option disabled">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">↶</span>
+                                    Undo
+                                </span>
+                                <span class="menu-option-shortcut">Ctrl+Z</span>
+                            </div>
+                            <div class="menu-option disabled">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">↷</span>
+                                    Redo
+                                </span>
+                                <span class="menu-option-shortcut">Ctrl+Y</span>
+                            </div>
+                            <div class="menu-separator"></div>
+                            <div class="menu-option" onclick="clearSelection(); closeAllMenus();">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">✕</span>
+                                    Clear Selection
+                                </span>
+                                <span class="menu-option-shortcut">Esc</span>
+                            </div>
+                            <div class="menu-option" onclick="clearHexMap(); closeAllMenus();">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">🗑️</span>
+                                    Clear Map
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="menu-item">
+                        <button class="menu-button" onclick="toggleMenu('viewMenu')">View</button>
+                        <div class="dropdown-menu" id="viewMenu">
+                            <div class="menu-option" onclick="zoomIn(); closeAllMenus();">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">🔍</span>
+                                    Zoom In
+                                </span>
+                                <span class="menu-option-shortcut">+</span>
+                            </div>
+                            <div class="menu-option" onclick="zoomOut(); closeAllMenus();">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">🔍</span>
+                                    Zoom Out
+                                </span>
+                                <span class="menu-option-shortcut">-</span>
+                            </div>
+                            <div class="menu-option" onclick="resetZoom(); closeAllMenus();">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">⟲</span>
+                                    Reset Zoom
+                                </span>
+                                <span class="menu-option-shortcut">0</span>
+                            </div>
+                            <div class="menu-separator"></div>
+                            <div class="menu-option" onclick="toggleAllLayers(true); closeAllMenus();">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">👁️</span>
+                                    Show All Layers
+                                </span>
+                            </div>
+                            <div class="menu-option" onclick="toggleAllLayers(false); closeAllMenus();">
+                                <span class="menu-option-label">
+                                    <span class="menu-option-icon">🚫</span>
+                                    Hide All Layers
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="breadcrumb">
                     <span id="viewName">Hex Map</span>
                 </div>

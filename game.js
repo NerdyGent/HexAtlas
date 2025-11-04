@@ -1,4 +1,4 @@
-        const TERRAINS = {
+const TERRAINS = {
             plains: {
                 name: 'Plains',
                 color: '#90EE90',
@@ -3158,6 +3158,9 @@
                     deselectHex();
                     renderHex();
                     
+                    // Save imported map to cache
+                    autoSaveToCache();
+                    
                     const landmarkCount = data.landmarks ? data.landmarks.length : 0;
                     const tokenCount = data.tokens ? data.tokens.length : 0;
                     const pathCount = data.paths ? data.paths.length : 0;
@@ -3172,14 +3175,17 @@
         }
 
         function clearHexMap() {
-            if (confirm('Clear all hexes, tokens, and paths? This cannot be undone.')) {
+            if (confirm('Clear all hexes, tokens, and paths? This will also clear your auto-saved cache. This cannot be undone.')) {
                 state.hexMap.hexes.clear();
+                state.hexMap.landmarks.clear();
                 state.hexMap.tokens.clear();
                 state.hexMap.paths = [];
                 state.hexMap.selectedHex = null;
+                state.hexMap.selectedLandmark = null;
                 state.hexMap.selectedToken = null;
                 state.hexMap.selectedPath = null;
                 state.hexMap.currentPath = null;
+                clearCache();
                 updateHexCount();
                 deselectHex();
                 renderHex();
@@ -3280,12 +3286,262 @@
             `;
             terrainPalette.appendChild(clearBtn);
             
-            createStarterMap();
+            // Try to load from cache first, create starter map if no cache exists
+            const loadedFromCache = loadFromCache();
+            if (!loadedFromCache) {
+                createStarterMap();
+            }
+            
             preloadHexIcons();
             window.addEventListener('resize', resizeCanvas);
             resizeCanvas();
             updateUI();
             updateHexTopBar();
         }
+
+        // ============================================================================
+        // AUTO-SAVE TO LOCALSTORAGE
+        // ============================================================================
+        
+        const AUTOSAVE_KEY = 'hexworlds_autosave';
+        const AUTOSAVE_INTERVAL = 5000; // Auto-save every 5 seconds
+        let lastSaveTime = null;
+        
+        function showSaveIndicator() {
+            const breadcrumb = document.querySelector('.breadcrumb');
+            const indicator = document.createElement('span');
+            indicator.style.color = '#48bb78';
+            indicator.style.fontSize = '12px';
+            indicator.style.marginLeft = '8px';
+            indicator.textContent = '✓ Auto-saved';
+            indicator.id = 'saveIndicator';
+            
+            // Remove old indicator if exists
+            const oldIndicator = document.getElementById('saveIndicator');
+            if (oldIndicator) {
+                oldIndicator.remove();
+            }
+            
+            breadcrumb.appendChild(indicator);
+            
+            // Fade out after 2 seconds
+            setTimeout(() => {
+                indicator.style.transition = 'opacity 1s';
+                indicator.style.opacity = '0';
+                setTimeout(() => indicator.remove(), 1000);
+            }, 2000);
+        }
+        
+        function autoSaveToCache() {
+            try {
+                const saveData = {
+                    hexes: Array.from(state.hexMap.hexes.entries()).map(([key, hex]) => ({
+                        q: hex.q,
+                        r: hex.r,
+                        terrain: hex.terrain,
+                        name: hex.name,
+                        description: hex.description
+                    })),
+                    landmarks: Array.from(state.hexMap.landmarks.entries()).map(([key, landmark]) => ({
+                        id: landmark.id,
+                        q: landmark.q,
+                        r: landmark.r,
+                        name: landmark.name,
+                        type: landmark.type,
+                        style: landmark.style,
+                        icon: landmark.icon,
+                        color: landmark.color,
+                        showLabel: landmark.showLabel,
+                        labelPosition: landmark.labelPosition,
+                        size: landmark.size,
+                        attributes: landmark.attributes,
+                        notes: landmark.notes,
+                        visible: landmark.visible,
+                        created: landmark.created
+                    })),
+                    tokens: Array.from(state.hexMap.tokens.entries()).map(([id, token]) => ({
+                        id: token.id,
+                        q: token.q,
+                        r: token.r,
+                        name: token.name,
+                        type: token.type,
+                        color: token.color,
+                        label: token.label,
+                        size: token.size,
+                        attributes: token.attributes,
+                        notes: token.notes,
+                        visible: token.visible,
+                        created: token.created
+                    })),
+                    paths: state.hexMap.paths.map(path => ({
+                        id: path.id,
+                        type: path.type,
+                        style: path.style,
+                        width: path.width,
+                        color: path.color,
+                        points: path.points,
+                        created: path.created
+                    })),
+                    viewport: state.hexMap.viewport,
+                    savedAt: new Date().toISOString()
+                };
+                
+                localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(saveData));
+                lastSaveTime = new Date();
+                showSaveIndicator();
+                console.log('Auto-saved to cache');
+            } catch (error) {
+                console.error('Auto-save failed:', error);
+            }
+        }
+        
+        function loadFromCache() {
+            try {
+                const savedData = localStorage.getItem(AUTOSAVE_KEY);
+                if (!savedData) {
+                    console.log('No cached map found');
+                    return false;
+                }
+                
+                const data = JSON.parse(savedData);
+                
+                // Clear existing data
+                state.hexMap.hexes.clear();
+                state.hexMap.landmarks.clear();
+                state.hexMap.tokens.clear();
+                state.hexMap.paths = [];
+                state.hexMap.selectedHex = null;
+                state.hexMap.selectedLandmark = null;
+                state.hexMap.selectedToken = null;
+                state.hexMap.currentPath = null;
+                
+                // Load hexes
+                data.hexes.forEach(hexData => {
+                    const key = `${hexData.q},${hexData.r}`;
+                    state.hexMap.hexes.set(key, {
+                        q: hexData.q,
+                        r: hexData.r,
+                        terrain: hexData.terrain,
+                        name: hexData.name || '',
+                        description: hexData.description || ''
+                    });
+                });
+                
+                // Load landmarks
+                if (data.landmarks && Array.isArray(data.landmarks)) {
+                    data.landmarks.forEach(landmarkData => {
+                        const key = `${landmarkData.q},${landmarkData.r}`;
+                        state.hexMap.landmarks.set(key, {
+                            id: landmarkData.id,
+                            q: landmarkData.q,
+                            r: landmarkData.r,
+                            name: landmarkData.name,
+                            type: landmarkData.type,
+                            style: landmarkData.style,
+                            icon: landmarkData.icon,
+                            color: landmarkData.color,
+                            showLabel: landmarkData.showLabel !== false,
+                            labelPosition: landmarkData.labelPosition || 'above',
+                            size: landmarkData.size || 1.0,
+                            attributes: landmarkData.attributes || {},
+                            notes: landmarkData.notes || '',
+                            visible: landmarkData.visible !== false,
+                            created: landmarkData.created
+                        });
+                        const idNum = parseInt(landmarkData.id.split('_')[1]);
+                        if (idNum >= state.nextLandmarkId) {
+                            state.nextLandmarkId = idNum + 1;
+                        }
+                    });
+                }
+                
+                // Load tokens
+                if (data.tokens && Array.isArray(data.tokens)) {
+                    data.tokens.forEach(tokenData => {
+                        state.hexMap.tokens.set(tokenData.id, {
+                            id: tokenData.id,
+                            q: tokenData.q,
+                            r: tokenData.r,
+                            name: tokenData.name,
+                            type: tokenData.type,
+                            color: tokenData.color,
+                            label: tokenData.label,
+                            size: tokenData.size,
+                            attributes: tokenData.attributes || {},
+                            notes: tokenData.notes || '',
+                            visible: tokenData.visible !== false,
+                            scale: 1,
+                            created: tokenData.created
+                        });
+                        const idNum = parseInt(tokenData.id.split('_')[1]);
+                        if (idNum >= state.nextTokenId) {
+                            state.nextTokenId = idNum + 1;
+                        }
+                    });
+                }
+                
+                // Load paths
+                if (data.paths && Array.isArray(data.paths)) {
+                    data.paths.forEach(pathData => {
+                        state.hexMap.paths.push({
+                            id: pathData.id,
+                            type: pathData.type,
+                            style: pathData.style,
+                            width: pathData.width,
+                            color: pathData.color || PATH_STYLES[pathData.type].color,
+                            points: pathData.points,
+                            created: pathData.created
+                        });
+                        const idNum = parseInt(pathData.id.split('_')[1]);
+                        if (idNum >= state.nextPathId) {
+                            state.nextPathId = idNum + 1;
+                        }
+                    });
+                }
+                
+                // Load viewport
+                if (data.viewport) {
+                    state.hexMap.viewport = data.viewport;
+                }
+                
+                updateHexCount();
+                deselectHex();
+                renderHex();
+                
+                const savedDate = new Date(data.savedAt);
+                const timeAgo = Math.round((Date.now() - savedDate.getTime()) / 1000 / 60);
+                console.log(`Loaded cached map from ${timeAgo} minutes ago`);
+                
+                return true;
+            } catch (error) {
+                console.error('Failed to load from cache:', error);
+                return false;
+            }
+        }
+        
+        function clearCache() {
+            try {
+                localStorage.removeItem(AUTOSAVE_KEY);
+                console.log('Cache cleared');
+            } catch (error) {
+                console.error('Failed to clear cache:', error);
+            }
+        }
+        
+        // Start auto-save interval
+        setInterval(autoSaveToCache, AUTOSAVE_INTERVAL);
+        
+        // Also save on major actions
+        const originalSetHex = setHex;
+        setHex = function(q, r, terrain) {
+            originalSetHex(q, r, terrain);
+            autoSaveToCache();
+        };
+        
+        const originalDeleteHex = deleteHex;
+        deleteHex = function(q, r) {
+            originalDeleteHex(q, r);
+            autoSaveToCache();
+        };
 
         init();

@@ -633,6 +633,47 @@ textarea.form-input {
    ============================================================================ */
 
 @media (max-width: 768px) {
+    /* Lock viewport - prevent browser scrolling */
+    html, body {
+        position: fixed;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .app {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+    }
+
+    .main {
+        touch-action: none;
+        overscroll-behavior: none;
+    }
+
+    #hexCanvas {
+        touch-action: none;
+        overscroll-behavior: none;
+    }
+
+    /* Allow scrolling ONLY in these areas */
+    .mobile-content {
+        touch-action: pan-y;
+        overscroll-behavior: contain;
+    }
+
+    .mobile-terrain-scroll {
+        touch-action: pan-x;
+        overscroll-behavior: contain;
+    }
+
     /* Hide desktop sidebar */
     .sidebar-left {
         display: none;

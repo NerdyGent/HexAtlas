@@ -2579,26 +2579,38 @@ function updateUI() {
 }
 
 // Mouse Events
-canvas.addEventListener('mousedown', (e) => {
+// ============================================================================
+// UNIFIED TOUCH AND MOUSE EVENT HANDLERS
+// ============================================================================
+
+let touchState = {
+    isPinching: false,
+    lastPinchDistance: 0,
+    lastTouchPos: { x: 0, y: 0 },
+    touches: []
+};
+
+// Unified pointer down handler
+function handlePointerDown(x, y, button, isTouch, shiftKey = false, detail = 1) {
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const hex = pixelToHex(x, y);
+    const canvasX = x - rect.left;
+    const canvasY = y - rect.top;
+    const hex = pixelToHex(canvasX, canvasY);
     
-    if (e.button === 2 || e.button === 1) {
-        e.preventDefault();
+    // Right click or two-finger touch = pan
+    if (button === 2 || button === 1 || (isTouch && touchState.touches.length >= 2)) {
         state.hexMap.isPanning = true;
-        state.hexMap.lastPanPos = { x, y };
+        state.hexMap.lastPanPos = { x: canvasX, y: canvasY };
         canvas.style.cursor = 'grabbing';
         return;
     }
     
-    if (e.button === 0) {
-        // EXPLORER MODE - simple click to view, drag tokens to move
+    // Left click / single touch
+    if (button === 0 || isTouch) {
+        // EXPLORER MODE
         if (state.hexMap.viewMode === 'explorer') {
-            const clickedToken = findTokenAtPixel(x, y);
+            const clickedToken = findTokenAtPixel(canvasX, canvasY);
             if (clickedToken) {
-                // Check if clicking to drag or to select
                 state.hexMap.draggingToken = clickedToken;
                 state.hexMap.selectedToken = clickedToken;
                 state.hexMap.selectedHex = null;
@@ -2606,7 +2618,6 @@ canvas.addEventListener('mousedown', (e) => {
                 showTokenDetails(clickedToken);
                 canvas.style.cursor = 'grabbing';
             } else {
-                // Click on hex to view info
                 const existingHex = getHex(hex.q, hex.r);
                 if (existingHex) {
                     state.hexMap.selectedToken = null;
@@ -2616,8 +2627,7 @@ canvas.addEventListener('mousedown', (e) => {
             return;
         }
         
-        // BUILDER MODE - rest of the logic
-        // Check if we're selecting a pathfinding destination (works in any mode)
+        // BUILDER MODE
         if (pathfindingState.selectingDestination) {
             pathfindingState.selectingDestination = false;
             startTokenPathfinding(pathfindingState.tokenId, hex.q, hex.r);
@@ -2625,10 +2635,9 @@ canvas.addEventListener('mousedown', (e) => {
             return;
         }
         
-        // SHIFT+CLICK SELECTION (tool-specific)
-        if (e.shiftKey) {
+        // SHIFT+CLICK SELECTION (desktop only)
+        if (shiftKey && !isTouch) {
             if (state.hexMap.mode === 'paint') {
-                // Select hex in terrain mode
                 const existingHex = getHex(hex.q, hex.r);
                 if (existingHex) {
                     state.hexMap.selectedToken = null;
@@ -2636,8 +2645,7 @@ canvas.addEventListener('mousedown', (e) => {
                 }
                 return;
             } else if (state.hexMap.mode === 'token') {
-                // Select token in token mode
-                const clickedToken = findTokenAtPixel(x, y);
+                const clickedToken = findTokenAtPixel(canvasX, canvasY);
                 if (clickedToken) {
                     state.hexMap.selectedToken = clickedToken;
                     state.hexMap.selectedHex = null;
@@ -2648,8 +2656,7 @@ canvas.addEventListener('mousedown', (e) => {
                 }
                 return;
             } else if (state.hexMap.mode === 'landmark') {
-                // Select landmark in landmark mode
-                const clickedLandmark = findLandmarkAtPixel(x, y);
+                const clickedLandmark = findLandmarkAtPixel(canvasX, canvasY);
                 if (clickedLandmark) {
                     state.hexMap.selectedLandmark = clickedLandmark;
                     state.hexMap.selectedHex = null;
@@ -2659,8 +2666,7 @@ canvas.addEventListener('mousedown', (e) => {
                 }
                 return;
             } else if (state.hexMap.mode === 'path') {
-                // Select path in path mode
-                const clickedPath = findPathAtPixel(x, y);
+                const clickedPath = findPathAtPixel(canvasX, canvasY);
                 if (clickedPath) {
                     state.hexMap.selectedPath = clickedPath;
                     state.hexMap.selectedHex = null;
@@ -2674,58 +2680,50 @@ canvas.addEventListener('mousedown', (e) => {
         
         // Path mode
         if (state.hexMap.mode === 'path') {
-            // Check if in edit mode and clicking on a path point
             if (state.hexMap.pathEditMode && state.hexMap.selectedPath) {
-                const clickedPoint = findPathPointAtPixel(x, y, state.hexMap.selectedPath);
+                const clickedPoint = findPathPointAtPixel(canvasX, canvasY, state.hexMap.selectedPath);
                 if (clickedPoint) {
                     state.hexMap.draggingPathPoint = clickedPoint;
                     canvas.style.cursor = 'grabbing';
                     return;
                 }
                 
-                // Check for double-click on path line in edit mode to insert point
-                if (e.detail === 2) {
-                    const segmentIndex = findPathSegmentAtPixel(x, y, state.hexMap.selectedPath);
+                if (detail === 2) {
+                    const segmentIndex = findPathSegmentAtPixel(canvasX, canvasY, state.hexMap.selectedPath);
                     if (segmentIndex !== null) {
                         insertPointAfter(state.hexMap.selectedPath.id, segmentIndex);
                         return;
                     }
                 }
-                // In edit mode but didn't click a point - do nothing (don't add points)
                 return;
             }
             
-            if (e.detail === 2) { // Double-click
-                // If we're currently drawing a path, finish it
+            if (detail === 2) {
                 if (state.hexMap.currentPath) {
                     finishPath();
                     return;
                 }
                 
-                // If we have a selected path (not in edit mode), double-click to insert point
                 if (state.hexMap.selectedPath) {
-                    const segmentIndex = findPathSegmentAtPixel(x, y, state.hexMap.selectedPath);
+                    const segmentIndex = findPathSegmentAtPixel(canvasX, canvasY, state.hexMap.selectedPath);
                     if (segmentIndex !== null) {
                         insertPointAfter(state.hexMap.selectedPath.id, segmentIndex);
                         return;
                     }
                 }
             } else {
-                // Single click (non-shift)
-                // Check if clicking on existing path first (only when not drawing)
-                if (!state.hexMap.currentPath && !e.shiftKey) {
-                    const clickedPath = findPathAtPixel(x, y);
+                if (!state.hexMap.currentPath && !shiftKey) {
+                    const clickedPath = findPathAtPixel(canvasX, canvasY);
                     if (clickedPath) {
                         state.hexMap.selectedPath = clickedPath;
                         state.hexMap.selectedHex = null;
                         state.hexMap.selectedToken = null;
                         showPathDetails(clickedPath);
                         renderHex();
-                        return; // Don't add point after selecting
+                        return;
                     }
                 }
                 
-                // Only add points if we're actively drawing (currentPath exists) or starting new
                 if (state.hexMap.currentPath || !state.hexMap.selectedPath) {
                     addPathPoint(hex.q, hex.r);
                 }
@@ -2735,8 +2733,8 @@ canvas.addEventListener('mousedown', (e) => {
         
         // Token mode
         if (state.hexMap.mode === 'token') {
-            const clickedToken = findTokenAtPixel(x, y);
-            if (clickedToken && !e.shiftKey) {
+            const clickedToken = findTokenAtPixel(canvasX, canvasY);
+            if (clickedToken && !shiftKey) {
                 state.hexMap.draggingToken = clickedToken;
                 animateTokenScale(clickedToken.id, 1.3, 150);
                 canvas.style.cursor = 'grabbing';
@@ -2747,7 +2745,7 @@ canvas.addEventListener('mousedown', (e) => {
                 animateTokenScale(newToken.id, 1, 300);
                 renderHex();
                 updateUI();
-            } else if (!e.shiftKey) {
+            } else if (!shiftKey) {
                 showTokenCreator();
             }
             return;
@@ -2756,37 +2754,32 @@ canvas.addEventListener('mousedown', (e) => {
         // Landmark mode
         if (state.hexMap.mode === 'landmark') {
             if (state.hexMap.pendingLandmark) {
-                // Place the landmark
                 const newLandmark = createLandmark(hex.q, hex.r, state.hexMap.pendingLandmark);
                 state.hexMap.pendingLandmark = null;
                 renderHex();
                 updateUI();
-            } else if (!e.shiftKey) {
-                // Check if clicking on existing landmark first
-                const clickedLandmark = findLandmarkAtPixel(x, y);
+            } else if (!shiftKey) {
+                const clickedLandmark = findLandmarkAtPixel(canvasX, canvasY);
                 if (clickedLandmark) {
-                    // Show landmark details  (not implemented with shift - just select it)
                     state.hexMap.selectedLandmark = clickedLandmark;
                     state.hexMap.selectedHex = null;
                     state.hexMap.selectedToken = null;
                     showLandmarkDetails(clickedLandmark);
                     renderHex();
                 } else {
-                    // No landmark, show creator
                     showLandmarkCreator();
                 }
             }
             return;
         }
         
+        // Paint mode
         if (state.hexMap.mode === 'paint') {
-            // Check if fill mode is enabled
             if (state.hexMap.fillMode && state.hexMap.selectedTerrain !== 'clear') {
                 floodFill(hex.q, hex.r, state.hexMap.selectedTerrain);
             } else {
                 state.hexMap.isPainting = true;
                 
-                // Handle clear terrain
                 if (state.hexMap.selectedTerrain === 'clear') {
                     const hexesToClear = getHexesInRadius(hex.q, hex.r, state.hexMap.brushSize - 1);
                     hexesToClear.forEach(h => deleteHex(h.q, h.r));
@@ -2800,7 +2793,40 @@ canvas.addEventListener('mousedown', (e) => {
             renderHex();
         }
     }
+}
+
+// Mouse events
+canvas.addEventListener('mousedown', (e) => {
+    handlePointerDown(e.clientX, e.clientY, e.button, false, e.shiftKey, e.detail);
 });
+
+// Touch events
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    touchState.touches = Array.from(e.touches);
+    
+    if (e.touches.length === 1) {
+        // Single touch
+        const touch = e.touches[0];
+        handlePointerDown(touch.clientX, touch.clientY, 0, true);
+    } else if (e.touches.length === 2) {
+        // Two finger touch - start pinch or pan
+        touchState.isPinching = true;
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        touchState.lastPinchDistance = Math.hypot(
+            touch2.clientX - touch1.clientX,
+            touch2.clientY - touch1.clientY
+        );
+        
+        // Use midpoint for panning
+        const rect = canvas.getBoundingClientRect();
+        const midX = (touch1.clientX + touch2.clientX) / 2 - rect.left;
+        const midY = (touch1.clientY + touch2.clientY) / 2 - rect.top;
+        state.hexMap.lastPanPos = { x: midX, y: midY };
+        state.hexMap.isPanning = true;
+    }
+}, { passive: false });
 
 canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
@@ -2828,15 +2854,12 @@ canvas.addEventListener('mousemove', (e) => {
         return;
     }
     
-    // Prevent all other editing actions in Explorer mode
     if (state.hexMap.viewMode === 'explorer') {
-        // Only show hover cursor for tokens
         const hoverToken = findTokenAtPixel(x, y);
         canvas.style.cursor = hoverToken ? 'pointer' : 'default';
         return;
     }
     
-    // Path point dragging (Builder mode only)
     if (state.hexMap.draggingPathPoint) {
         const targetHex = pixelToHex(x, y);
         const point = state.hexMap.selectedPath.points[state.hexMap.draggingPathPoint.pointIndex];
@@ -2848,9 +2871,7 @@ canvas.addEventListener('mousemove', (e) => {
         return;
     }
     
-    // Path mode hover detection
     if (state.hexMap.mode === 'path') {
-        // Check for path point hover in edit mode
         if (state.hexMap.pathEditMode && state.hexMap.selectedPath) {
             const hoveredPoint = findPathPointAtPixel(x, y, state.hexMap.selectedPath);
             if (hoveredPoint !== state.hexMap.hoveredPathPoint) {
@@ -2859,7 +2880,6 @@ canvas.addEventListener('mousemove', (e) => {
                 renderHex();
             }
         } else if (!state.hexMap.currentPath) {
-            // Regular path hover when not in edit mode
             const hoveredPath = findPathAtPixel(x, y);
             if (hoveredPath !== state.hexMap.hoveredPath) {
                 state.hexMap.hoveredPath = hoveredPath;
@@ -2908,6 +2928,84 @@ canvas.addEventListener('mousemove', (e) => {
     }
 });
 
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    touchState.touches = Array.from(e.touches);
+    
+    if (e.touches.length === 2 && touchState.isPinching) {
+        // Pinch zoom
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const distance = Math.hypot(
+            touch2.clientX - touch1.clientX,
+            touch2.clientY - touch1.clientY
+        );
+        
+        if (touchState.lastPinchDistance > 0) {
+            const rect = canvas.getBoundingClientRect();
+            const midX = (touch1.clientX + touch2.clientX) / 2 - rect.left;
+            const midY = (touch1.clientY + touch2.clientY) / 2 - rect.top;
+            
+            const worldX = (midX - canvas.width / 2 - state.hexMap.viewport.offsetX) / state.hexMap.viewport.scale;
+            const worldY = (midY - canvas.height / 2 - state.hexMap.viewport.offsetY) / state.hexMap.viewport.scale;
+            
+            const zoomFactor = distance / touchState.lastPinchDistance;
+            const newScale = Math.max(0.1, Math.min(3, state.hexMap.viewport.scale * zoomFactor));
+            
+            state.hexMap.viewport.offsetX = midX - canvas.width / 2 - worldX * newScale;
+            state.hexMap.viewport.offsetY = midY - canvas.height / 2 - worldY * newScale;
+            state.hexMap.viewport.scale = newScale;
+            
+            renderHex();
+            document.getElementById('zoomLevel').textContent = Math.round(newScale * 100) + '%';
+        }
+        
+        touchState.lastPinchDistance = distance;
+        
+        // Two-finger pan
+        const rect = canvas.getBoundingClientRect();
+        const midX = (touch1.clientX + touch2.clientX) / 2 - rect.left;
+        const midY = (touch1.clientY + touch2.clientY) / 2 - rect.top;
+        
+        if (state.hexMap.isPanning) {
+            const dx = midX - state.hexMap.lastPanPos.x;
+            const dy = midY - state.hexMap.lastPanPos.y;
+            state.hexMap.viewport.offsetX += dx;
+            state.hexMap.viewport.offsetY += dy;
+        }
+        
+        state.hexMap.lastPanPos = { x: midX, y: midY };
+        
+    } else if (e.touches.length === 1) {
+        // Single finger drag
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        if (state.hexMap.draggingToken) {
+            const targetHex = pixelToHex(x, y);
+            if (targetHex.q !== state.hexMap.draggingToken.q || targetHex.r !== state.hexMap.draggingToken.r) {
+                state.hexMap.draggingToken.q = targetHex.q;
+                state.hexMap.draggingToken.r = targetHex.r;
+            }
+            renderHex();
+        } else if (state.hexMap.isPainting) {
+            const hex = pixelToHex(x, y);
+            if (hex.q !== state.hexMap.lastPaintPos.q || hex.r !== state.hexMap.lastPaintPos.r) {
+                if (state.hexMap.selectedTerrain === 'clear') {
+                    const hexesToClear = getHexesInRadius(hex.q, hex.r, state.hexMap.brushSize - 1);
+                    hexesToClear.forEach(h => deleteHex(h.q, h.r));
+                } else {
+                    paintHex(hex.q, hex.r);
+                }
+                state.hexMap.lastPaintPos = hex;
+                renderHex();
+            }
+        }
+    }
+}, { passive: false });
+
 canvas.addEventListener('mouseup', () => {
     if (state.hexMap.draggingToken) {
         animateTokenScale(state.hexMap.draggingToken.id, 1.0, 200);
@@ -2922,18 +3020,36 @@ canvas.addEventListener('mouseup', () => {
     state.hexMap.isPainting = false;
     state.hexMap.isPanning = false;
     
-    // Set cursor based on mode
-    if (state.hexMap.viewMode === 'explorer') {
-        canvas.style.cursor = 'default';
-    } else {
-        const cursorMap = {
-            paint: 'crosshair',
-            token: 'crosshair',
-            path: 'crosshair'
-        };
-        canvas.style.cursor = cursorMap[state.hexMap.mode] || 'default';
-    }
+    const cursorMap = {
+        paint: 'crosshair',
+        token: 'crosshair',
+        path: 'crosshair',
+        landmark: 'crosshair'
+    };
+    canvas.style.cursor = state.hexMap.viewMode === 'explorer' ? 'default' : (cursorMap[state.hexMap.mode] || 'default');
 });
+
+canvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    touchState.touches = Array.from(e.touches);
+    
+    if (e.touches.length === 0) {
+        // All fingers lifted
+        touchState.isPinching = false;
+        touchState.lastPinchDistance = 0;
+        state.hexMap.isPanning = false;
+        state.hexMap.isPainting = false;
+        
+        if (state.hexMap.draggingToken) {
+            animateTokenScale(state.hexMap.draggingToken.id, 1.0, 200);
+            state.hexMap.draggingToken = null;
+        }
+    } else if (e.touches.length === 1) {
+        // One finger remains
+        touchState.isPinching = false;
+        touchState.lastPinchDistance = 0;
+    }
+}, { passive: false });
 
 canvas.addEventListener('mouseleave', () => {
     state.hexMap.isPainting = false;
@@ -2951,8 +3067,9 @@ canvas.addEventListener('mouseleave', () => {
 
 canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-   canvas.addEventListener('wheel', (e) => {
+canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
+    console.log('Wheel event:', e.deltaY, 'Current scale:', state.hexMap.viewport.scale);
     
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -2966,6 +3083,8 @@ canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
     const newScale = Math.max(0.1, Math.min(3, state.hexMap.viewport.scale * zoomFactor));
     
+    console.log('New scale:', newScale);
+    
     // Calculate new offset to keep world position under mouse
     state.hexMap.viewport.offsetX = mouseX - canvas.width / 2 - worldX * newScale;
     state.hexMap.viewport.offsetY = mouseY - canvas.height / 2 - worldY * newScale;
@@ -2973,7 +3092,7 @@ canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     
     renderHex();
     document.getElementById('zoomLevel').textContent = Math.round(state.hexMap.viewport.scale * 100) + '%';
-});
+}, { passive: false });
 
 document.addEventListener('keydown', (e) => {
     // Don't trigger shortcuts when typing in input fields

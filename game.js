@@ -277,16 +277,14 @@ function setHex(q, r, terrain) {
     updateHexCount();
     markUnsaved();
     
-    // Smart bounds update: only update bounds cache if this is a new hex that expands bounds
+    // Smart bounds update: only refresh minimap if bounds changed
     if (isNewHex) {
         const expandedBounds = wouldExpandBounds(q, r);
         if (expandedBounds) {
             updateBoundsForNewHex(q, r);
+            refreshMinimapDebounced();
         }
     }
-    
-    // Always refresh minimap to show terrain changes (uses cached bounds if they didn't change)
-    refreshMinimapDebounced();
 }
 
 function deleteHex(q, r) {
@@ -3564,6 +3562,586 @@ function exportHexMap() {
     alert(`World exported successfully!\n\n${worldData.metadata.totalHexes} hexes\n${worldData.metadata.totalLandmarks} landmarks\n${worldData.metadata.totalTokens} tokens\n${worldData.metadata.totalPaths} paths`);
 }
 
+function exportHexMapAsImage() {
+    if (state.hexMap.hexes.size === 0) {
+        alert('No hexes to export! Create some hexes first.');
+        return;
+    }
+
+    showExportDialog();
+}
+
+function showExportDialog() {
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+        background: #1a202c;
+        border-radius: 12px;
+        padding: 24px;
+        width: 400px;
+        max-width: 90%;
+        color: #e2e8f0;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    `;
+
+    dialog.innerHTML = `
+        <h2 style="margin: 0 0 20px 0; font-size: 24px; color: #667eea;">Export Image Settings</h2>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold;">Export Mode</label>
+            <div style="display: flex; gap: 10px;">
+                <label style="flex: 1; cursor: pointer;">
+                    <input type="radio" name="exportMode" value="viewport" checked style="margin-right: 6px;">
+                    Current View
+                </label>
+                <label style="flex: 1; cursor: pointer;">
+                    <input type="radio" name="exportMode" value="fullmap" style="margin-right: 6px;">
+                    Full Map
+                </label>
+            </div>
+            <div style="font-size: 12px; color: #a0aec0; margin-top: 6px;">
+                Current View: Exports what you see now with zoom<br>
+                Full Map: Exports entire map at custom resolution
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold;">
+                Hex Size (pixels)
+                <span id="hexSizeValue" style="color: #667eea;">30</span>
+            </label>
+            <input type="range" id="hexSizeSlider" min="10" max="200" value="30" step="5"
+                   style="width: 100%; cursor: pointer;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #718096; margin-top: 4px;">
+                <span>10px - Low Quality</span>
+                <span>200px - Ultra HD</span>
+            </div>
+        </div>
+
+        <div id="resolutionPreview" style="margin-bottom: 20px; padding: 12px; background: #2d3748; border-radius: 8px; font-size: 13px;">
+            <strong>Estimated Resolution:</strong> <span id="estimatedRes">Calculating...</span><br>
+            <span style="color: #a0aec0;">File size: <span id="estimatedSize">~2-5 MB</span></span>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 24px;">
+            <button id="exportBtn" class="btn btn-primary" style="flex: 1; padding: 12px; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: bold;">
+                🖼️ Export
+            </button>
+            <button id="cancelBtn" class="btn btn-secondary" style="padding: 12px 20px; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; background: #4a5568; color: white;">
+                Cancel
+            </button>
+        </div>
+    `;
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    // Get elements
+    const hexSizeSlider = dialog.querySelector('#hexSizeSlider');
+    const hexSizeValue = dialog.querySelector('#hexSizeValue');
+    const estimatedRes = dialog.querySelector('#estimatedRes');
+    const estimatedSize = dialog.querySelector('#estimatedSize');
+    const exportModeRadios = dialog.querySelectorAll('input[name="exportMode"]');
+    const exportBtn = dialog.querySelector('#exportBtn');
+    const cancelBtn = dialog.querySelector('#cancelBtn');
+
+    // Update preview
+    function updatePreview() {
+        const hexSize = parseInt(hexSizeSlider.value);
+        const mode = dialog.querySelector('input[name="exportMode"]:checked').value;
+        
+        hexSizeValue.textContent = hexSize + 'px';
+
+        let width, height;
+        if (mode === 'viewport') {
+            width = canvas.width;
+            height = canvas.height;
+        } else {
+            // Calculate bounds in hex coordinates
+            let minQ = Infinity, maxQ = -Infinity;
+            let minR = Infinity, maxR = -Infinity;
+            
+            state.hexMap.hexes.forEach(hex => {
+                minQ = Math.min(minQ, hex.q);
+                maxQ = Math.max(maxQ, hex.q);
+                minR = Math.min(minR, hex.r);
+                maxR = Math.max(maxR, hex.r);
+            });
+            
+            // Calculate pixel bounds with custom hex size
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+            
+            state.hexMap.hexes.forEach(hex => {
+                const x = hexSize * (3/2 * hex.q);
+                const y = hexSize * (Math.sqrt(3)/2 * hex.q + Math.sqrt(3) * hex.r);
+                minX = Math.min(minX, x);
+                maxX = Math.max(maxX, x);
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);
+            });
+            
+            const padding = hexSize * 2;
+            width = Math.round(maxX - minX + (padding * 2) + hexSize * 2);
+            height = Math.round(maxY - minY + (padding * 2) + hexSize * 2);
+        }
+
+        estimatedRes.textContent = `${width} × ${height}px`;
+        
+        const megapixels = (width * height) / 1000000;
+        const estimatedMB = Math.max(1, Math.round(megapixels * 0.5));
+        estimatedSize.textContent = `~${estimatedMB}-${estimatedMB + 2} MB`;
+    }
+
+    hexSizeSlider.addEventListener('input', updatePreview);
+    exportModeRadios.forEach(radio => radio.addEventListener('change', updatePreview));
+
+    exportBtn.addEventListener('click', () => {
+        const hexSize = parseInt(hexSizeSlider.value);
+        const mode = dialog.querySelector('input[name="exportMode"]:checked').value;
+        document.body.removeChild(overlay);
+        performExport(mode, hexSize);
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+    });
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
+        }
+    });
+
+    updatePreview();
+}
+
+function performExport(mode, hexSize) {
+    const exportCanvas = document.createElement('canvas');
+    const exportCtx = exportCanvas.getContext('2d');
+
+    if (mode === 'viewport') {
+        // ============ VIEWPORT MODE: Export exactly what's on screen ============
+        exportCanvas.width = canvas.width;
+        exportCanvas.height = canvas.height;
+        
+        // Fill background
+        exportCtx.fillStyle = '#0a0d11';
+        exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+        
+        // Draw all hexes using current viewport
+        state.hexMap.hexes.forEach(hex => {
+            const pos = hexToPixel(hex.q, hex.r);
+            const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
+            
+            const terrain = TERRAINS[hex.terrain];
+            
+            exportCtx.save();
+            exportCtx.translate(pos.x, pos.y);
+            
+            exportCtx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i;
+                const hx = size * Math.cos(angle);
+                const hy = size * Math.sin(angle);
+                if (i === 0) {
+                    exportCtx.moveTo(hx, hy);
+                } else {
+                    exportCtx.lineTo(hx, hy);
+                }
+            }
+            exportCtx.closePath();
+            
+            exportCtx.fillStyle = terrain.color;
+            exportCtx.fill();
+            
+            exportCtx.strokeStyle = '#2d3748';
+            exportCtx.lineWidth = 1;
+            exportCtx.stroke();
+            
+            exportCtx.restore();
+        });
+
+        // Draw paths for viewport mode
+        state.hexMap.paths.forEach(path => {
+            exportCtx.save();
+            exportCtx.strokeStyle = path.color || PATH_STYLES[path.type].color;
+            exportCtx.lineWidth = path.width * state.hexMap.viewport.scale;
+            exportCtx.lineCap = 'round';
+            exportCtx.lineJoin = 'round';
+
+            if (path.style === 'curved' && path.points.length > 2) {
+                exportCtx.beginPath();
+                for (let i = 0; i < path.points.length - 1; i++) {
+                    const p1 = path.points[i];
+                    const p2 = path.points[i + 1];
+                    
+                    const pos1 = hexToPixel(p1.q, p1.r);
+                    const pos2 = hexToPixel(p2.q, p2.r);
+                    
+                    if (i === 0) {
+                        exportCtx.moveTo(pos1.x, pos1.y);
+                    }
+                    
+                    if (i < path.points.length - 2) {
+                        const p3 = path.points[i + 2];
+                        const pos3 = hexToPixel(p3.q, p3.r);
+                        
+                        const cpX = pos2.x;
+                        const cpY = pos2.y;
+                        const endX = (pos2.x + pos3.x) / 2;
+                        const endY = (pos2.y + pos3.y) / 2;
+                        
+                        exportCtx.quadraticCurveTo(cpX, cpY, endX, endY);
+                    } else {
+                        exportCtx.lineTo(pos2.x, pos2.y);
+                    }
+                }
+                exportCtx.stroke();
+            } else {
+                exportCtx.beginPath();
+                path.points.forEach((point, i) => {
+                    const pos = hexToPixel(point.q, point.r);
+                    if (i === 0) {
+                        exportCtx.moveTo(pos.x, pos.y);
+                    } else {
+                        exportCtx.lineTo(pos.x, pos.y);
+                    }
+                });
+                exportCtx.stroke();
+            }
+            exportCtx.restore();
+        });
+
+        // Draw landmarks for viewport mode
+        state.hexMap.landmarks.forEach(landmark => {
+            if (!landmark.visible) return;
+            
+            const pos = hexToPixel(landmark.q, landmark.r);
+            const size = (landmark.size || 1) * state.hexMap.hexSize * state.hexMap.viewport.scale * 0.4;
+            
+            exportCtx.save();
+            exportCtx.translate(pos.x, pos.y);
+            
+            exportCtx.fillStyle = landmark.color || '#FFD700';
+            exportCtx.beginPath();
+            exportCtx.arc(0, 0, size, 0, Math.PI * 2);
+            exportCtx.fill();
+            
+            exportCtx.strokeStyle = '#000000';
+            exportCtx.lineWidth = 2;
+            exportCtx.stroke();
+            
+            if (landmark.showLabel && landmark.name) {
+                const labelOffset = size + 8;
+                let textX = 0;
+                let textY = labelOffset;
+                
+                if (landmark.labelPosition === 'top') textY = -labelOffset;
+                else if (landmark.labelPosition === 'left') { textX = -labelOffset; textY = 0; }
+                else if (landmark.labelPosition === 'right') { textX = labelOffset; textY = 0; }
+                
+                exportCtx.fillStyle = '#FFFFFF';
+                exportCtx.strokeStyle = '#000000';
+                exportCtx.lineWidth = 3;
+                exportCtx.font = 'bold 12px Arial';
+                exportCtx.textAlign = 'center';
+                exportCtx.textBaseline = 'middle';
+                
+                exportCtx.strokeText(landmark.name, textX, textY);
+                exportCtx.fillText(landmark.name, textX, textY);
+            }
+            
+            exportCtx.restore();
+        });
+
+        // Draw tokens for viewport mode
+        state.hexMap.tokens.forEach(token => {
+            if (!token.visible) return;
+            
+            const pos = hexToPixel(token.q, token.r);
+            const size = (token.size || 1) * state.hexMap.hexSize * state.hexMap.viewport.scale * 0.3;
+            
+            exportCtx.save();
+            exportCtx.translate(pos.x, pos.y);
+            
+            exportCtx.fillStyle = token.color || '#FF6B6B';
+            exportCtx.beginPath();
+            exportCtx.arc(0, 0, size, 0, Math.PI * 2);
+            exportCtx.fill();
+            
+            exportCtx.strokeStyle = '#FFFFFF';
+            exportCtx.lineWidth = 2;
+            exportCtx.stroke();
+            
+            if (token.label) {
+                exportCtx.fillStyle = '#FFFFFF';
+                exportCtx.strokeStyle = '#000000';
+                exportCtx.lineWidth = 3;
+                exportCtx.font = 'bold 10px Arial';
+                exportCtx.textAlign = 'center';
+                exportCtx.textBaseline = 'middle';
+                
+                exportCtx.strokeText(token.label, 0, size + 10);
+                exportCtx.fillText(token.label, 0, size + 10);
+            }
+            
+            exportCtx.restore();
+        });
+        
+    } else {
+        // ============ FULL MAP MODE: Export entire map at custom hex size ============
+        
+        // Calculate bounds in hex coordinates
+        let minQ = Infinity, maxQ = -Infinity;
+        let minR = Infinity, maxR = -Infinity;
+        
+        state.hexMap.hexes.forEach(hex => {
+            minQ = Math.min(minQ, hex.q);
+            maxQ = Math.max(maxQ, hex.q);
+            minR = Math.min(minR, hex.r);
+            maxR = Math.max(maxR, hex.r);
+        });
+        
+        // Helper function to convert hex coords to pixel coords for full map export
+        function hexToPixelFullMap(q, r) {
+            const x = hexSize * (3/2 * q);
+            const y = hexSize * (Math.sqrt(3)/2 * q + Math.sqrt(3) * r);
+            return { x, y };
+        }
+        
+        // Calculate pixel bounds
+        let minX = Infinity, maxX = -Infinity;
+        let minY = Infinity, maxY = -Infinity;
+        
+        state.hexMap.hexes.forEach(hex => {
+            const pos = hexToPixelFullMap(hex.q, hex.r);
+            minX = Math.min(minX, pos.x);
+            maxX = Math.max(maxX, pos.x);
+            minY = Math.min(minY, pos.y);
+            maxY = Math.max(maxY, pos.y);
+        });
+        
+        // Add padding
+        const padding = hexSize * 2;
+        const offsetX = -minX + padding;
+        const offsetY = -minY + padding;
+        
+        exportCanvas.width = Math.round(maxX - minX + (padding * 2) + hexSize * 2);
+        exportCanvas.height = Math.round(maxY - minY + (padding * 2) + hexSize * 2);
+        
+        // Fill background
+        exportCtx.fillStyle = '#0a0d11';
+        exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+        
+        // Draw all hexes
+        state.hexMap.hexes.forEach(hex => {
+            const pos = hexToPixelFullMap(hex.q, hex.r);
+            const x = pos.x + offsetX;
+            const y = pos.y + offsetY;
+            
+            const terrain = TERRAINS[hex.terrain];
+            
+            exportCtx.save();
+            exportCtx.translate(x, y);
+            
+            exportCtx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i;
+                const hx = hexSize * Math.cos(angle);
+                const hy = hexSize * Math.sin(angle);
+                if (i === 0) {
+                    exportCtx.moveTo(hx, hy);
+                } else {
+                    exportCtx.lineTo(hx, hy);
+                }
+            }
+            exportCtx.closePath();
+            
+            exportCtx.fillStyle = terrain.color;
+            exportCtx.fill();
+            
+            exportCtx.strokeStyle = '#2d3748';
+            exportCtx.lineWidth = 1;
+            exportCtx.stroke();
+            
+            exportCtx.restore();
+        });
+
+        // Draw paths for full map mode
+        state.hexMap.paths.forEach(path => {
+            exportCtx.save();
+            exportCtx.strokeStyle = path.color || PATH_STYLES[path.type].color;
+            exportCtx.lineWidth = path.width * (hexSize / state.hexMap.hexSize);
+            exportCtx.lineCap = 'round';
+            exportCtx.lineJoin = 'round';
+
+            if (path.style === 'curved' && path.points.length > 2) {
+                exportCtx.beginPath();
+                for (let i = 0; i < path.points.length - 1; i++) {
+                    const p1 = path.points[i];
+                    const p2 = path.points[i + 1];
+                    
+                    const pos1 = hexToPixelFullMap(p1.q, p1.r);
+                    const pos2 = hexToPixelFullMap(p2.q, p2.r);
+                    
+                    const x1 = pos1.x + offsetX;
+                    const y1 = pos1.y + offsetY;
+                    const x2 = pos2.x + offsetX;
+                    const y2 = pos2.y + offsetY;
+                    
+                    if (i === 0) {
+                        exportCtx.moveTo(x1, y1);
+                    }
+                    
+                    if (i < path.points.length - 2) {
+                        const p3 = path.points[i + 2];
+                        const pos3 = hexToPixelFullMap(p3.q, p3.r);
+                        const x3 = pos3.x + offsetX;
+                        const y3 = pos3.y + offsetY;
+                        
+                        const cpX = x2;
+                        const cpY = y2;
+                        const endX = (x2 + x3) / 2;
+                        const endY = (y2 + y3) / 2;
+                        
+                        exportCtx.quadraticCurveTo(cpX, cpY, endX, endY);
+                    } else {
+                        exportCtx.lineTo(x2, y2);
+                    }
+                }
+                exportCtx.stroke();
+            } else {
+                exportCtx.beginPath();
+                path.points.forEach((point, i) => {
+                    const pos = hexToPixelFullMap(point.q, point.r);
+                    const x = pos.x + offsetX;
+                    const y = pos.y + offsetY;
+                    
+                    if (i === 0) {
+                        exportCtx.moveTo(x, y);
+                    } else {
+                        exportCtx.lineTo(x, y);
+                    }
+                });
+                exportCtx.stroke();
+            }
+            exportCtx.restore();
+        });
+
+        // Draw landmarks for full map mode
+        state.hexMap.landmarks.forEach(landmark => {
+            if (!landmark.visible) return;
+            
+            const pos = hexToPixelFullMap(landmark.q, landmark.r);
+            const x = pos.x + offsetX;
+            const y = pos.y + offsetY;
+            const size = (landmark.size || 1) * hexSize * 0.4;
+            
+            exportCtx.save();
+            exportCtx.translate(x, y);
+            
+            exportCtx.fillStyle = landmark.color || '#FFD700';
+            exportCtx.beginPath();
+            exportCtx.arc(0, 0, size, 0, Math.PI * 2);
+            exportCtx.fill();
+            
+            exportCtx.strokeStyle = '#000000';
+            exportCtx.lineWidth = 2;
+            exportCtx.stroke();
+            
+            if (landmark.showLabel && landmark.name) {
+                const labelOffset = size + 8;
+                let textX = 0;
+                let textY = labelOffset;
+                
+                if (landmark.labelPosition === 'top') textY = -labelOffset;
+                else if (landmark.labelPosition === 'left') { textX = -labelOffset; textY = 0; }
+                else if (landmark.labelPosition === 'right') { textX = labelOffset; textY = 0; }
+                
+                const fontSize = Math.max(10, Math.round(12 * (hexSize / state.hexMap.hexSize)));
+                
+                exportCtx.fillStyle = '#FFFFFF';
+                exportCtx.strokeStyle = '#000000';
+                exportCtx.lineWidth = 3;
+                exportCtx.font = `bold ${fontSize}px Arial`;
+                exportCtx.textAlign = 'center';
+                exportCtx.textBaseline = 'middle';
+                
+                exportCtx.strokeText(landmark.name, textX, textY);
+                exportCtx.fillText(landmark.name, textX, textY);
+            }
+            
+            exportCtx.restore();
+        });
+
+        // Draw tokens for full map mode
+        state.hexMap.tokens.forEach(token => {
+            if (!token.visible) return;
+            
+            const pos = hexToPixelFullMap(token.q, token.r);
+            const x = pos.x + offsetX;
+            const y = pos.y + offsetY;
+            const size = (token.size || 1) * hexSize * 0.3;
+            
+            exportCtx.save();
+            exportCtx.translate(x, y);
+            
+            exportCtx.fillStyle = token.color || '#FF6B6B';
+            exportCtx.beginPath();
+            exportCtx.arc(0, 0, size, 0, Math.PI * 2);
+            exportCtx.fill();
+            
+            exportCtx.strokeStyle = '#FFFFFF';
+            exportCtx.lineWidth = 2;
+            exportCtx.stroke();
+            
+            if (token.label) {
+                const fontSize = Math.max(8, Math.round(10 * (hexSize / state.hexMap.hexSize)));
+                
+                exportCtx.fillStyle = '#FFFFFF';
+                exportCtx.strokeStyle = '#000000';
+                exportCtx.lineWidth = 3;
+                exportCtx.font = `bold ${fontSize}px Arial`;
+                exportCtx.textAlign = 'center';
+                exportCtx.textBaseline = 'middle';
+                
+                exportCtx.strokeText(token.label, 0, size + 10);
+                exportCtx.fillText(token.label, 0, size + 10);
+            }
+            
+            exportCtx.restore();
+        });
+    }
+
+    // Convert canvas to blob and download
+    exportCanvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+        a.download = `hexworld-${mode}-${timestamp}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        alert(`Map exported as image!\n\nMode: ${mode === 'viewport' ? 'Current View' : 'Full Map'}\nResolution: ${exportCanvas.width}x${exportCanvas.height}px\nHex Size: ${mode === 'viewport' ? Math.round(state.hexMap.hexSize * state.hexMap.viewport.scale) : hexSize}px`);
+    }, 'image/png');
+}
+
 function importHexMap() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -3770,8 +4348,9 @@ function createStarterMap() {
 function updateHexTopBar() {
     const actions = document.getElementById('topbarActions');
     actions.innerHTML = `
-        <button class="btn btn-secondary" onclick="importHexMap()">ðŸ“¥ Import World</button>
-        <button class="btn btn-secondary" onclick="exportHexMap()">ðŸ’¾ Export World</button>
+        <button class="btn btn-secondary" onclick="importHexMap()">📥 Import World</button>
+        <button class="btn btn-secondary" onclick="exportHexMap()">💾 Export JSON</button>
+        <button class="btn btn-secondary" onclick="exportHexMapAsImage()">🖼️ Export Image</button>
         <button class="btn btn-danger" onclick="clearHexMap()">Clear Map</button>
     `;
 }

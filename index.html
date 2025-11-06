@@ -10,7 +10,7 @@
     <div class="app">
         <div class="topbar">
             <div class="topbar-left">
-                <div class="logo">⬡ HexWorlds</div>
+                <div class="logo"> HexWorlds</div>
                 <div class="breadcrumb">
                     <span id="viewName">Hex Map</span>
                 </div>
@@ -133,13 +133,13 @@
                     <h3>Create Token</h3>
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <button class="btn btn-primary" style="width: 100%;" onclick="showTokenCreator()">
-                            ➕ New Token
+                            âž• New Token
                         </button>
                         <div style="font-size: 11px; color: #718096; line-height: 1.5;">
                             <strong>Token Mode:</strong><br>
-                            • Click hex to place new token<br>
-                            • Click token to select/view<br>
-                            • Drag token to move it<br>
+                            â€¢ Click hex to place new token<br>
+                            â€¢ Click token to select/view<br>
+                            â€¢ Drag token to move it<br>
                         </div>
                     </div>
                 </div>
@@ -149,13 +149,13 @@
                     <h3>Create Landmark</h3>
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <button class="btn btn-primary" style="width: 100%;" onclick="showLandmarkCreator()">
-                            ➕ New Landmark
+                            âž• New Landmark
                         </button>
                         <div style="font-size: 11px; color: #718096; line-height: 1.5;">
                             <strong>Landmark Mode:</strong><br>
-                            • Click hex to place landmark<br>
-                            • Shift+Click landmark to select<br>
-                            • Landmarks appear on hex terrain<br>
+                            â€¢ Click hex to place landmark<br>
+                            â€¢ Shift+Click landmark to select<br>
+                            â€¢ Landmarks appear on hex terrain<br>
                         </div>
                     </div>
                 </div>
@@ -191,11 +191,11 @@
                     <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
                         <button class="btn btn-secondary" style="width: 100%; justify-content: center;" 
                                 onclick="selectPathStyle('straight')" id="pathStyle_straight">
-                            ━ Straight
+                            â” Straight
                         </button>
                         <button class="btn btn-secondary" style="width: 100%; justify-content: center;" 
                                 onclick="selectPathStyle('curved')" id="pathStyle_curved">
-                            ⌢ Curved
+                            âŒ¢ Curved
                         </button>
                     </div>
                     
@@ -222,11 +222,11 @@
                     
                     <div style="font-size: 11px; color: #718096; line-height: 1.5; margin-top: 16px;">
                         <strong>Path Mode:</strong><br>
-                        • Click hexes to draw path<br>
-                        • Paths auto-connect at intersections<br>
-                        • Double-click to finish<br>
-                        • Click existing path to edit/delete<br>
-                        • ESC to cancel current path<br>
+                        â€¢ Click hexes to draw path<br>
+                        â€¢ Paths auto-connect at intersections<br>
+                        â€¢ Double-click to finish<br>
+                        â€¢ Click existing path to edit/delete<br>
+                        â€¢ ESC to cancel current path<br>
                     </div>
                 </div>
             </div>
@@ -235,14 +235,14 @@
                 <canvas id="hexCanvas"></canvas>
                 
                 <div class="canvas-overlay">
-                    <strong id="modeText">Paint Mode</strong> · <span id="terrainText">Plains</span> selected<br>
-                    <span id="instructionText">Click to paint · Drag for multiple · Keys 1-5 for brush size</span>
+                    <strong id="modeText">Paint Mode</strong> Â· <span id="terrainText">Plains</span> selected<br>
+                    <span id="instructionText">Click to paint Â· Drag for multiple Â· Keys 1-5 for brush size</span>
                 </div>
 
                 <div class="zoom-controls">
                     <button class="zoom-btn" onclick="zoomIn()">+</button>
                     <button class="zoom-btn zoom-level" id="zoomLevel">100%</button>
-                    <button class="zoom-btn" onclick="zoomOut()">−</button>
+                    <button class="zoom-btn" onclick="zoomOut()">âˆ’</button>
                 </div>
             </div>
 
@@ -259,7 +259,7 @@
                 </div>
                 
                 <div class="no-selection">
-                    <div class="no-selection-icon">⬡</div>
+                    <div class="no-selection-icon"></div>
                     <p>Select a hex to view details</p>
                     <p style="margin-top: 8px; font-size: 12px;">Click any hex on the map</p>
                 </div>

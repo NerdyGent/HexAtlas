@@ -1,2781 +1,2837 @@
 const TERRAINS = {
-            plains: {
-                name: 'Plains',
-                color: '#90EE90',
-                icon: 'https://api.iconify.design/mdi/wheat.svg?color=%23000000'
-            },
-            forest: {
-                name: 'Forest',
-                color: '#228B22',
-                icon: 'https://api.iconify.design/mdi/pine-tree.svg?color=%23ffffff'
-            },
-            mountain: {
-                name: 'Mountain',
-                color: '#8B7355',
-                icon: 'https://api.iconify.design/mdi/image-filter-hdr.svg?color=%23000000'
-            },
-            desert: {
-                name: 'Desert',
-                color: '#F4A460',
-                icon: 'https://api.iconify.design/mdi/cactus.svg?color=%23000000'
-            },
-            water: {
-                name: 'Water',
-                color: '#4682B4',
-                icon: 'https://api.iconify.design/mdi/waves.svg?color=%23ffffff'
-            },
-            swamp: {
-                name: 'Swamp',
-                color: '#556B2F',
-                icon: 'https://api.iconify.design/mdi/water.svg?color=%23ffffff'
-            },
-            hills: {
-                name: 'Hills',
-                color: '#9ACD32',
-                icon: 'https://api.iconify.design/mdi/terrain.svg?color=%23000000'
-            },
-            tundra: {
-                name: 'Tundra',
-                color: '#E0FFFF',
-                icon: 'https://api.iconify.design/mdi/snowflake.svg?color=%23000000'
-            },
-            grassland: {
-                name: 'Grassland',
-                color: '#7CFC00',
-                icon: 'https://api.iconify.design/mdi/grass.svg?color=%23000000'
-            },
-            jungle: {
-                name: 'Jungle',
-                color: '#006400',
-                icon: 'https://api.iconify.design/mdi/palm-tree.svg?color=%23ffffff'
+    plains: {
+        name: 'Plains',
+        color: '#90EE90',
+        icon: 'https://api.iconify.design/mdi/wheat.svg?color=%23000000'
+    },
+    forest: {
+        name: 'Forest',
+        color: '#228B22',
+        icon: 'https://api.iconify.design/mdi/pine-tree.svg?color=%23ffffff'
+    },
+    mountain: {
+        name: 'Mountain',
+        color: '#8B7355',
+        icon: 'https://api.iconify.design/mdi/image-filter-hdr.svg?color=%23000000'
+    },
+    desert: {
+        name: 'Desert',
+        color: '#F4A460',
+        icon: 'https://api.iconify.design/mdi/cactus.svg?color=%23000000'
+    },
+    water: {
+        name: 'Water',
+        color: '#4682B4',
+        icon: 'https://api.iconify.design/mdi/waves.svg?color=%23ffffff'
+    },
+    swamp: {
+        name: 'Swamp',
+        color: '#556B2F',
+        icon: 'https://api.iconify.design/mdi/water.svg?color=%23ffffff'
+    },
+    hills: {
+        name: 'Hills',
+        color: '#9ACD32',
+        icon: 'https://api.iconify.design/mdi/terrain.svg?color=%23000000'
+    },
+    tundra: {
+        name: 'Tundra',
+        color: '#E0FFFF',
+        icon: 'https://api.iconify.design/mdi/snowflake.svg?color=%23000000'
+    },
+    grassland: {
+        name: 'Grassland',
+        color: '#7CFC00',
+        icon: 'https://api.iconify.design/mdi/grass.svg?color=%23000000'
+    },
+    jungle: {
+        name: 'Jungle',
+        color: '#006400',
+        icon: 'https://api.iconify.design/mdi/palm-tree.svg?color=%23ffffff'
+    }
+};
+
+const state = {
+    hexMap: {
+        viewMode: 'builder', // 'builder' or 'explorer'
+        mode: 'paint',
+        fillMode: false, // NEW: fill connected areas
+        selectedTerrain: 'plains',
+        selectedHex: null,
+        hexes: new Map(),
+        tokens: new Map(),
+        landmarks: new Map(), // NEW: Landmarks/locations on hexes
+        paths: [],
+        selectedPath: null,
+        hoveredPath: null,
+        pathEditMode: false,
+        draggingPathPoint: null,
+        hoveredPathPoint: null,
+        selectedToken: null,
+        selectedLandmark: null, // NEW
+        draggingToken: null,
+        pendingToken: null,
+        pendingLandmark: null, // NEW
+        currentPath: null,
+        pathType: 'road',
+        pathStyle: 'straight',
+        pathWidth: 4,
+        pathColor: '#8B7355',
+        viewport: { offsetX: 0, offsetY: 0, scale: 1 },
+        isPanning: false,
+        isPainting: false,
+        lastPanPos: { x: 0, y: 0 },
+        lastPaintPos: { q: null, r: null },
+        hexSize: 30,
+        brushSize: 1,
+        paintSpeed: 8,
+        paintThrottle: 0,
+        brushPreviewHexes: []
+    },
+    dungeonEditor: null,
+    nextTokenId: 1,
+    nextPathId: 1,
+    nextLandmarkId: 1 // NEW
+};
+
+const canvas = document.getElementById('hexCanvas');
+const ctx = canvas.getContext('2d');
+let hexIconCache = new Map();
+
+// Hex Math
+function hexToPixel(q, r) {
+    const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
+    const x = size * (3/2 * q);
+    const y = size * (Math.sqrt(3)/2 * q + Math.sqrt(3) * r);
+    return { 
+        x: x + state.hexMap.viewport.offsetX + canvas.width / 2,
+        y: y + state.hexMap.viewport.offsetY + canvas.height / 2
+    };
+}
+
+function pixelToHex(x, y) {
+    const adjX = x - canvas.width / 2 - state.hexMap.viewport.offsetX;
+    const adjY = y - canvas.height / 2 - state.hexMap.viewport.offsetY;
+    const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
+    const q = (2/3 * adjX) / size;
+    const r = (-1/3 * adjX + Math.sqrt(3)/3 * adjY) / size;
+    return axialRound(q, r);
+}
+
+function axialRound(q, r) {
+    let s = -q - r;
+    let rq = Math.round(q);
+    let rr = Math.round(r);
+    let rs = Math.round(s);
+    const qDiff = Math.abs(rq - q);
+    const rDiff = Math.abs(rr - r);
+    const sDiff = Math.abs(rs - s);
+    if (qDiff > rDiff && qDiff > sDiff) {
+        rq = -rr - rs;
+    } else if (rDiff > sDiff) {
+        rr = -rq - rs;
+    }
+    return { q: rq, r: rr };
+}
+
+function drawHexagon(ctx, x, y, size) {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i;
+        const hx = x + size * Math.cos(angle);
+        const hy = y + size * Math.sin(angle);
+        if (i === 0) {
+            ctx.moveTo(hx, hy);
+        } else {
+            ctx.lineTo(hx, hy);
+        }
+    }
+    ctx.closePath();
+}
+
+function getHexNeighbors(q, r, radius) {
+    const neighbors = [];
+    for (let dq = -radius; dq <= radius; dq++) {
+        for (let dr = Math.max(-radius, -dq - radius); dr <= Math.min(radius, -dq + radius); dr++) {
+            if (dq === 0 && dr === 0) continue;
+            neighbors.push({ q: q + dq, r: r + dr });
+        }
+    }
+    return neighbors;
+}
+
+function getHexesInRadius(q, r, radius) {
+    const hexes = [{ q, r }];
+    if (radius > 0) {
+        hexes.push(...getHexNeighbors(q, r, radius));
+    }
+    return hexes;
+}
+
+// Hex Management
+function getHex(q, r) {
+    return state.hexMap.hexes.get(`${q},${r}`);
+}
+
+function setHex(q, r, terrain) {
+    const key = `${q},${r}`;
+    const existing = state.hexMap.hexes.get(key);
+    state.hexMap.hexes.set(key, {
+        q, r, terrain,
+        name: existing?.name || '',
+        description: existing?.description || '',
+        dungeon: existing?.dungeon || null
+    });
+    updateHexCount();
+    refreshMinimapDebounced();
+    markUnsaved();
+}
+
+function deleteHex(q, r) {
+    state.hexMap.hexes.delete(`${q},${r}`);
+    updateHexCount();
+    refreshMinimapDebounced();
+    markUnsaved();
+}
+
+function updateHexCount() {
+    const count = state.hexMap.hexes.size;
+    const dungeonCount = Array.from(state.hexMap.hexes.values()).filter(h => h.dungeon).length;
+    const tokenCount = state.hexMap.tokens.size;
+    const landmarkCount = state.hexMap.landmarks.size;
+    const pathCount = state.hexMap.paths.length;
+    document.getElementById('viewName').textContent = `Hex Map (${count} hexes, ${dungeonCount} dungeons, ${landmarkCount} landmarks, ${tokenCount} tokens, ${pathCount} paths)`;
+}
+
+// ============================================================================
+// PATH SYSTEM
+// ============================================================================
+
+const PATH_STYLES = {
+    road: { color: '#8B7355', width: 4, dash: [] },
+    river: { color: '#4682B4', width: 5, dash: [] },
+    trail: { color: '#D2B48C', width: 2, dash: [5, 3] }
+};
+
+function selectPathType(type) {
+    state.hexMap.pathType = type;
+    document.querySelectorAll('[id^="pathType_"]').forEach(btn => {
+        btn.classList.toggle('btn-primary', btn.id === `pathType_${type}`);
+        btn.classList.toggle('btn-secondary', btn.id !== `pathType_${type}`);
+    });
+    // Update color to match the path type default
+    const defaultColor = PATH_STYLES[type].color;
+    state.hexMap.pathColor = defaultColor;
+    document.getElementById('pathColor').value = defaultColor;
+}
+
+function selectPathStyle(style) {
+    state.hexMap.pathStyle = style;
+    document.querySelectorAll('[id^="pathStyle_"]').forEach(btn => {
+        btn.classList.toggle('btn-primary', btn.id === `pathStyle_${style}`);
+        btn.classList.toggle('btn-secondary', btn.id !== `pathStyle_${style}`);
+    });
+}
+
+function updatePathWidth(value) {
+    state.hexMap.pathWidth = parseInt(value);
+    document.getElementById('pathWidthValue').textContent = value;
+}
+
+function updatePathColor(color) {
+    state.hexMap.pathColor = color;
+    // If currently drawing a path, update its color
+    if (state.hexMap.currentPath) {
+        state.hexMap.currentPath.color = color;
+        renderHex();
+    }
+}
+
+function resetPathColorToDefault() {
+    const defaultColor = PATH_STYLES[state.hexMap.pathType].color;
+    state.hexMap.pathColor = defaultColor;
+    document.getElementById('pathColor').value = defaultColor;
+    if (state.hexMap.currentPath) {
+        state.hexMap.currentPath.color = defaultColor;
+        renderHex();
+    }
+}
+
+function startPath(q, r) {
+    state.hexMap.currentPath = {
+        id: `path_${state.nextPathId++}`,
+        type: state.hexMap.pathType,
+        style: state.hexMap.pathStyle,
+        width: state.hexMap.pathWidth,
+        color: state.hexMap.pathColor,
+        points: [{ q, r }],
+        created: new Date().toISOString()
+    };
+}
+
+function addPathPoint(q, r) {
+    if (!state.hexMap.currentPath) {
+        startPath(q, r);
+        return;
+    }
+    
+    const lastPoint = state.hexMap.currentPath.points[state.hexMap.currentPath.points.length - 1];
+    if (lastPoint.q === q && lastPoint.r === r) {
+        return;
+    }
+    
+    state.hexMap.currentPath.points.push({ q, r });
+    renderHex();
+}
+
+function finishPath() {
+    if (!state.hexMap.currentPath || state.hexMap.currentPath.points.length < 2) {
+        state.hexMap.currentPath = null;
+        return;
+    }
+    
+    state.hexMap.paths.push({ ...state.hexMap.currentPath });
+    state.hexMap.currentPath = null;
+    updateHexCount();
+    renderHex();
+    markUnsaved();
+}
+
+function cancelPath() {
+    state.hexMap.currentPath = null;
+    state.hexMap.selectedPath = null;
+    renderHex();
+}
+
+function deletePath(pathId) {
+    const index = state.hexMap.paths.findIndex(p => p.id === pathId);
+    if (index !== -1) {
+        state.hexMap.paths.splice(index, 1);
+        updateHexCount();
+        renderHex();
+        markUnsaved();
+    }
+}
+
+function findPathAtPixel(x, y) {
+    const clickTolerance = 15; // pixels
+    let closestPath = null;
+    let closestDistance = clickTolerance;
+    
+    // Check all paths to see if click is near any path segment
+    for (let i = state.hexMap.paths.length - 1; i >= 0; i--) {
+        const path = state.hexMap.paths[i];
+        
+        // Check each segment of the path
+        for (let j = 0; j < path.points.length - 1; j++) {
+            const p1 = hexToPixel(path.points[j].q, path.points[j].r);
+            const p2 = hexToPixel(path.points[j + 1].q, path.points[j + 1].r);
+            
+            // Calculate distance from click point to line segment
+            const distance = distanceToLineSegment(x, y, p1.x, p1.y, p2.x, p2.y);
+            
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestPath = path;
             }
-        };
-
-        const state = {
-            hexMap: {
-                viewMode: 'builder', // 'builder' or 'explorer'
-                mode: 'paint',
-                fillMode: false, // NEW: fill connected areas
-                selectedTerrain: 'plains',
-                selectedHex: null,
-                hexes: new Map(),
-                tokens: new Map(),
-                landmarks: new Map(), // NEW: Landmarks/locations on hexes
-                paths: [],
-                selectedPath: null,
-                hoveredPath: null,
-                pathEditMode: false,
-                draggingPathPoint: null,
-                hoveredPathPoint: null,
-                selectedToken: null,
-                selectedLandmark: null, // NEW
-                draggingToken: null,
-                pendingToken: null,
-                pendingLandmark: null, // NEW
-                currentPath: null,
-                pathType: 'road',
-                pathStyle: 'straight',
-                pathWidth: 4,
-                pathColor: '#8B7355',
-                viewport: { offsetX: 0, offsetY: 0, scale: 1 },
-                isPanning: false,
-                isPainting: false,
-                lastPanPos: { x: 0, y: 0 },
-                lastPaintPos: { q: null, r: null },
-                hexSize: 30,
-                brushSize: 1,
-                paintSpeed: 8,
-                paintThrottle: 0,
-                brushPreviewHexes: []
-            },
-            dungeonEditor: null,
-            nextTokenId: 1,
-            nextPathId: 1,
-            nextLandmarkId: 1 // NEW
-        };
-
-        const canvas = document.getElementById('hexCanvas');
-        const ctx = canvas.getContext('2d');
-        let hexIconCache = new Map();
-
-        // Hex Math
-        function hexToPixel(q, r) {
-            const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
-            const x = size * (3/2 * q);
-            const y = size * (Math.sqrt(3)/2 * q + Math.sqrt(3) * r);
-            return { 
-                x: x + state.hexMap.viewport.offsetX + canvas.width / 2,
-                y: y + state.hexMap.viewport.offsetY + canvas.height / 2
-            };
         }
+    }
+    
+    return closestPath;
+}
 
-        function pixelToHex(x, y) {
-            const adjX = x - canvas.width / 2 - state.hexMap.viewport.offsetX;
-            const adjY = y - canvas.height / 2 - state.hexMap.viewport.offsetY;
-            const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
-            const q = (2/3 * adjX) / size;
-            const r = (-1/3 * adjX + Math.sqrt(3)/3 * adjY) / size;
-            return axialRound(q, r);
+// Helper function to calculate distance from point to line segment
+function distanceToLineSegment(px, py, x1, y1, x2, y2) {
+    const A = px - x1;
+    const B = py - y1;
+    const C = x2 - x1;
+    const D = y2 - y1;
+    
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    let param = -1;
+    
+    if (lenSq !== 0) {
+        param = dot / lenSq;
+    }
+    
+    let xx, yy;
+    
+    if (param < 0) {
+        xx = x1;
+        yy = y1;
+    } else if (param > 1) {
+        xx = x2;
+        yy = y2;
+    } else {
+        xx = x1 + param * C;
+        yy = y1 + param * D;
+    }
+    
+    const dx = px - xx;
+    const dy = py - yy;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function findPathSegmentAtPixel(x, y, path) {
+    if (!path || path.points.length < 2) return null;
+    
+    const clickTolerance = 15;
+    let closestSegment = null;
+    let closestDistance = clickTolerance;
+    
+    for (let i = 0; i < path.points.length - 1; i++) {
+        const p1 = hexToPixel(path.points[i].q, path.points[i].r);
+        const p2 = hexToPixel(path.points[i + 1].q, path.points[i + 1].r);
+        
+        const distance = distanceToLineSegment(x, y, p1.x, p1.y, p2.x, p2.y);
+        
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            closestSegment = i;
         }
+    }
+    
+    return closestSegment;
+}
 
-        function axialRound(q, r) {
-            let s = -q - r;
-            let rq = Math.round(q);
-            let rr = Math.round(r);
-            let rs = Math.round(s);
-            const qDiff = Math.abs(rq - q);
-            const rDiff = Math.abs(rr - r);
-            const sDiff = Math.abs(rs - s);
-            if (qDiff > rDiff && qDiff > sDiff) {
-                rq = -rr - rs;
-            } else if (rDiff > sDiff) {
-                rr = -rq - rs;
-            }
-            return { q: rq, r: rr };
-        }
+// Get all hexes between two hex coordinates using hex line algorithm
+function getHexLine(q0, r0, q1, r1) {
+    const distance = Math.max(
+        Math.abs(q0 - q1),
+        Math.abs(r0 - r1),
+        Math.abs((-q0 - r0) - (-q1 - r1))
+    );
+    
+    if (distance === 0) return [{ q: q0, r: r0 }];
+    
+    const hexes = [];
+    for (let i = 0; i <= distance; i++) {
+        const t = i / distance;
+        const q = q0 * (1 - t) + q1 * t;
+        const r = r0 * (1 - t) + r1 * t;
+        const rounded = axialRound(q, r);
+        hexes.push(rounded);
+    }
+    
+    return hexes;
+}
 
-        function drawHexagon(ctx, x, y, size) {
-            ctx.beginPath();
-            for (let i = 0; i < 6; i++) {
-                const angle = (Math.PI / 3) * i;
-                const hx = x + size * Math.cos(angle);
-                const hy = y + size * Math.sin(angle);
-                if (i === 0) {
-                    ctx.moveTo(hx, hy);
-                } else {
-                    ctx.lineTo(hx, hy);
+// Get all hexes that a path passes through
+function getPathHexes(path) {
+    if (!path || path.points.length < 2) return [];
+    
+    const hexSet = new Set();
+    
+    // Get hexes for each segment
+    for (let i = 0; i < path.points.length - 1; i++) {
+        const p1 = path.points[i];
+        const p2 = path.points[i + 1];
+        const lineHexes = getHexLine(p1.q, p1.r, p2.q, p2.r);
+        
+        lineHexes.forEach(hex => {
+            hexSet.add(`${hex.q},${hex.r}`);
+        });
+    }
+    
+    // Convert back to array of {q, r} objects
+    return Array.from(hexSet).map(key => {
+        const [q, r] = key.split(',').map(Number);
+        return { q, r };
+    });
+}
+
+function showPathDetails(path) {
+    const panel = document.getElementById('hexDetailsPanel');
+    const pathTypeNames = {
+        road: 'Road',
+        river: 'River',
+        trail: 'Trail'
+    };
+    
+    const editModeButton = state.hexMap.pathEditMode 
+        ? '<button class="btn btn-primary" style="width: 100%;" onclick="togglePathEditMode()">✓ Done Editing</button>'
+        : '<button class="btn btn-secondary" style="width: 100%;" onclick="togglePathEditMode()">✏️ Edit Points</button>';
+    
+    panel.innerHTML = `
+        <div class="details-header">
+            <h2>${pathTypeNames[path.type]} Path</h2>
+            <div class="coords">${path.points.length} waypoints · ${path.style} style</div>
+        </div>
+        <div class="details-content">
+            <div class="form-group">
+                ${editModeButton}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Path Type</label>
+                <select class="form-select" onchange="updatePathType('${path.id}', this.value)">
+                    <option value="road" ${path.type === 'road' ? 'selected' : ''}>Road</option>
+                    <option value="river" ${path.type === 'river' ? 'selected' : ''}>River</option>
+                    <option value="trail" ${path.type === 'trail' ? 'selected' : ''}>Trail</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Path Style</label>
+                <select class="form-select" onchange="updatePathStyleField('${path.id}', this.value)">
+                    <option value="straight" ${path.style === 'straight' ? 'selected' : ''}>━ Straight</option>
+                    <option value="curved" ${path.style === 'curved' ? 'selected' : ''}>⌢ Curved</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Path Width</label>
+                <div class="slider-container">
+                    <input type="range" class="slider" id="pathWidthEdit_${path.id}" min="2" max="12" value="${path.width}" 
+                           oninput="updatePathWidthField('${path.id}', this.value)">
+                    <span class="slider-value" id="pathWidthEditValue_${path.id}">${path.width}</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Path Color</label>
+                <input type="color" id="pathColorEdit_${path.id}" value="${path.color || PATH_STYLES[path.type].color}" 
+                       onchange="updatePathColorField('${path.id}', this.value)"
+                       style="width: 100%; height: 40px; border: 2px solid #3d4758; border-radius: 6px; background: transparent; cursor: pointer;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Waypoints ${state.hexMap.pathEditMode ? '<span style="color: #f59e0b;">(Edit Mode)</span>' : ''}</label>
+                <div style="max-height: 200px; overflow-y: auto; background: #2d3748; border-radius: 6px; padding: 8px;">
+                    ${path.points.map((p, i) => `
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; font-size: 12px; color: #e1e8ed; border-bottom: 1px solid #3d4758; background: #2d3748; border-radius: 4px; margin-bottom: 4px;">
+                            <span>${i === 0 ? '🟢' : i === path.points.length - 1 ? '🔴' : '🔵'} Point ${i + 1}: (${p.q}, ${p.r})</span>
+                            <div style="display: flex; gap: 4px;">
+                                ${i < path.points.length - 1 ? `<button onclick="insertPointAfter('${path.id}', ${i})" style="padding: 2px 6px; font-size: 10px; background: #667eea; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Add point after">+</button>` : ''}
+                                ${path.points.length > 2 ? `<button onclick="deletePathPoint('${path.id}', ${i})" style="padding: 2px 6px; font-size: 10px; background: #f56565; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Delete point">×</button>` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Split Path (Create Branch)</label>
+                <div style="max-height: 150px; overflow-y: auto; background: #2d3748; border-radius: 6px; padding: 8px;">
+                    <p style="font-size: 11px; color: #a0aec0; margin-bottom: 8px;">Click a point below to split the path there:</p>
+                    ${path.points.map((p, i) => {
+                        if (i === 0 || i === path.points.length - 1) return '';
+                        return `
+                            <button onclick="splitPathAt('${path.id}', ${i})" 
+                                    style="width: 100%; padding: 8px; margin-bottom: 4px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; text-align: left;"
+                                    onmouseover="this.style.background='#5568d3'" 
+                                    onmouseout="this.style.background='#667eea'">
+                                ✂️ Split at Point ${i + 1} (${p.q}, ${p.r})
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+            <div style="font-size: 11px; color: #718096; line-height: 1.5; padding: 12px; background: #2d3748; border-radius: 6px;">
+                <strong>${state.hexMap.pathEditMode ? 'Edit Mode Tips:' : 'Path Info:'}</strong><br>
+                ${state.hexMap.pathEditMode ? 
+                    '• Drag points on the map to move them<br>• Click + to add points between segments<br>• Click × to remove points<br>• Double-click path line to insert point' :
+                    '• Click "Edit Points" to modify path<br>• Use + buttons to add waypoints<br>• Split to create Y/T intersections<br>• Double-click path to insert point'
                 }
-            }
-            ctx.closePath();
-        }
+            </div>
+        </div>
+        <div class="details-actions">
+            <button class="btn btn-secondary" style="flex: 1" onclick="deselectPath()">Close</button>
+            <button class="btn btn-danger" style="flex: 1" onclick="deleteCurrentPath()">Delete Path</button>
+        </div>
+    `;
+}
 
-        function getHexNeighbors(q, r, radius) {
-            const neighbors = [];
-            for (let dq = -radius; dq <= radius; dq++) {
-                for (let dr = Math.max(-radius, -dq - radius); dr <= Math.min(radius, -dq + radius); dr++) {
-                    if (dq === 0 && dr === 0) continue;
-                    neighbors.push({ q: q + dq, r: r + dr });
-                }
-            }
-            return neighbors;
-        }
+function updatePathType(pathId, type) {
+    const path = state.hexMap.paths.find(p => p.id === pathId);
+    if (path) {
+        path.type = type;
+        renderHex();
+        showPathDetails(path);
+        markUnsaved();
+    }
+}
 
-        function getHexesInRadius(q, r, radius) {
-            const hexes = [{ q, r }];
-            if (radius > 0) {
-                hexes.push(...getHexNeighbors(q, r, radius));
-            }
-            return hexes;
-        }
+function updatePathStyleField(pathId, style) {
+    const path = state.hexMap.paths.find(p => p.id === pathId);
+    if (path) {
+        path.style = style;
+        renderHex();
+        markUnsaved();
+    }
+}
 
-        // Hex Management
-        function getHex(q, r) {
-            return state.hexMap.hexes.get(`${q},${r}`);
-        }
+function updatePathWidthField(pathId, width) {
+    const path = state.hexMap.paths.find(p => p.id === pathId);
+    if (path) {
+        path.width = parseInt(width);
+        document.getElementById(`pathWidthEditValue_${pathId}`).textContent = width;
+        renderHex();
+        markUnsaved();
+    }
+}
 
-        function setHex(q, r, terrain) {
-            const key = `${q},${r}`;
-            const existing = state.hexMap.hexes.get(key);
-            state.hexMap.hexes.set(key, {
-                q, r, terrain,
-                name: existing?.name || '',
-                description: existing?.description || '',
-                dungeon: existing?.dungeon || null
-            });
-            updateHexCount();
-        }
+function updatePathColorField(pathId, color) {
+    const path = state.hexMap.paths.find(p => p.id === pathId);
+    if (path) {
+        path.color = color;
+        renderHex();
+        markUnsaved();
+    }
+}
 
-        function deleteHex(q, r) {
-            state.hexMap.hexes.delete(`${q},${r}`);
-            updateHexCount();
-        }
+function deselectPath() {
+    state.hexMap.selectedPath = null;
+    state.hexMap.pathEditMode = false;
+    state.hexMap.draggingPathPoint = null;
+    state.hexMap.hoveredPathPoint = null;
+    deselectHex();
+}
 
-        function updateHexCount() {
-            const count = state.hexMap.hexes.size;
-            const dungeonCount = Array.from(state.hexMap.hexes.values()).filter(h => h.dungeon).length;
-            const tokenCount = state.hexMap.tokens.size;
-            const landmarkCount = state.hexMap.landmarks.size;
-            const pathCount = state.hexMap.paths.length;
-            document.getElementById('viewName').textContent = `Hex Map (${count} hexes, ${dungeonCount} dungeons, ${landmarkCount} landmarks, ${tokenCount} tokens, ${pathCount} paths)`;
-        }
+function togglePathEditMode() {
+    state.hexMap.pathEditMode = !state.hexMap.pathEditMode;
+    if (state.hexMap.selectedPath) {
+        showPathDetails(state.hexMap.selectedPath);
+    }
+    renderHex();
+}
 
-        // ============================================================================
-        // PATH SYSTEM
-        // ============================================================================
+function insertPointAfter(pathId, pointIndex) {
+    const path = state.hexMap.paths.find(p => p.id === pathId);
+    if (!path || pointIndex >= path.points.length - 1) return;
+    
+    // Calculate midpoint between this point and the next
+    const p1 = path.points[pointIndex];
+    const p2 = path.points[pointIndex + 1];
+    const midQ = Math.round((p1.q + p2.q) / 2);
+    const midR = Math.round((p1.r + p2.r) / 2);
+    
+    // Insert the new point
+    path.points.splice(pointIndex + 1, 0, { q: midQ, r: midR });
+    
+    showPathDetails(path);
+    renderHex();
+}
+
+function deletePathPoint(pathId, pointIndex) {
+    const path = state.hexMap.paths.find(p => p.id === pathId);
+    if (!path || path.points.length <= 2) {
+        alert('Cannot delete point - paths must have at least 2 points');
+        return;
+    }
+    
+    path.points.splice(pointIndex, 1);
+    showPathDetails(path);
+    renderHex();
+}
+
+function splitPathAt(pathId, pointIndex) {
+    const path = state.hexMap.paths.find(p => p.id === pathId);
+    if (!path) return;
+    
+    // Create new path from split point to end
+    const newPath = {
+        id: `path_${state.nextPathId++}`,
+        type: path.type,
+        style: path.style,
+        width: path.width,
+        color: path.color || PATH_STYLES[path.type].color,
+        points: path.points.slice(pointIndex),
+        created: new Date().toISOString()
+    };
+    
+    // Truncate original path at split point
+    path.points = path.points.slice(0, pointIndex + 1);
+    
+    // Add the new path
+    state.hexMap.paths.push(newPath);
+    
+    // Select the new path
+    state.hexMap.selectedPath = newPath;
+    showPathDetails(newPath);
+    renderHex();
+    
+    alert(`Path split! Original path has ${path.points.length} points, new branch has ${newPath.points.length} points.`);
+}
+
+function findPathPointAtPixel(x, y, path) {
+    if (!path) return null;
+    
+    const clickRadius = 20; // pixels
+    
+    for (let i = 0; i < path.points.length; i++) {
+        const point = path.points[i];
+        const pos = hexToPixel(point.q, point.r);
+        const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
         
-        const PATH_STYLES = {
-            road: { color: '#8B7355', width: 4, dash: [] },
-            river: { color: '#4682B4', width: 5, dash: [] },
-            trail: { color: '#D2B48C', width: 2, dash: [5, 3] }
-        };
-        
-        function selectPathType(type) {
-            state.hexMap.pathType = type;
-            document.querySelectorAll('[id^="pathType_"]').forEach(btn => {
-                btn.classList.toggle('btn-primary', btn.id === `pathType_${type}`);
-                btn.classList.toggle('btn-secondary', btn.id !== `pathType_${type}`);
-            });
-            // Update color to match the path type default
-            const defaultColor = PATH_STYLES[type].color;
-            state.hexMap.pathColor = defaultColor;
-            document.getElementById('pathColor').value = defaultColor;
+        if (distance <= clickRadius) {
+            return { pointIndex: i, point: point };
         }
+    }
+    
+    return null;
+}
+
+function deleteCurrentPath() {
+    if (state.hexMap.selectedPath && confirm('Delete this path? This cannot be undone.')) {
+        deletePath(state.hexMap.selectedPath.id);
+        state.hexMap.selectedPath = null;
+        state.hexMap.pathEditMode = false;
+        state.hexMap.draggingPathPoint = null;
+        state.hexMap.hoveredPathPoint = null;
+        deselectHex();
+        renderHex();
+    }
+}
+
+function drawPath(path) {
+    if (path.points.length < 2) return;
+    
+    const style = PATH_STYLES[path.type];
+    const width = (path.width || style.width) * state.hexMap.viewport.scale;
+    
+    ctx.save();
+    ctx.strokeStyle = path.color || style.color;
+    ctx.lineWidth = width;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    if (style.dash.length > 0) {
+        ctx.setLineDash(style.dash.map(d => d * state.hexMap.viewport.scale));
+    }
+    
+    ctx.beginPath();
+    
+    if (path.style === 'curved' && path.points.length > 2) {
+        // Draw smooth curved path
+        const firstPoint = hexToPixel(path.points[0].q, path.points[0].r);
+        ctx.moveTo(firstPoint.x, firstPoint.y);
         
-        function selectPathStyle(style) {
-            state.hexMap.pathStyle = style;
-            document.querySelectorAll('[id^="pathStyle_"]').forEach(btn => {
-                btn.classList.toggle('btn-primary', btn.id === `pathStyle_${style}`);
-                btn.classList.toggle('btn-secondary', btn.id !== `pathStyle_${style}`);
-            });
-        }
-        
-        function updatePathWidth(value) {
-            state.hexMap.pathWidth = parseInt(value);
-            document.getElementById('pathWidthValue').textContent = value;
-        }
-        
-        function updatePathColor(color) {
-            state.hexMap.pathColor = color;
-            // If currently drawing a path, update its color
-            if (state.hexMap.currentPath) {
-                state.hexMap.currentPath.color = color;
-                renderHex();
+        for (let i = 1; i < path.points.length - 1; i++) {
+            const p0 = hexToPixel(path.points[i - 1].q, path.points[i - 1].r);
+            const p1 = hexToPixel(path.points[i].q, path.points[i].r);
+            const p2 = hexToPixel(path.points[i + 1].q, path.points[i + 1].r);
+            
+            // Calculate control points for smooth curve
+            const cp1x = p1.x - (p2.x - p0.x) * 0.15;
+            const cp1y = p1.y - (p2.y - p0.y) * 0.15;
+            const cp2x = p1.x + (p2.x - p0.x) * 0.15;
+            const cp2y = p1.y + (p2.y - p0.y) * 0.15;
+            
+            ctx.quadraticCurveTo(cp1x, cp1y, p1.x, p1.y);
+            
+            if (i === path.points.length - 2) {
+                ctx.quadraticCurveTo(cp2x, cp2y, p2.x, p2.y);
             }
         }
         
-        function resetPathColorToDefault() {
-            const defaultColor = PATH_STYLES[state.hexMap.pathType].color;
-            state.hexMap.pathColor = defaultColor;
-            document.getElementById('pathColor').value = defaultColor;
-            if (state.hexMap.currentPath) {
-                state.hexMap.currentPath.color = defaultColor;
-                renderHex();
-            }
+        if (path.points.length === 2) {
+            const p1 = hexToPixel(path.points[1].q, path.points[1].r);
+            ctx.lineTo(p1.x, p1.y);
         }
-        
-        function startPath(q, r) {
-            state.hexMap.currentPath = {
-                id: `path_${state.nextPathId++}`,
-                type: state.hexMap.pathType,
-                style: state.hexMap.pathStyle,
-                width: state.hexMap.pathWidth,
-                color: state.hexMap.pathColor,
-                points: [{ q, r }],
-                created: new Date().toISOString()
-            };
-        }
-        
-        function addPathPoint(q, r) {
-            if (!state.hexMap.currentPath) {
-                startPath(q, r);
-                return;
-            }
-            
-            const lastPoint = state.hexMap.currentPath.points[state.hexMap.currentPath.points.length - 1];
-            if (lastPoint.q === q && lastPoint.r === r) {
-                return;
-            }
-            
-            state.hexMap.currentPath.points.push({ q, r });
-            renderHex();
-        }
-        
-        function finishPath() {
-            if (!state.hexMap.currentPath || state.hexMap.currentPath.points.length < 2) {
-                state.hexMap.currentPath = null;
-                return;
-            }
-            
-            state.hexMap.paths.push({ ...state.hexMap.currentPath });
-            state.hexMap.currentPath = null;
-            updateHexCount();
-            renderHex();
-        }
-        
-        function cancelPath() {
-            state.hexMap.currentPath = null;
-            state.hexMap.selectedPath = null;
-            renderHex();
-        }
-        
-        function deletePath(pathId) {
-            const index = state.hexMap.paths.findIndex(p => p.id === pathId);
-            if (index !== -1) {
-                state.hexMap.paths.splice(index, 1);
-                updateHexCount();
-                renderHex();
-            }
-        }
-        
-        function findPathAtPixel(x, y) {
-            const clickTolerance = 15; // pixels
-            let closestPath = null;
-            let closestDistance = clickTolerance;
-            
-            // Check all paths to see if click is near any path segment
-            for (let i = state.hexMap.paths.length - 1; i >= 0; i--) {
-                const path = state.hexMap.paths[i];
-                
-                // Check each segment of the path
-                for (let j = 0; j < path.points.length - 1; j++) {
-                    const p1 = hexToPixel(path.points[j].q, path.points[j].r);
-                    const p2 = hexToPixel(path.points[j + 1].q, path.points[j + 1].r);
-                    
-                    // Calculate distance from click point to line segment
-                    const distance = distanceToLineSegment(x, y, p1.x, p1.y, p2.x, p2.y);
-                    
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
-                        closestPath = path;
-                    }
-                }
-            }
-            
-            return closestPath;
-        }
-        
-        // Helper function to calculate distance from point to line segment
-        function distanceToLineSegment(px, py, x1, y1, x2, y2) {
-            const A = px - x1;
-            const B = py - y1;
-            const C = x2 - x1;
-            const D = y2 - y1;
-            
-            const dot = A * C + B * D;
-            const lenSq = C * C + D * D;
-            let param = -1;
-            
-            if (lenSq !== 0) {
-                param = dot / lenSq;
-            }
-            
-            let xx, yy;
-            
-            if (param < 0) {
-                xx = x1;
-                yy = y1;
-            } else if (param > 1) {
-                xx = x2;
-                yy = y2;
+    } else {
+        // Draw straight path
+        path.points.forEach((point, index) => {
+            const { x, y } = hexToPixel(point.q, point.r);
+            if (index === 0) {
+                ctx.moveTo(x, y);
             } else {
-                xx = x1 + param * C;
-                yy = y1 + param * D;
+                ctx.lineTo(x, y);
             }
-            
-            const dx = px - xx;
-            const dy = py - yy;
-            return Math.sqrt(dx * dx + dy * dy);
-        }
-        
-        function findPathSegmentAtPixel(x, y, path) {
-            if (!path || path.points.length < 2) return null;
-            
-            const clickTolerance = 15;
-            let closestSegment = null;
-            let closestDistance = clickTolerance;
-            
-            for (let i = 0; i < path.points.length - 1; i++) {
-                const p1 = hexToPixel(path.points[i].q, path.points[i].r);
-                const p2 = hexToPixel(path.points[i + 1].q, path.points[i + 1].r);
-                
-                const distance = distanceToLineSegment(x, y, p1.x, p1.y, p2.x, p2.y);
-                
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestSegment = i;
-                }
-            }
-            
-            return closestSegment;
-        }
-        
-        // Get all hexes between two hex coordinates using hex line algorithm
-        function getHexLine(q0, r0, q1, r1) {
-            const distance = Math.max(
-                Math.abs(q0 - q1),
-                Math.abs(r0 - r1),
-                Math.abs((-q0 - r0) - (-q1 - r1))
-            );
-            
-            if (distance === 0) return [{ q: q0, r: r0 }];
-            
-            const hexes = [];
-            for (let i = 0; i <= distance; i++) {
-                const t = i / distance;
-                const q = q0 * (1 - t) + q1 * t;
-                const r = r0 * (1 - t) + r1 * t;
-                const rounded = axialRound(q, r);
-                hexes.push(rounded);
-            }
-            
-            return hexes;
-        }
-        
-        // Get all hexes that a path passes through
-        function getPathHexes(path) {
-            if (!path || path.points.length < 2) return [];
-            
-            const hexSet = new Set();
-            
-            // Get hexes for each segment
-            for (let i = 0; i < path.points.length - 1; i++) {
-                const p1 = path.points[i];
-                const p2 = path.points[i + 1];
-                const lineHexes = getHexLine(p1.q, p1.r, p2.q, p2.r);
-                
-                lineHexes.forEach(hex => {
-                    hexSet.add(`${hex.q},${hex.r}`);
-                });
-            }
-            
-            // Convert back to array of {q, r} objects
-            return Array.from(hexSet).map(key => {
-                const [q, r] = key.split(',').map(Number);
-                return { q, r };
-            });
-        }
-        
-        function showPathDetails(path) {
-            const panel = document.getElementById('hexDetailsPanel');
-            const pathTypeNames = {
-                road: 'Road',
-                river: 'River',
-                trail: 'Trail'
-            };
-            
-            const editModeButton = state.hexMap.pathEditMode 
-                ? '<button class="btn btn-primary" style="width: 100%;" onclick="togglePathEditMode()">✓ Done Editing</button>'
-                : '<button class="btn btn-secondary" style="width: 100%;" onclick="togglePathEditMode()">✏️ Edit Points</button>';
-            
-            panel.innerHTML = `
-                <div class="details-header">
-                    <h2>${pathTypeNames[path.type]} Path</h2>
-                    <div class="coords">${path.points.length} waypoints · ${path.style} style</div>
-                </div>
-                <div class="details-content">
-                    <div class="form-group">
-                        ${editModeButton}
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Path Type</label>
-                        <select class="form-select" onchange="updatePathType('${path.id}', this.value)">
-                            <option value="road" ${path.type === 'road' ? 'selected' : ''}>Road</option>
-                            <option value="river" ${path.type === 'river' ? 'selected' : ''}>River</option>
-                            <option value="trail" ${path.type === 'trail' ? 'selected' : ''}>Trail</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Path Style</label>
-                        <select class="form-select" onchange="updatePathStyleField('${path.id}', this.value)">
-                            <option value="straight" ${path.style === 'straight' ? 'selected' : ''}>━ Straight</option>
-                            <option value="curved" ${path.style === 'curved' ? 'selected' : ''}>⌢ Curved</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Path Width</label>
-                        <div class="slider-container">
-                            <input type="range" class="slider" id="pathWidthEdit_${path.id}" min="2" max="12" value="${path.width}" 
-                                   oninput="updatePathWidthField('${path.id}', this.value)">
-                            <span class="slider-value" id="pathWidthEditValue_${path.id}">${path.width}</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Path Color</label>
-                        <input type="color" id="pathColorEdit_${path.id}" value="${path.color || PATH_STYLES[path.type].color}" 
-                               onchange="updatePathColorField('${path.id}', this.value)"
-                               style="width: 100%; height: 40px; border: 2px solid #3d4758; border-radius: 6px; background: transparent; cursor: pointer;">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Waypoints ${state.hexMap.pathEditMode ? '<span style="color: #f59e0b;">(Edit Mode)</span>' : ''}</label>
-                        <div style="max-height: 200px; overflow-y: auto; background: #2d3748; border-radius: 6px; padding: 8px;">
-                            ${path.points.map((p, i) => `
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; font-size: 12px; color: #e1e8ed; border-bottom: 1px solid #3d4758; background: #2d3748; border-radius: 4px; margin-bottom: 4px;">
-                                    <span>${i === 0 ? '🟢' : i === path.points.length - 1 ? '🔴' : '🔵'} Point ${i + 1}: (${p.q}, ${p.r})</span>
-                                    <div style="display: flex; gap: 4px;">
-                                        ${i < path.points.length - 1 ? `<button onclick="insertPointAfter('${path.id}', ${i})" style="padding: 2px 6px; font-size: 10px; background: #667eea; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Add point after">+</button>` : ''}
-                                        ${path.points.length > 2 ? `<button onclick="deletePathPoint('${path.id}', ${i})" style="padding: 2px 6px; font-size: 10px; background: #f56565; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Delete point">×</button>` : ''}
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Split Path (Create Branch)</label>
-                        <div style="max-height: 150px; overflow-y: auto; background: #2d3748; border-radius: 6px; padding: 8px;">
-                            <p style="font-size: 11px; color: #a0aec0; margin-bottom: 8px;">Click a point below to split the path there:</p>
-                            ${path.points.map((p, i) => {
-                                if (i === 0 || i === path.points.length - 1) return '';
-                                return `
-                                    <button onclick="splitPathAt('${path.id}', ${i})" 
-                                            style="width: 100%; padding: 8px; margin-bottom: 4px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; text-align: left;"
-                                            onmouseover="this.style.background='#5568d3'" 
-                                            onmouseout="this.style.background='#667eea'">
-                                        ✂️ Split at Point ${i + 1} (${p.q}, ${p.r})
-                                    </button>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                    <div style="font-size: 11px; color: #718096; line-height: 1.5; padding: 12px; background: #2d3748; border-radius: 6px;">
-                        <strong>${state.hexMap.pathEditMode ? 'Edit Mode Tips:' : 'Path Info:'}</strong><br>
-                        ${state.hexMap.pathEditMode ? 
-                            '• Drag points on the map to move them<br>• Click + to add points between segments<br>• Click × to remove points<br>• Double-click path line to insert point' :
-                            '• Click "Edit Points" to modify path<br>• Use + buttons to add waypoints<br>• Split to create Y/T intersections<br>• Double-click path to insert point'
-                        }
-                    </div>
-                </div>
-                <div class="details-actions">
-                    <button class="btn btn-secondary" style="flex: 1" onclick="deselectPath()">Close</button>
-                    <button class="btn btn-danger" style="flex: 1" onclick="deleteCurrentPath()">Delete Path</button>
-                </div>
-            `;
-        }
-        
-        function updatePathType(pathId, type) {
-            const path = state.hexMap.paths.find(p => p.id === pathId);
-            if (path) {
-                path.type = type;
-                renderHex();
-                showPathDetails(path);
-            }
-        }
-        
-        function updatePathStyleField(pathId, style) {
-            const path = state.hexMap.paths.find(p => p.id === pathId);
-            if (path) {
-                path.style = style;
-                renderHex();
-            }
-        }
-        
-        function updatePathWidthField(pathId, width) {
-            const path = state.hexMap.paths.find(p => p.id === pathId);
-            if (path) {
-                path.width = parseInt(width);
-                document.getElementById(`pathWidthEditValue_${pathId}`).textContent = width;
-                renderHex();
-            }
-        }
-        
-        function updatePathColorField(pathId, color) {
-            const path = state.hexMap.paths.find(p => p.id === pathId);
-            if (path) {
-                path.color = color;
-                renderHex();
-            }
-        }
-        
-        function deselectPath() {
-            state.hexMap.selectedPath = null;
-            state.hexMap.pathEditMode = false;
-            state.hexMap.draggingPathPoint = null;
-            state.hexMap.hoveredPathPoint = null;
-            deselectHex();
-        }
-        
-        function togglePathEditMode() {
-            state.hexMap.pathEditMode = !state.hexMap.pathEditMode;
-            if (state.hexMap.selectedPath) {
-                showPathDetails(state.hexMap.selectedPath);
-            }
-            renderHex();
-        }
-        
-        function insertPointAfter(pathId, pointIndex) {
-            const path = state.hexMap.paths.find(p => p.id === pathId);
-            if (!path || pointIndex >= path.points.length - 1) return;
-            
-            // Calculate midpoint between this point and the next
-            const p1 = path.points[pointIndex];
-            const p2 = path.points[pointIndex + 1];
-            const midQ = Math.round((p1.q + p2.q) / 2);
-            const midR = Math.round((p1.r + p2.r) / 2);
-            
-            // Insert the new point
-            path.points.splice(pointIndex + 1, 0, { q: midQ, r: midR });
-            
-            showPathDetails(path);
-            renderHex();
-        }
-        
-        function deletePathPoint(pathId, pointIndex) {
-            const path = state.hexMap.paths.find(p => p.id === pathId);
-            if (!path || path.points.length <= 2) {
-                alert('Cannot delete point - paths must have at least 2 points');
-                return;
-            }
-            
-            path.points.splice(pointIndex, 1);
-            showPathDetails(path);
-            renderHex();
-        }
-        
-        function splitPathAt(pathId, pointIndex) {
-            const path = state.hexMap.paths.find(p => p.id === pathId);
-            if (!path) return;
-            
-            // Create new path from split point to end
-            const newPath = {
-                id: `path_${state.nextPathId++}`,
-                type: path.type,
-                style: path.style,
-                width: path.width,
-                color: path.color || PATH_STYLES[path.type].color,
-                points: path.points.slice(pointIndex),
-                created: new Date().toISOString()
-            };
-            
-            // Truncate original path at split point
-            path.points = path.points.slice(0, pointIndex + 1);
-            
-            // Add the new path
-            state.hexMap.paths.push(newPath);
-            
-            // Select the new path
-            state.hexMap.selectedPath = newPath;
-            showPathDetails(newPath);
-            renderHex();
-            
-            alert(`Path split! Original path has ${path.points.length} points, new branch has ${newPath.points.length} points.`);
-        }
-        
-        function findPathPointAtPixel(x, y, path) {
-            if (!path) return null;
-            
-            const clickRadius = 20; // pixels
-            
-            for (let i = 0; i < path.points.length; i++) {
-                const point = path.points[i];
-                const pos = hexToPixel(point.q, point.r);
-                const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
-                
-                if (distance <= clickRadius) {
-                    return { pointIndex: i, point: point };
-                }
-            }
-            
-            return null;
-        }
-        
-        function deleteCurrentPath() {
-            if (state.hexMap.selectedPath && confirm('Delete this path? This cannot be undone.')) {
-                deletePath(state.hexMap.selectedPath.id);
-                state.hexMap.selectedPath = null;
-                state.hexMap.pathEditMode = false;
-                state.hexMap.draggingPathPoint = null;
-                state.hexMap.hoveredPathPoint = null;
-                deselectHex();
-                renderHex();
-            }
-        }
-        
-        function drawPath(path) {
-            if (path.points.length < 2) return;
-            
-            const style = PATH_STYLES[path.type];
-            const width = (path.width || style.width) * state.hexMap.viewport.scale;
-            
-            ctx.save();
-            ctx.strokeStyle = path.color || style.color;
-            ctx.lineWidth = width;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            
-            if (style.dash.length > 0) {
-                ctx.setLineDash(style.dash.map(d => d * state.hexMap.viewport.scale));
-            }
-            
+        });
+    }
+    
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Draw path points for editing
+    if (path === state.hexMap.currentPath) {
+        path.points.forEach((point, index) => {
+            const { x, y } = hexToPixel(point.q, point.r);
+            ctx.fillStyle = index === 0 ? '#10b981' : index === path.points.length - 1 ? '#ef4444' : '#667eea';
             ctx.beginPath();
-            
-            if (path.style === 'curved' && path.points.length > 2) {
-                // Draw smooth curved path
-                const firstPoint = hexToPixel(path.points[0].q, path.points[0].r);
-                ctx.moveTo(firstPoint.x, firstPoint.y);
-                
-                for (let i = 1; i < path.points.length - 1; i++) {
-                    const p0 = hexToPixel(path.points[i - 1].q, path.points[i - 1].r);
-                    const p1 = hexToPixel(path.points[i].q, path.points[i].r);
-                    const p2 = hexToPixel(path.points[i + 1].q, path.points[i + 1].r);
-                    
-                    // Calculate control points for smooth curve
-                    const cp1x = p1.x - (p2.x - p0.x) * 0.15;
-                    const cp1y = p1.y - (p2.y - p0.y) * 0.15;
-                    const cp2x = p1.x + (p2.x - p0.x) * 0.15;
-                    const cp2y = p1.y + (p2.y - p0.y) * 0.15;
-                    
-                    ctx.quadraticCurveTo(cp1x, cp1y, p1.x, p1.y);
-                    
-                    if (i === path.points.length - 2) {
-                        ctx.quadraticCurveTo(cp2x, cp2y, p2.x, p2.y);
-                    }
-                }
-                
-                if (path.points.length === 2) {
-                    const p1 = hexToPixel(path.points[1].q, path.points[1].r);
-                    ctx.lineTo(p1.x, p1.y);
-                }
-            } else {
-                // Draw straight path
-                path.points.forEach((point, index) => {
-                    const { x, y } = hexToPixel(point.q, point.r);
-                    if (index === 0) {
-                        ctx.moveTo(x, y);
-                    } else {
-                        ctx.lineTo(x, y);
-                    }
-                });
-            }
-            
-            ctx.stroke();
-            ctx.setLineDash([]);
-            
-            // Draw path points for editing
-            if (path === state.hexMap.currentPath) {
-                path.points.forEach((point, index) => {
-                    const { x, y } = hexToPixel(point.q, point.r);
-                    ctx.fillStyle = index === 0 ? '#10b981' : index === path.points.length - 1 ? '#ef4444' : '#667eea';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 5 * state.hexMap.viewport.scale, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                });
-            }
-            
-            ctx.restore();
-        }
-        
-        function drawPathHighlight(path) {
-            if (path.points.length < 2) return;
-            
-            ctx.save();
-            ctx.strokeStyle = '#f59e0b';
-            ctx.lineWidth = (path.width + 4) * state.hexMap.viewport.scale;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.globalAlpha = 0.5;
-            ctx.setLineDash([8, 4]);
-            
-            ctx.beginPath();
-            
-            if (path.style === 'curved' && path.points.length > 2) {
-                const firstPoint = hexToPixel(path.points[0].q, path.points[0].r);
-                ctx.moveTo(firstPoint.x, firstPoint.y);
-                
-                for (let i = 1; i < path.points.length - 1; i++) {
-                    const p0 = hexToPixel(path.points[i - 1].q, path.points[i - 1].r);
-                    const p1 = hexToPixel(path.points[i].q, path.points[i].r);
-                    const p2 = hexToPixel(path.points[i + 1].q, path.points[i + 1].r);
-                    
-                    const cp1x = p1.x - (p2.x - p0.x) * 0.15;
-                    const cp1y = p1.y - (p2.y - p0.y) * 0.15;
-                    const cp2x = p1.x + (p2.x - p0.x) * 0.15;
-                    const cp2y = p1.y + (p2.y - p0.y) * 0.15;
-                    
-                    ctx.quadraticCurveTo(cp1x, cp1y, p1.x, p1.y);
-                    
-                    if (i === path.points.length - 2) {
-                        ctx.quadraticCurveTo(cp2x, cp2y, p2.x, p2.y);
-                    }
-                }
-                
-                if (path.points.length === 2) {
-                    const p1 = hexToPixel(path.points[1].q, path.points[1].r);
-                    ctx.lineTo(p1.x, p1.y);
-                }
-            } else {
-                path.points.forEach((point, index) => {
-                    const { x, y } = hexToPixel(point.q, point.r);
-                    if (index === 0) {
-                        ctx.moveTo(x, y);
-                    } else {
-                        ctx.lineTo(x, y);
-                    }
-                });
-            }
-            
-            ctx.stroke();
-            ctx.restore();
-        }
-        
-        function drawPathHoverHighlight(path) {
-            if (path.points.length < 2) return;
-            
-            ctx.save();
-            ctx.strokeStyle = '#667eea';
-            ctx.lineWidth = (path.width + 3) * state.hexMap.viewport.scale;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.globalAlpha = 0.3;
-            
-            ctx.beginPath();
-            
-            if (path.style === 'curved' && path.points.length > 2) {
-                const firstPoint = hexToPixel(path.points[0].q, path.points[0].r);
-                ctx.moveTo(firstPoint.x, firstPoint.y);
-                
-                for (let i = 1; i < path.points.length - 1; i++) {
-                    const p0 = hexToPixel(path.points[i - 1].q, path.points[i - 1].r);
-                    const p1 = hexToPixel(path.points[i].q, path.points[i].r);
-                    const p2 = hexToPixel(path.points[i + 1].q, path.points[i + 1].r);
-                    
-                    const cp1x = p1.x - (p2.x - p0.x) * 0.15;
-                    const cp1y = p1.y - (p2.y - p0.y) * 0.15;
-                    const cp2x = p1.x + (p2.x - p0.x) * 0.15;
-                    const cp2y = p1.y + (p2.y - p0.y) * 0.15;
-                    
-                    ctx.quadraticCurveTo(cp1x, cp1y, p1.x, p1.y);
-                    
-                    if (i === path.points.length - 2) {
-                        ctx.quadraticCurveTo(cp2x, cp2y, p2.x, p2.y);
-                    }
-                }
-                
-                if (path.points.length === 2) {
-                    const p1 = hexToPixel(path.points[1].q, path.points[1].r);
-                    ctx.lineTo(p1.x, p1.y);
-                }
-            } else {
-                path.points.forEach((point, index) => {
-                    const { x, y } = hexToPixel(point.q, point.r);
-                    if (index === 0) {
-                        ctx.moveTo(x, y);
-                    } else {
-                        ctx.lineTo(x, y);
-                    }
-                });
-            }
-            
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        // ============================================================================
-        // TOKEN SYSTEM
-        // ============================================================================
-        
-        function createToken(q, r, data = {}) {
-            const tokenId = `token_${state.nextTokenId++}`;
-            const token = {
-                id: tokenId,
-                q, r,
-                name: data.name || 'New Token',
-                type: data.type || 'player',
-                color: data.color || '#667eea',
-                label: data.label || 'T',
-                size: data.size || 1,
-                attributes: data.attributes || {},
-                notes: data.notes || '',
-                visible: data.visible !== false,
-                scale: 1,
-                created: new Date().toISOString()
-            };
-            state.hexMap.tokens.set(tokenId, token);
-            updateHexCount();
-            return token;
-        }
-        
-        function getToken(tokenId) {
-            return state.hexMap.tokens.get(tokenId);
-        }
-        
-        function getTokensAt(q, r) {
-            return Array.from(state.hexMap.tokens.values()).filter(t => t.q === q && t.r === r);
-        }
-        
-        function moveToken(tokenId, q, r) {
-            const token = getToken(tokenId);
-            if (token) {
-                token.q = q;
-                token.r = r;
-                renderHex();
-            }
-        }
-        
-        function deleteToken(tokenId) {
-            state.hexMap.tokens.delete(tokenId);
-            updateHexCount();
-            renderHex();
-        }
-        
-        function findTokenAtPixel(x, y) {
-            const hex = pixelToHex(x, y);
-            const tokens = getTokensAt(hex.q, hex.r);
-            if (tokens.length === 0) return null;
-            return tokens[tokens.length - 1];
-        }
-        
-        function animateTokenScale(tokenId, targetScale, duration = 200) {
-            const token = getToken(tokenId);
-            if (!token) return;
-            
-            const startScale = token.scale;
-            const startTime = Date.now();
-            
-            function animate() {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const eased = 1 - Math.pow(1 - progress, 3);
-                token.scale = startScale + (targetScale - startScale) * eased;
-                renderHex();
-                if (progress < 1) requestAnimationFrame(animate);
-            }
-            animate();
-        }
-        
-        // ============================================================================
-        // LANDMARK SYSTEM
-        // ============================================================================
-        
-        function createLandmark(q, r, data = {}) {
-            const key = `${q},${r}`;
-            const landmarkId = `landmark_${state.nextLandmarkId++}`;
-            const landmark = {
-                id: landmarkId,
-                q, r,
-                name: data.name || 'New Landmark',
-                type: data.type || 'custom',
-                style: data.style || 'circle', // 'icon', 'circle', 'badge'
-                icon: data.icon || '',
-                color: data.color || '#FFD700',
-                showLabel: data.showLabel !== false,
-                labelPosition: data.labelPosition || 'above',
-                size: data.size || 1.0,
-                attributes: data.attributes || {},
-                notes: data.notes || '',
-                visible: data.visible !== false,
-                created: new Date().toISOString()
-            };
-            state.hexMap.landmarks.set(key, landmark);
-            updateHexCount();
-            return landmark;
-        }
-        
-        function getLandmark(q, r) {
-            return state.hexMap.landmarks.get(`${q},${r}`);
-        }
-        
-        function getLandmarkById(landmarkId) {
-            for (const landmark of state.hexMap.landmarks.values()) {
-                if (landmark.id === landmarkId) return landmark;
-            }
-            return null;
-        }
-        
-        function deleteLandmark(q, r) {
-            state.hexMap.landmarks.delete(`${q},${r}`);
-            updateHexCount();
-            renderHex();
-        }
-        
-        function deleteLandmarkById(landmarkId) {
-            for (const [key, landmark] of state.hexMap.landmarks.entries()) {
-                if (landmark.id === landmarkId) {
-                    state.hexMap.landmarks.delete(key);
-                    updateHexCount();
-                    renderHex();
-                    return;
-                }
-            }
-        }
-        
-        function findLandmarkAtPixel(x, y) {
-            const hex = pixelToHex(x, y);
-            return getLandmark(hex.q, hex.r);
-        }
-        
-        function showTokenCreator() {
-            const panel = document.getElementById('hexDetailsPanel');
-            panel.innerHTML = `
-                <div class="details-header">
-                    <h2>Create New Token</h2>
-                </div>
-                <div class="details-content">
-                    <div class="form-group">
-                        <label class="form-label">Token Name</label>
-                        <input type="text" class="form-input" id="newTokenName" placeholder="e.g., Aragorn, Party Alpha">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Type</label>
-                        <select class="form-select" id="newTokenType">
-                            <option value="player">Player Character</option>
-                            <option value="party">Party/Group</option>
-                            <option value="npc">NPC/Ally</option>
-                            <option value="monster">Monster/Enemy</option>
-                            <option value="landmark">Landmark/POI</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Label Text</label>
-                        <input type="text" class="form-input" id="newTokenLabel" value="P" maxlength="20">
-                        <div style="font-size: 11px; color: #718096; margin-top: 4px;">Text shown on token</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Token Size</label>
-                        <div class="slider-container">
-                            <input type="range" class="slider" id="newTokenSize" min="0.5" max="5" step="0.1" value="1"
-                                   oninput="document.getElementById('newTokenSizeValue').textContent = parseFloat(this.value).toFixed(1)">
-                            <span class="slider-value" id="newTokenSizeValue">1.0</span>
-                        </div>
-                        <div style="font-size: 11px; color: #718096; margin-top: 4px;">Larger tokens show more text</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Color</label>
-                        <input type="color" class="form-input" id="newTokenColor" value="#667eea" style="height: 50px; cursor: pointer;">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Attributes (JSON)</label>
-                        <textarea class="form-input" id="newTokenAttributes" placeholder='{"level": 5, "hp": 45}' style="min-height: 80px; font-family: monospace; font-size: 12px;"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Notes</label>
-                        <textarea class="form-input" id="newTokenNotes" placeholder="Additional notes..."></textarea>
-                    </div>
-                </div>
-                <div class="details-actions">
-                    <button class="btn btn-secondary" style="flex: 1" onclick="cancelTokenCreator()">Cancel</button>
-                    <button class="btn btn-primary" style="flex: 1" onclick="confirmTokenCreator()">Create & Place</button>
-                </div>
-            `;
-            document.getElementById('newTokenName').focus();
-        }
-        
-        function cancelTokenCreator() {
-            deselectHex();
-        }
-        
-        function confirmTokenCreator() {
-            const name = document.getElementById('newTokenName').value.trim();
-            const type = document.getElementById('newTokenType').value;
-            const label = document.getElementById('newTokenLabel').value.trim() || 'T';
-            const color = document.getElementById('newTokenColor').value;
-            const size = parseFloat(document.getElementById('newTokenSize').value);
-            const attributesText = document.getElementById('newTokenAttributes').value.trim();
-            const notes = document.getElementById('newTokenNotes').value.trim();
-            
-            let attributes = {};
-            if (attributesText) {
-                try {
-                    attributes = JSON.parse(attributesText);
-                } catch (e) {
-                    alert('Invalid JSON in attributes field. Please fix and try again.');
-                    return;
-                }
-            }
-            
-            if (!name) {
-                alert('Please enter a token name.');
-                return;
-            }
-            
-            state.hexMap.pendingToken = { name, type, label, color, size, attributes, notes };
-            deselectHex();
-            document.getElementById('instructionText').textContent = 'Click any hex to place token';
-            document.getElementById('modeText').textContent = 'Token Placement';
-        }
-        
-        function showTokenDetails(token) {
-            const panel = document.getElementById('hexDetailsPanel');
-            const attributesJson = JSON.stringify(token.attributes, null, 2);
-            const hasPathfinding = token.attributes?.pathfinding === true;
-            
-            panel.innerHTML = `
-                <div class="details-header">
-                    <h2 style="display: flex; align-items: center; gap: 8px;">
-                        <span style="display: inline-block; width: 32px; height: 32px; border-radius: 50%; background: ${token.color}; border: 2px solid #000; text-align: center; line-height: 28px; color: white; font-weight: bold; font-size: 14px;">${token.label.charAt(0).toUpperCase()}</span>
-                        ${token.name}
-                    </h2>
-                    <div class="coords">${token.type.charAt(0).toUpperCase() + token.type.slice(1)} · Hex (${token.q}, ${token.r})</div>
-                </div>
-                <div class="details-content">
-                    ${hasPathfinding ? `
-                    <div class="form-group" style="background: #667eea; padding: 12px; border-radius: 8px;">
-                        <label class="form-label" style="color: white; margin-bottom: 8px;">🗺️ Pathfinding Active</label>
-                        <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="selectPathfindingDestination('${token.id}')">
-                            📍 Select Destination Hex
-                        </button>
-                        <button class="btn btn-danger" style="width: 100%;" onclick="stopPathfinding('${token.id}')">
-                            ⏹️ Stop Pathfinding
-                        </button>
-                        ${token.pathfindingRoute ? `<div style="color: white; font-size: 11px; margin-top: 8px;">Route: ${token.pathfindingRoute.length} hexes</div>` : ''}
-                    </div>
-                    ` : ''}
-                    <div class="form-group">
-                        <label class="form-label">Token Name</label>
-                        <input type="text" class="form-input" value="${token.name}" onchange="updateTokenField('${token.id}', 'name', this.value)">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Type</label>
-                        <select class="form-select" onchange="updateTokenField('${token.id}', 'type', this.value)">
-                            <option value="player" ${token.type === 'player' ? 'selected' : ''}>Player Character</option>
-                            <option value="party" ${token.type === 'party' ? 'selected' : ''}>Party/Group</option>
-                            <option value="npc" ${token.type === 'npc' ? 'selected' : ''}>NPC/Ally</option>
-                            <option value="monster" ${token.type === 'monster' ? 'selected' : ''}>Monster/Enemy</option>
-                            <option value="landmark" ${token.type === 'landmark' ? 'selected' : ''}>Landmark/POI</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Label Text</label>
-                        <input type="text" class="form-input" value="${token.label}" maxlength="20" onchange="updateTokenField('${token.id}', 'label', this.value); renderHex();">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Token Size</label>
-                        <div class="slider-container">
-                            <input type="range" class="slider" id="tokenSize_${token.id}" min="0.5" max="5" step="0.1" value="${token.size}" oninput="updateTokenSize('${token.id}', this.value)">
-                            <span class="slider-value" id="tokenSizeValue_${token.id}">${token.size.toFixed(1)}</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Color</label>
-                        <input type="color" class="form-input" value="${token.color}" style="height: 50px; cursor: pointer;" onchange="updateTokenField('${token.id}', 'color', this.value); renderHex();">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Attributes (JSON)</label>
-                        <textarea class="form-input" id="tokenAttributes_${token.id}" style="min-height: 120px; font-family: monospace; font-size: 12px;" onchange="updateTokenAttributes('${token.id}', this.value)">${attributesJson}</textarea>
-                        <div style="font-size: 11px; color: #718096; margin-top: 4px;">
-                            💡 Set <strong>"pathfinding": true</strong> to enable pathfinding
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Notes</label>
-                        <textarea class="form-input" onchange="updateTokenField('${token.id}', 'notes', this.value)">${token.notes}</textarea>
-                    </div>
-                </div>
-                <div class="details-actions">
-                    <button class="btn btn-secondary" style="flex: 1" onclick="deselectToken()">Close</button>
-                    <button class="btn btn-danger" style="flex: 1" onclick="deleteCurrentToken()">Delete Token</button>
-                </div>
-            `;
-        }
-        
-        function updateTokenField(tokenId, field, value) {
-            const token = getToken(tokenId);
-            if (token) token[field] = value;
-        }
-        
-        function updateTokenSize(tokenId, value) {
-            const token = getToken(tokenId);
-            if (token) {
-                token.size = parseFloat(value);
-                document.getElementById(`tokenSizeValue_${tokenId}`).textContent = parseFloat(value).toFixed(1);
-                renderHex();
-            }
-        }
-        
-        function updateTokenAttributes(tokenId, jsonText) {
-            const token = getToken(tokenId);
-            if (!token) return;
-            try {
-                const oldPathfinding = token.attributes?.pathfinding;
-                token.attributes = JSON.parse(jsonText);
-                const newPathfinding = token.attributes?.pathfinding;
-                
-                // Refresh panel if pathfinding state changed
-                if (oldPathfinding !== newPathfinding) {
-                    showTokenDetails(token);
-                }
-            } catch (e) {
-                alert('Invalid JSON format. Changes not saved.');
-                document.getElementById(`tokenAttributes_${tokenId}`).value = JSON.stringify(token.attributes, null, 2);
-            }
-        }
-        
-        function deselectToken() {
-            state.hexMap.selectedToken = null;
-            deselectHex();
-        }
-        
-        function deleteCurrentToken() {
-            if (state.hexMap.selectedToken && confirm('Delete this token? This cannot be undone.')) {
-                deleteToken(state.hexMap.selectedToken.id);
-                deselectToken();
-            }
-        }
-
-        // ============================================================================
-        // LANDMARK UI FUNCTIONS
-        // ============================================================================
-        
-        function showLandmarkCreator() {
-            const panel = document.getElementById('hexDetailsPanel');
-            panel.innerHTML = `
-                <div class="details-header">
-                    <h2>Create New Landmark</h2>
-                </div>
-                <div class="details-content">
-                    <div class="form-group">
-                        <label class="form-label">Landmark Name</label>
-                        <input type="text" class="form-input" id="newLandmarkName" placeholder="e.g., Rivendell, Dragon's Lair">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Style</label>
-                        <select class="form-select" id="newLandmarkStyle" onchange="updateLandmarkStylePreview()">
-                            <option value="circle">Circle</option>
-                            <option value="icon">Icon (URL)</option>
-                            <option value="badge">Badge</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="landmarkIconGroup" style="display: none;">
-                        <label class="form-label">Icon URL</label>
-                        <input type="text" class="form-input" id="newLandmarkIcon" placeholder="https://game-icons.net/...">
-                        <div style="font-size: 11px; color: #718096; margin-top: 4px;">Use game-icons.net URLs</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Color</label>
-                        <input type="color" class="form-input" id="newLandmarkColor" value="#FFD700" style="height: 50px; cursor: pointer;">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Size</label>
-                        <div class="slider-container">
-                            <input type="range" class="slider" id="newLandmarkSize" min="0.5" max="2.5" step="0.1" value="1.0"
-                                   oninput="document.getElementById('newLandmarkSizeValue').textContent = parseFloat(this.value).toFixed(1)">
-                            <span class="slider-value" id="newLandmarkSizeValue">1.0</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <input type="checkbox" id="newLandmarkShowLabel" checked style="margin-right: 8px;">
-                            Show Name Label
-                        </label>
-                    </div>
-                    <div class="form-group" id="landmarkLabelPosGroup">
-                        <label class="form-label">Label Position</label>
-                        <select class="form-select" id="newLandmarkLabelPos">
-                            <option value="above">Above</option>
-                            <option value="below">Below</option>
-                            <option value="inside">Inside</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Attributes (JSON)</label>
-                        <textarea class="form-input" id="newLandmarkAttributes" placeholder='{"type": "town", "population": 5000}' style="min-height: 80px; font-family: monospace; font-size: 12px;"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Notes</label>
-                        <textarea class="form-input" id="newLandmarkNotes" placeholder="Additional notes..."></textarea>
-                    </div>
-                </div>
-                <div class="details-actions">
-                    <button class="btn btn-secondary" style="flex: 1" onclick="cancelLandmarkCreator()">Cancel</button>
-                    <button class="btn btn-primary" style="flex: 1" onclick="confirmLandmarkCreator()">Create & Place</button>
-                </div>
-            `;
-            document.getElementById('newLandmarkName').focus();
-            updateLandmarkStylePreview();
-        }
-        
-        function updateLandmarkStylePreview() {
-            const style = document.getElementById('newLandmarkStyle').value;
-            const iconGroup = document.getElementById('landmarkIconGroup');
-            
-            iconGroup.style.display = (style === 'icon') ? 'block' : 'none';
-        }
-        
-        function cancelLandmarkCreator() {
-            deselectHex();
-        }
-        
-        function confirmLandmarkCreator() {
-            const name = document.getElementById('newLandmarkName').value.trim();
-            const style = document.getElementById('newLandmarkStyle').value;
-            const icon = document.getElementById('newLandmarkIcon').value.trim();
-            const color = document.getElementById('newLandmarkColor').value;
-            const size = parseFloat(document.getElementById('newLandmarkSize').value);
-            const showLabel = document.getElementById('newLandmarkShowLabel').checked;
-            const labelPosition = document.getElementById('newLandmarkLabelPos').value;
-            const attributesText = document.getElementById('newLandmarkAttributes').value.trim();
-            const notes = document.getElementById('newLandmarkNotes').value.trim();
-            
-            let attributes = {};
-            if (attributesText) {
-                try {
-                    attributes = JSON.parse(attributesText);
-                } catch (e) {
-                    alert('Invalid JSON in attributes field. Please fix and try again.');
-                    return;
-                }
-            }
-            
-            if (!name) {
-                alert('Please enter a landmark name.');
-                return;
-            }
-            
-            if (style === 'icon' && !icon) {
-                alert('Please enter an icon URL for icon style.');
-                return;
-            }
-            
-            state.hexMap.pendingLandmark = { 
-                name, 
-                style, 
-                icon, 
-                color, 
-                size, 
-                showLabel, 
-                labelPosition,
-                attributes, 
-                notes 
-            };
-            deselectHex();
-            document.getElementById('instructionText').textContent = 'Click any hex to place landmark';
-            document.getElementById('modeText').textContent = 'Landmark Placement';
-        }
-        
-        function showLandmarkDetails(landmark) {
-            const panel = document.getElementById('hexDetailsPanel');
-            const attributesJson = JSON.stringify(landmark.attributes, null, 2);
-            
-            panel.innerHTML = `
-                <div class="details-header">
-                    <h2>${landmark.name}</h2>
-                    <div class="coords">Landmark · Hex (${landmark.q}, ${landmark.r})</div>
-                </div>
-                <div class="details-content">
-                    <div class="form-group">
-                        <label class="form-label">Landmark Name</label>
-                        <input type="text" class="form-input" value="${landmark.name}" onchange="updateLandmarkField('${landmark.id}', 'name', this.value)">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Style</label>
-                        <select class="form-select" onchange="updateLandmarkField('${landmark.id}', 'style', this.value); renderHex();">
-                            <option value="circle" ${landmark.style === 'circle' ? 'selected' : ''}>Circle</option>
-                            <option value="icon" ${landmark.style === 'icon' ? 'selected' : ''}>Icon</option>
-                            <option value="badge" ${landmark.style === 'badge' ? 'selected' : ''}>Badge</option>
-                        </select>
-                    </div>
-                    ${landmark.style === 'icon' ? `
-                    <div class="form-group">
-                        <label class="form-label">Icon URL</label>
-                        <input type="text" class="form-input" value="${landmark.icon || ''}" onchange="updateLandmarkField('${landmark.id}', 'icon', this.value); renderHex();">
-                    </div>
-                    ` : ''}
-                    <div class="form-group">
-                        <label class="form-label">Color</label>
-                        <input type="color" class="form-input" value="${landmark.color}" style="height: 50px; cursor: pointer;" onchange="updateLandmarkField('${landmark.id}', 'color', this.value); renderHex();">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Size</label>
-                        <div class="slider-container">
-                            <input type="range" class="slider" id="landmarkSize_${landmark.id}" min="0.5" max="2.5" step="0.1" value="${landmark.size}" oninput="updateLandmarkSize('${landmark.id}', this.value)">
-                            <span class="slider-value" id="landmarkSizeValue_${landmark.id}">${landmark.size.toFixed(1)}</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <input type="checkbox" ${landmark.showLabel ? 'checked' : ''} onchange="updateLandmarkField('${landmark.id}', 'showLabel', this.checked); renderHex();" style="margin-right: 8px;">
-                            Show Name Label
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Label Position</label>
-                        <select class="form-select" onchange="updateLandmarkField('${landmark.id}', 'labelPosition', this.value); renderHex();">
-                            <option value="above" ${landmark.labelPosition === 'above' ? 'selected' : ''}>Above</option>
-                            <option value="below" ${landmark.labelPosition === 'below' ? 'selected' : ''}>Below</option>
-                            <option value="inside" ${landmark.labelPosition === 'inside' ? 'selected' : ''}>Inside</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Attributes (JSON)</label>
-                        <textarea class="form-input" id="landmarkAttributes_${landmark.id}" style="min-height: 120px; font-family: monospace; font-size: 12px;" onchange="updateLandmarkAttributes('${landmark.id}', this.value)">${attributesJson}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Notes</label>
-                        <textarea class="form-input" onchange="updateLandmarkField('${landmark.id}', 'notes', this.value)">${landmark.notes}</textarea>
-                    </div>
-                </div>
-                <div class="details-actions">
-                    <button class="btn btn-secondary" style="flex: 1" onclick="deselectLandmark()">Close</button>
-                    <button class="btn btn-danger" style="flex: 1" onclick="deleteCurrentLandmark()">Delete Landmark</button>
-                </div>
-            `;
-        }
-        
-        function updateLandmarkField(landmarkId, field, value) {
-            const landmark = getLandmarkById(landmarkId);
-            if (landmark) landmark[field] = value;
-        }
-        
-        function updateLandmarkSize(landmarkId, value) {
-            const landmark = getLandmarkById(landmarkId);
-            if (landmark) {
-                landmark.size = parseFloat(value);
-                document.getElementById(`landmarkSizeValue_${landmarkId}`).textContent = parseFloat(value).toFixed(1);
-                renderHex();
-            }
-        }
-        
-        function updateLandmarkAttributes(landmarkId, jsonText) {
-            const landmark = getLandmarkById(landmarkId);
-            if (!landmark) return;
-            
-            try {
-                landmark.attributes = JSON.parse(jsonText);
-            } catch (e) {
-                alert('Invalid JSON in attributes field.');
-            }
-        }
-        
-        function deselectLandmark() {
-            state.hexMap.selectedLandmark = null;
-            deselectHex();
-        }
-        
-        function deleteCurrentLandmark() {
-            if (state.hexMap.selectedLandmark && confirm('Delete this landmark? This cannot be undone.')) {
-                deleteLandmarkById(state.hexMap.selectedLandmark.id);
-                deselectLandmark();
-            }
-        }
-
-        // ============================================================================
-        // PATHFINDING SYSTEM
-        // ============================================================================
-        
-        let pathfindingState = {
-            selectingDestination: false,
-            tokenId: null
-        };
-        
-        function selectPathfindingDestination(tokenId) {
-            pathfindingState.selectingDestination = true;
-            pathfindingState.tokenId = tokenId;
-            
-            // Close the panel temporarily
-            const token = getToken(tokenId);
-            if (token) {
-                state.hexMap.selectedToken = null;
-                document.getElementById('hexDetailsPanel').innerHTML = `
-                    <div class="no-selection">
-                        <div class="no-selection-icon">📍</div>
-                        <p style="font-size: 16px; font-weight: 600;">Click destination hex</p>
-                        <p style="margin-top: 8px; font-size: 12px;">The token will pathfind to this location</p>
-                        <button class="btn btn-secondary" style="margin-top: 16px;" onclick="cancelPathfindingSelection()">Cancel</button>
-                    </div>
-                `;
-            }
-        }
-        
-        function cancelPathfindingSelection() {
-            pathfindingState.selectingDestination = false;
-            const token = getToken(pathfindingState.tokenId);
-            pathfindingState.tokenId = null;
-            if (token) {
-                state.hexMap.selectedToken = token;
-                showTokenDetails(token);
-            }
-        }
-        
-        function stopPathfinding(tokenId) {
-            const token = getToken(tokenId);
-            if (token) {
-                token.pathfindingRoute = null;
-                token.pathfindingIndex = 0;
-                showTokenDetails(token);
-                renderHex();
-            }
-        }
-        
-        // Build a graph of all hexes connected by paths
-        function buildRoadNetwork() {
-            const network = new Map(); // key: "q,r", value: Set of neighbor "q,r" strings
-            
-            state.hexMap.paths.forEach(path => {
-                const hexes = getPathHexes(path);
-                
-                // Connect consecutive hexes along the path
-                for (let i = 0; i < hexes.length - 1; i++) {
-                    const h1 = `${hexes[i].q},${hexes[i].r}`;
-                    const h2 = `${hexes[i + 1].q},${hexes[i + 1].r}`;
-                    
-                    if (!network.has(h1)) network.set(h1, new Set());
-                    if (!network.has(h2)) network.set(h2, new Set());
-                    
-                    network.get(h1).add(h2);
-                    network.get(h2).add(h1);
-                }
-            });
-            
-            console.log(`Road network built: ${network.size} hexes with paths, ${state.hexMap.paths.length} paths total`);
-            return network;
-        }
-        
-        // A* pathfinding algorithm
-        function findPath(startQ, startR, endQ, endR) {
-            const network = buildRoadNetwork();
-            const startKey = `${startQ},${startR}`;
-            const endKey = `${endQ},${endR}`;
-            
-            // Check if start and end are on the road network
-            if (!network.has(startKey)) {
-                console.log('Start hex is not on any path');
-                return null;
-            }
-            if (!network.has(endKey)) {
-                console.log('End hex is not on any path');
-                return null;
-            }
-            
-            const openSet = new Set([startKey]);
-            const cameFrom = new Map();
-            const gScore = new Map();
-            const fScore = new Map();
-            
-            gScore.set(startKey, 0);
-            fScore.set(startKey, heuristic(startQ, startR, endQ, endR));
-            
-            while (openSet.size > 0) {
-                // Find node in openSet with lowest fScore
-                let current = null;
-                let lowestF = Infinity;
-                openSet.forEach(key => {
-                    const f = fScore.get(key) || Infinity;
-                    if (f < lowestF) {
-                        lowestF = f;
-                        current = key;
-                    }
-                });
-                
-                if (current === endKey) {
-                    // Reconstruct path
-                    return reconstructPath(cameFrom, current);
-                }
-                
-                openSet.delete(current);
-                
-                const neighbors = network.get(current) || new Set();
-                neighbors.forEach(neighborKey => {
-                    const tentativeG = (gScore.get(current) || Infinity) + 1;
-                    
-                    if (tentativeG < (gScore.get(neighborKey) || Infinity)) {
-                        cameFrom.set(neighborKey, current);
-                        gScore.set(neighborKey, tentativeG);
-                        
-                        const [nq, nr] = neighborKey.split(',').map(Number);
-                        fScore.set(neighborKey, tentativeG + heuristic(nq, nr, endQ, endR));
-                        
-                        openSet.add(neighborKey);
-                    }
-                });
-            }
-            
-            // No path found
-            return null;
-        }
-        
-        function heuristic(q1, r1, q2, r2) {
-            // Hex distance
-            return Math.max(
-                Math.abs(q1 - q2),
-                Math.abs(r1 - r2),
-                Math.abs((-q1 - r1) - (-q2 - r2))
-            );
-        }
-        
-        function reconstructPath(cameFrom, current) {
-            const path = [current];
-            while (cameFrom.has(current)) {
-                current = cameFrom.get(current);
-                path.unshift(current);
-            }
-            return path.map(key => {
-                const [q, r] = key.split(',').map(Number);
-                return { q, r };
-            });
-        }
-        
-        function startTokenPathfinding(tokenId, destQ, destR) {
-            const token = getToken(tokenId);
-            if (!token) {
-                alert('Token not found!');
-                return;
-            }
-            
-            // Build network to check what's available
-            const network = buildRoadNetwork();
-            
-            if (network.size === 0) {
-                alert('No paths on the map! Draw some roads first.');
-                return;
-            }
-            
-            // Find nearest path hex to start position
-            const startKey = `${token.q},${token.r}`;
-            let actualStartQ = token.q;
-            let actualStartR = token.r;
-            
-            if (!network.has(startKey)) {
-                // Token is not on a path, find nearest path hex
-                const nearestStart = findNearestPathHex(token.q, token.r, network);
-                if (!nearestStart) {
-                    alert('Token is not near any path! Place the token on or near a road first.');
-                    return;
-                }
-                actualStartQ = nearestStart.q;
-                actualStartR = nearestStart.r;
-                console.log(`Token moved from (${token.q},${token.r}) to nearest path at (${actualStartQ},${actualStartR})`);
-            }
-            
-            // Find nearest path hex to destination
-            const destKey = `${destQ},${destR}`;
-            let actualDestQ = destQ;
-            let actualDestR = destR;
-            
-            if (!network.has(destKey)) {
-                const nearestDest = findNearestPathHex(destQ, destR, network);
-                if (!nearestDest) {
-                    alert('Destination is not near any path! Click on or near a road.');
-                    return;
-                }
-                actualDestQ = nearestDest.q;
-                actualDestR = nearestDest.r;
-                console.log(`Destination moved from (${destQ},${destR}) to nearest path at (${actualDestQ},${actualDestR})`);
-            }
-            
-            const path = findPath(actualStartQ, actualStartR, actualDestQ, actualDestR);
-            
-            if (!path) {
-                alert('No route found! Make sure the roads are connected between start and destination.');
-                return;
-            }
-            
-            console.log(`Path found with ${path.length} hexes`);
-            
-            token.pathfindingRoute = path;
-            token.pathfindingIndex = 0;
-            
-            // Start the movement animation
-            animateTokenAlongPath(tokenId);
-            
-            // Update UI
-            state.hexMap.selectedToken = token;
-            showTokenDetails(token);
-            renderHex();
-        }
-        
-        function findNearestPathHex(q, r, network) {
-            let nearestHex = null;
-            let nearestDist = Infinity;
-            
-            network.forEach((neighbors, key) => {
-                const [hq, hr] = key.split(',').map(Number);
-                const dist = heuristic(q, r, hq, hr);
-                if (dist < nearestDist) {
-                    nearestDist = dist;
-                    nearestHex = { q: hq, r: hr };
-                }
-            });
-            
-            // Only return if within reasonable distance (5 hexes)
-            return nearestDist <= 5 ? nearestHex : null;
-        }
-        
-        function animateTokenAlongPath(tokenId) {
-            const token = getToken(tokenId);
-            if (!token || !token.pathfindingRoute) return;
-            
-            // Move to next hex
-            token.pathfindingIndex++;
-            
-            if (token.pathfindingIndex >= token.pathfindingRoute.length) {
-                // Reached destination
-                token.pathfindingRoute = null;
-                token.pathfindingIndex = 0;
-                if (state.hexMap.selectedToken?.id === tokenId) {
-                    showTokenDetails(token);
-                }
-                renderHex();
-                return;
-            }
-            
-            const nextHex = token.pathfindingRoute[token.pathfindingIndex];
-            token.q = nextHex.q;
-            token.r = nextHex.r;
-            renderHex();
-            
-            // Continue animation
-            setTimeout(() => animateTokenAlongPath(tokenId), 500); // Move every 500ms
-        }
-
-        // Painting Functions
-        function paintHex(q, r) {
-            const hexes = getHexesInRadius(q, r, state.hexMap.brushSize - 1);
-            hexes.forEach(hex => {
-                setHex(hex.q, hex.r, state.hexMap.selectedTerrain);
-            });
-        }
-
-        function eraseHex(q, r) {
-            const hexes = getHexesInRadius(q, r, state.hexMap.brushSize - 1);
-            hexes.forEach(hex => {
-                deleteHex(hex.q, hex.r);
-            });
-        }
-
-        function floodFill(startQ, startR, targetTerrain) {
-            const startHex = getHex(startQ, startR);
-            const startTerrain = startHex ? startHex.terrain : null;
-            
-            if (startTerrain === targetTerrain) return;
-            
-            const queue = [{ q: startQ, r: startR }];
-            const visited = new Set();
-            const maxFill = 5000;
-            let filled = 0;
-            
-            while (queue.length > 0 && filled < maxFill) {
-                const { q, r } = queue.shift();
-                const key = `${q},${r}`;
-                
-                if (visited.has(key)) continue;
-                visited.add(key);
-                
-                const hex = getHex(q, r);
-                const currentTerrain = hex ? hex.terrain : null;
-                
-                if (currentTerrain !== startTerrain) continue;
-                
-                setHex(q, r, targetTerrain);
-                filled++;
-                
-                const neighbors = [
-                    { q: q + 1, r: r },
-                    { q: q - 1, r: r },
-                    { q: q, r: r + 1 },
-                    { q: q, r: r - 1 },
-                    { q: q + 1, r: r - 1 },
-                    { q: q - 1, r: r + 1 }
-                ];
-                
-                neighbors.forEach(n => {
-                    if (!visited.has(`${n.q},${n.r}`)) {
-                        queue.push(n);
-                    }
-                });
-            }
-            
-            renderHex();
-        }
-
-        function checkAutoPan(mouseX, mouseY) {
-            const edgeThreshold = 50;
-            const panSpeed = 10;
-            
-            let didPan = false;
-            
-            if (mouseX < edgeThreshold) {
-                state.hexMap.viewport.offsetX += panSpeed;
-                didPan = true;
-            } else if (mouseX > canvas.width - edgeThreshold) {
-                state.hexMap.viewport.offsetX -= panSpeed;
-                didPan = true;
-            }
-            
-            if (mouseY < edgeThreshold) {
-                state.hexMap.viewport.offsetY += panSpeed;
-                didPan = true;
-            } else if (mouseY > canvas.height - edgeThreshold) {
-                state.hexMap.viewport.offsetY -= panSpeed;
-                didPan = true;
-            }
-            
-            return didPan;
-        }
-
-        function getVisibleHexRange() {
-            const margin = 5;
-            
-            const corners = [
-                { x: 0, y: 0 },
-                { x: canvas.width, y: 0 },
-                { x: 0, y: canvas.height },
-                { x: canvas.width, y: canvas.height }
-            ];
-            
-            const hexCorners = corners.map(corner => pixelToHex(corner.x, corner.y));
-            
-            let minQ = Infinity, maxQ = -Infinity;
-            let minR = Infinity, maxR = -Infinity;
-            
-            hexCorners.forEach(hex => {
-                minQ = Math.min(minQ, hex.q);
-                maxQ = Math.max(maxQ, hex.q);
-                minR = Math.min(minR, hex.r);
-                maxR = Math.max(maxR, hex.r);
-            });
-            
-            return { 
-                minQ: minQ - margin, 
-                maxQ: maxQ + margin, 
-                minR: minR - margin, 
-                maxR: maxR + margin 
-            };
-        }
-
-        async function loadHexIcon(terrain) {
-            if (hexIconCache.has(terrain)) {
-                return hexIconCache.get(terrain);
-            }
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = () => {
-                    hexIconCache.set(terrain, img);
-                    resolve(img);
-                };
-                img.onerror = () => resolve(null);
-                img.src = TERRAINS[terrain].icon;
-            });
-        }
-
-        async function preloadHexIcons() {
-            const promises = Object.keys(TERRAINS).map(terrain => loadHexIcon(terrain));
-            await Promise.all(promises);
-            renderHex();
-        }
-
-        function renderHex() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const { minQ, maxQ, minR, maxR } = getVisibleHexRange();
-            const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
-            
-            // Draw grid
-            ctx.strokeStyle = '#1a1f26';
-            ctx.lineWidth = 1;
-            for (let q = minQ; q <= maxQ; q++) {
-                for (let r = minR; r <= maxR; r++) {
-                    const hex = getHex(q, r);
-                    if (!hex) {
-                        const { x, y } = hexToPixel(q, r);
-                        drawHexagon(ctx, x, y, size);
-                        ctx.stroke();
-                    }
-                }
-            }
-            
-            // Draw painted hexes
-            for (let q = minQ; q <= maxQ; q++) {
-                for (let r = minR; r <= maxR; r++) {
-                    const hex = getHex(q, r);
-                    if (hex) {
-                        drawHexTile(hex);
-                    }
-                }
-            }
-            
-            // Draw completed paths
-            state.hexMap.paths.forEach(path => drawPath(path));
-            
-            // Draw current path being created
-            if (state.hexMap.currentPath) {
-                drawPath(state.hexMap.currentPath);
-            }
-            
-            // Draw hovered path highlight (lighter)
-            if (state.hexMap.hoveredPath && state.hexMap.hoveredPath !== state.hexMap.selectedPath) {
-                drawPathHoverHighlight(state.hexMap.hoveredPath);
-            }
-            
-            // Draw selected path highlight (brighter)
-            if (state.hexMap.selectedPath) {
-                drawPathHighlight(state.hexMap.selectedPath);
-            }
-            
-            // Draw landmarks
-            state.hexMap.landmarks.forEach(landmark => {
-                if (landmark.visible) drawLandmark(landmark);
-            });
-            
-            // Draw tokens
-            state.hexMap.tokens.forEach(token => {
-                if (token.visible) drawToken(token);
-            });
-            
-            // Draw brush preview
-            if (state.hexMap.brushPreviewHexes.length > 0 && (state.hexMap.mode === 'paint' || state.hexMap.mode === 'erase')) {
-                ctx.strokeStyle = '#667eea';
-                ctx.lineWidth = 3;
-                ctx.globalAlpha = 0.5;
-                state.hexMap.brushPreviewHexes.forEach(({ q, r }) => {
-                    const { x, y } = hexToPixel(q, r);
-                    drawHexagon(ctx, x, y, size);
-                    ctx.stroke();
-                });
-                ctx.globalAlpha = 1;
-            }
-            
-            // Draw selected hex
-            if (state.hexMap.selectedHex) {
-                const { x, y } = hexToPixel(state.hexMap.selectedHex.q, state.hexMap.selectedHex.r);
-                ctx.strokeStyle = '#667eea';
-                ctx.lineWidth = 3;
-                drawHexagon(ctx, x, y, size);
-                ctx.stroke();
-            }
-            
-            // Draw selected token highlight
-            if (state.hexMap.selectedToken) {
-                const { x, y } = hexToPixel(state.hexMap.selectedToken.q, state.hexMap.selectedToken.r);
-                ctx.strokeStyle = '#f59e0b';
-                ctx.lineWidth = 4;
-                ctx.setLineDash([8, 4]);
-                drawHexagon(ctx, x, y, size);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-            
-            // Draw pathfinding routes for tokens
-            state.hexMap.tokens.forEach(token => {
-                if (token.pathfindingRoute && token.pathfindingRoute.length > 0) {
-                    drawPathfindingRoute(token);
-                }
-            });
-            
-            // Draw path points when in edit mode
-            if (state.hexMap.pathEditMode && state.hexMap.selectedPath) {
-                drawPathPoints(state.hexMap.selectedPath);
-            }
-        }
-        
-        function drawPathfindingRoute(token) {
-            if (!token.pathfindingRoute || token.pathfindingRoute.length < 2) return;
-            
-            ctx.save();
-            ctx.strokeStyle = token.color;
-            ctx.lineWidth = 6 * state.hexMap.viewport.scale;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.globalAlpha = 0.6;
-            ctx.setLineDash([10, 5]);
-            
-            ctx.beginPath();
-            token.pathfindingRoute.forEach((point, index) => {
-                const { x, y } = hexToPixel(point.q, point.r);
-                if (index === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
-            });
-            ctx.stroke();
-            
-            // Draw destination marker
-            const dest = token.pathfindingRoute[token.pathfindingRoute.length - 1];
-            const { x, y } = hexToPixel(dest.q, dest.r);
-            ctx.globalAlpha = 1;
-            ctx.fillStyle = token.color;
-            ctx.beginPath();
-            ctx.arc(x, y, 8 * state.hexMap.viewport.scale, 0, Math.PI * 2);
+            ctx.arc(x, y, 5 * state.hexMap.viewport.scale, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2;
             ctx.stroke();
+        });
+    }
+    
+    ctx.restore();
+}
+
+function drawPathHighlight(path) {
+    if (path.points.length < 2) return;
+    
+    ctx.save();
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = (path.width + 4) * state.hexMap.viewport.scale;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.globalAlpha = 0.5;
+    ctx.setLineDash([8, 4]);
+    
+    ctx.beginPath();
+    
+    if (path.style === 'curved' && path.points.length > 2) {
+        const firstPoint = hexToPixel(path.points[0].q, path.points[0].r);
+        ctx.moveTo(firstPoint.x, firstPoint.y);
+        
+        for (let i = 1; i < path.points.length - 1; i++) {
+            const p0 = hexToPixel(path.points[i - 1].q, path.points[i - 1].r);
+            const p1 = hexToPixel(path.points[i].q, path.points[i].r);
+            const p2 = hexToPixel(path.points[i + 1].q, path.points[i + 1].r);
             
-            ctx.restore();
+            const cp1x = p1.x - (p2.x - p0.x) * 0.15;
+            const cp1y = p1.y - (p2.y - p0.y) * 0.15;
+            const cp2x = p1.x + (p2.x - p0.x) * 0.15;
+            const cp2y = p1.y + (p2.y - p0.y) * 0.15;
+            
+            ctx.quadraticCurveTo(cp1x, cp1y, p1.x, p1.y);
+            
+            if (i === path.points.length - 2) {
+                ctx.quadraticCurveTo(cp2x, cp2y, p2.x, p2.y);
+            }
         }
         
-        function drawPathPoints(path) {
-            path.points.forEach((point, index) => {
-                const { x, y } = hexToPixel(point.q, point.r);
-                const isHovered = state.hexMap.hoveredPathPoint?.pointIndex === index;
-                const isDragging = state.hexMap.draggingPathPoint?.pointIndex === index;
-                
-                // Point circle
-                ctx.save();
-                ctx.fillStyle = isDragging ? '#f59e0b' : isHovered ? '#667eea' : '#ffffff';
-                ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 2;
-                
-                const radius = isDragging ? 10 : isHovered ? 9 : 7;
-                
-                ctx.beginPath();
-                ctx.arc(x, y, radius, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-                
-                // Point number
-                ctx.fillStyle = '#000000';
-                ctx.font = 'bold 10px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText((index + 1).toString(), x, y);
-                
-                // Start/End indicators
-                if (index === 0) {
-                    ctx.fillStyle = '#10b981';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 12, 0, Math.PI * 2);
-                    ctx.globalAlpha = 0.3;
-                    ctx.fill();
-                    ctx.globalAlpha = 1;
-                } else if (index === path.points.length - 1) {
-                    ctx.fillStyle = '#ef4444';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 12, 0, Math.PI * 2);
-                    ctx.globalAlpha = 0.3;
-                    ctx.fill();
-                    ctx.globalAlpha = 1;
-                }
-                
-                ctx.restore();
-            });
+        if (path.points.length === 2) {
+            const p1 = hexToPixel(path.points[1].q, path.points[1].r);
+            ctx.lineTo(p1.x, p1.y);
         }
+    } else {
+        path.points.forEach((point, index) => {
+            const { x, y } = hexToPixel(point.q, point.r);
+            if (index === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+    }
+    
+    ctx.stroke();
+    ctx.restore();
+}
 
-        function drawHexTile(hex) {
-            const { x, y } = hexToPixel(hex.q, hex.r);
-            const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
+function drawPathHoverHighlight(path) {
+    if (path.points.length < 2) return;
+    
+    ctx.save();
+    ctx.strokeStyle = '#667eea';
+    ctx.lineWidth = (path.width + 3) * state.hexMap.viewport.scale;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.globalAlpha = 0.3;
+    
+    ctx.beginPath();
+    
+    if (path.style === 'curved' && path.points.length > 2) {
+        const firstPoint = hexToPixel(path.points[0].q, path.points[0].r);
+        ctx.moveTo(firstPoint.x, firstPoint.y);
+        
+        for (let i = 1; i < path.points.length - 1; i++) {
+            const p0 = hexToPixel(path.points[i - 1].q, path.points[i - 1].r);
+            const p1 = hexToPixel(path.points[i].q, path.points[i].r);
+            const p2 = hexToPixel(path.points[i + 1].q, path.points[i + 1].r);
             
-            ctx.fillStyle = TERRAINS[hex.terrain].color;
+            const cp1x = p1.x - (p2.x - p0.x) * 0.15;
+            const cp1y = p1.y - (p2.y - p0.y) * 0.15;
+            const cp2x = p1.x + (p2.x - p0.x) * 0.15;
+            const cp2y = p1.y + (p2.y - p0.y) * 0.15;
+            
+            ctx.quadraticCurveTo(cp1x, cp1y, p1.x, p1.y);
+            
+            if (i === path.points.length - 2) {
+                ctx.quadraticCurveTo(cp2x, cp2y, p2.x, p2.y);
+            }
+        }
+        
+        if (path.points.length === 2) {
+            const p1 = hexToPixel(path.points[1].q, path.points[1].r);
+            ctx.lineTo(p1.x, p1.y);
+        }
+    } else {
+        path.points.forEach((point, index) => {
+            const { x, y } = hexToPixel(point.q, point.r);
+            if (index === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+    }
+    
+    ctx.stroke();
+    ctx.restore();
+}
+
+// ============================================================================
+// TOKEN SYSTEM
+// ============================================================================
+
+function createToken(q, r, data = {}) {
+    const tokenId = `token_${state.nextTokenId++}`;
+    const token = {
+        id: tokenId,
+        q, r,
+        name: data.name || 'New Token',
+        type: data.type || 'player',
+        color: data.color || '#667eea',
+        label: data.label || 'T',
+        size: data.size || 1,
+        attributes: data.attributes || {},
+        notes: data.notes || '',
+        visible: data.visible !== false,
+        scale: 1,
+        created: new Date().toISOString()
+    };
+    state.hexMap.tokens.set(tokenId, token);
+    updateHexCount();
+    markUnsaved();
+    return token;
+}
+
+function getToken(tokenId) {
+    return state.hexMap.tokens.get(tokenId);
+}
+
+function getTokensAt(q, r) {
+    return Array.from(state.hexMap.tokens.values()).filter(t => t.q === q && t.r === r);
+}
+
+function moveToken(tokenId, q, r) {
+    const token = getToken(tokenId);
+    if (token) {
+        token.q = q;
+        token.r = r;
+        renderHex();
+    }
+}
+
+function deleteToken(tokenId) {
+    state.hexMap.tokens.delete(tokenId);
+    updateHexCount();
+    renderHex();
+    markUnsaved();
+}
+
+function findTokenAtPixel(x, y) {
+    const hex = pixelToHex(x, y);
+    const tokens = getTokensAt(hex.q, hex.r);
+    if (tokens.length === 0) return null;
+    return tokens[tokens.length - 1];
+}
+
+function animateTokenScale(tokenId, targetScale, duration = 200) {
+    const token = getToken(tokenId);
+    if (!token) return;
+    
+    const startScale = token.scale;
+    const startTime = Date.now();
+    
+    function animate() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        token.scale = startScale + (targetScale - startScale) * eased;
+        renderHex();
+        if (progress < 1) requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+// ============================================================================
+// LANDMARK SYSTEM
+// ============================================================================
+
+function createLandmark(q, r, data = {}) {
+    const key = `${q},${r}`;
+    const landmarkId = `landmark_${state.nextLandmarkId++}`;
+    const landmark = {
+        id: landmarkId,
+        q, r,
+        name: data.name || 'New Landmark',
+        type: data.type || 'custom',
+        style: data.style || 'circle', // 'icon', 'circle', 'badge'
+        icon: data.icon || '',
+        color: data.color || '#FFD700',
+        showLabel: data.showLabel !== false,
+        labelPosition: data.labelPosition || 'above',
+        size: data.size || 1.0,
+        attributes: data.attributes || {},
+        notes: data.notes || '',
+        visible: data.visible !== false,
+        created: new Date().toISOString()
+    };
+    state.hexMap.landmarks.set(key, landmark);
+    updateHexCount();
+    markUnsaved();
+    return landmark;
+}
+
+function getLandmark(q, r) {
+    return state.hexMap.landmarks.get(`${q},${r}`);
+}
+
+function getLandmarkById(landmarkId) {
+    for (const landmark of state.hexMap.landmarks.values()) {
+        if (landmark.id === landmarkId) return landmark;
+    }
+    return null;
+}
+
+function deleteLandmark(q, r) {
+    state.hexMap.landmarks.delete(`${q},${r}`);
+    updateHexCount();
+    renderHex();
+    markUnsaved();
+}
+
+function deleteLandmarkById(landmarkId) {
+    for (const [key, landmark] of state.hexMap.landmarks.entries()) {
+        if (landmark.id === landmarkId) {
+            state.hexMap.landmarks.delete(key);
+            updateHexCount();
+            renderHex();
+            markUnsaved();
+            return;
+        }
+    }
+}
+
+function findLandmarkAtPixel(x, y) {
+    const hex = pixelToHex(x, y);
+    return getLandmark(hex.q, hex.r);
+}
+
+function showTokenCreator() {
+    const panel = document.getElementById('hexDetailsPanel');
+    panel.innerHTML = `
+        <div class="details-header">
+            <h2>Create New Token</h2>
+        </div>
+        <div class="details-content">
+            <div class="form-group">
+                <label class="form-label">Token Name</label>
+                <input type="text" class="form-input" id="newTokenName" placeholder="e.g., Aragorn, Party Alpha">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Type</label>
+                <select class="form-select" id="newTokenType">
+                    <option value="player">Player Character</option>
+                    <option value="party">Party/Group</option>
+                    <option value="npc">NPC/Ally</option>
+                    <option value="monster">Monster/Enemy</option>
+                    <option value="landmark">Landmark/POI</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Label Text</label>
+                <input type="text" class="form-input" id="newTokenLabel" value="P" maxlength="20">
+                <div style="font-size: 11px; color: #718096; margin-top: 4px;">Text shown on token</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Token Size</label>
+                <div class="slider-container">
+                    <input type="range" class="slider" id="newTokenSize" min="0.5" max="5" step="0.1" value="1"
+                           oninput="document.getElementById('newTokenSizeValue').textContent = parseFloat(this.value).toFixed(1)">
+                    <span class="slider-value" id="newTokenSizeValue">1.0</span>
+                </div>
+                <div style="font-size: 11px; color: #718096; margin-top: 4px;">Larger tokens show more text</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Color</label>
+                <input type="color" class="form-input" id="newTokenColor" value="#667eea" style="height: 50px; cursor: pointer;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Attributes (JSON)</label>
+                <textarea class="form-input" id="newTokenAttributes" placeholder='{"level": 5, "hp": 45}' style="min-height: 80px; font-family: monospace; font-size: 12px;"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea class="form-input" id="newTokenNotes" placeholder="Additional notes..."></textarea>
+            </div>
+        </div>
+        <div class="details-actions">
+            <button class="btn btn-secondary" style="flex: 1" onclick="cancelTokenCreator()">Cancel</button>
+            <button class="btn btn-primary" style="flex: 1" onclick="confirmTokenCreator()">Create & Place</button>
+        </div>
+    `;
+    document.getElementById('newTokenName').focus();
+}
+
+function cancelTokenCreator() {
+    deselectHex();
+}
+
+function confirmTokenCreator() {
+    const name = document.getElementById('newTokenName').value.trim();
+    const type = document.getElementById('newTokenType').value;
+    const label = document.getElementById('newTokenLabel').value.trim() || 'T';
+    const color = document.getElementById('newTokenColor').value;
+    const size = parseFloat(document.getElementById('newTokenSize').value);
+    const attributesText = document.getElementById('newTokenAttributes').value.trim();
+    const notes = document.getElementById('newTokenNotes').value.trim();
+    
+    let attributes = {};
+    if (attributesText) {
+        try {
+            attributes = JSON.parse(attributesText);
+        } catch (e) {
+            alert('Invalid JSON in attributes field. Please fix and try again.');
+            return;
+        }
+    }
+    
+    if (!name) {
+        alert('Please enter a token name.');
+        return;
+    }
+    
+    state.hexMap.pendingToken = { name, type, label, color, size, attributes, notes };
+    deselectHex();
+    document.getElementById('instructionText').textContent = 'Click any hex to place token';
+    document.getElementById('modeText').textContent = 'Token Placement';
+}
+
+function showTokenDetails(token) {
+    const panel = document.getElementById('hexDetailsPanel');
+    const attributesJson = JSON.stringify(token.attributes, null, 2);
+    const hasPathfinding = token.attributes?.pathfinding === true;
+    
+    panel.innerHTML = `
+        <div class="minimap-container">
+            <div class="minimap-header">
+                <span class="minimap-title">Map Overview</span>
+                <span class="minimap-stats" id="minimapStats">...</span>
+            </div>
+            <div class="minimap-wrapper">
+                <canvas id="minimapCanvas" class="minimap-canvas"></canvas>
+                <div id="minimapViewport" class="minimap-viewport"></div>
+            </div>
+        </div>
+
+        <div class="details-header">
+            <h2 style="display: flex; align-items: center; gap: 8px;">
+                <span style="display: inline-block; width: 32px; height: 32px; border-radius: 50%; background: ${token.color}; border: 2px solid #000; text-align: center; line-height: 28px; color: white; font-weight: bold; font-size: 14px;">${token.label.charAt(0).toUpperCase()}</span>
+                ${token.name}
+            </h2>
+            <div class="coords">${token.type.charAt(0).toUpperCase() + token.type.slice(1)} · Hex (${token.q}, ${token.r})</div>
+        </div>
+        <div class="details-content">
+            ${hasPathfinding ? `
+            <div class="form-group" style="background: #667eea; padding: 12px; border-radius: 8px;">
+                <label class="form-label" style="color: white; margin-bottom: 8px;">🗺️ Pathfinding Active</label>
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="selectPathfindingDestination('${token.id}')">
+                    📍 Select Destination Hex
+                </button>
+                <button class="btn btn-danger" style="width: 100%;" onclick="stopPathfinding('${token.id}')">
+                    ⏹️ Stop Pathfinding
+                </button>
+                ${token.pathfindingRoute ? `<div style="color: white; font-size: 11px; margin-top: 8px;">Route: ${token.pathfindingRoute.length} hexes</div>` : ''}
+            </div>
+            ` : ''}
+            <div class="form-group">
+                <label class="form-label">Token Name</label>
+                <input type="text" class="form-input" value="${token.name}" onchange="updateTokenField('${token.id}', 'name', this.value)">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Type</label>
+                <select class="form-select" onchange="updateTokenField('${token.id}', 'type', this.value)">
+                    <option value="player" ${token.type === 'player' ? 'selected' : ''}>Player Character</option>
+                    <option value="party" ${token.type === 'party' ? 'selected' : ''}>Party/Group</option>
+                    <option value="npc" ${token.type === 'npc' ? 'selected' : ''}>NPC/Ally</option>
+                    <option value="monster" ${token.type === 'monster' ? 'selected' : ''}>Monster/Enemy</option>
+                    <option value="landmark" ${token.type === 'landmark' ? 'selected' : ''}>Landmark/POI</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Label Text</label>
+                <input type="text" class="form-input" value="${token.label}" maxlength="20" onchange="updateTokenField('${token.id}', 'label', this.value); renderHex();">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Token Size</label>
+                <div class="slider-container">
+                    <input type="range" class="slider" id="tokenSize_${token.id}" min="0.5" max="5" step="0.1" value="${token.size}" oninput="updateTokenSize('${token.id}', this.value)">
+                    <span class="slider-value" id="tokenSizeValue_${token.id}">${token.size.toFixed(1)}</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Color</label>
+                <input type="color" class="form-input" value="${token.color}" style="height: 50px; cursor: pointer;" onchange="updateTokenField('${token.id}', 'color', this.value); renderHex();">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Attributes (JSON)</label>
+                <textarea class="form-input" id="tokenAttributes_${token.id}" style="min-height: 120px; font-family: monospace; font-size: 12px;" onchange="updateTokenAttributes('${token.id}', this.value)">${attributesJson}</textarea>
+                <div style="font-size: 11px; color: #718096; margin-top: 4px;">
+                    💡 Set <strong>"pathfinding": true</strong> to enable pathfinding
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea class="form-input" onchange="updateTokenField('${token.id}', 'notes', this.value)">${token.notes}</textarea>
+            </div>
+        </div>
+        <div class="details-actions">
+            <button class="btn btn-secondary" style="flex: 1" onclick="deselectToken()">Close</button>
+            <button class="btn btn-danger" style="flex: 1" onclick="deleteCurrentToken()">Delete Token</button>
+        </div>
+    `;
+    
+    setTimeout(initializeMinimap, 0);
+}
+
+function updateTokenField(tokenId, field, value) {
+    const token = getToken(tokenId);
+    if (token) {
+        token[field] = value;
+        markUnsaved();
+    }
+}
+
+function updateTokenSize(tokenId, value) {
+    const token = getToken(tokenId);
+    if (token) {
+        token.size = parseFloat(value);
+        document.getElementById(`tokenSizeValue_${tokenId}`).textContent = parseFloat(value).toFixed(1);
+        renderHex();
+        markUnsaved();
+    }
+}
+
+function updateTokenAttributes(tokenId, jsonText) {
+    const token = getToken(tokenId);
+    if (!token) return;
+    try {
+        const oldPathfinding = token.attributes?.pathfinding;
+        token.attributes = JSON.parse(jsonText);
+        const newPathfinding = token.attributes?.pathfinding;
+        
+        // Refresh panel if pathfinding state changed
+        if (oldPathfinding !== newPathfinding) {
+            showTokenDetails(token);
+        }
+        markUnsaved();
+    } catch (e) {
+        alert('Invalid JSON format. Changes not saved.');
+        document.getElementById(`tokenAttributes_${tokenId}`).value = JSON.stringify(token.attributes, null, 2);
+    }
+}
+
+function deselectToken() {
+    state.hexMap.selectedToken = null;
+    deselectHex();
+}
+
+function deleteCurrentToken() {
+    if (state.hexMap.selectedToken && confirm('Delete this token? This cannot be undone.')) {
+        deleteToken(state.hexMap.selectedToken.id);
+        deselectToken();
+    }
+}
+
+// ============================================================================
+// LANDMARK UI FUNCTIONS
+// ============================================================================
+
+function showLandmarkCreator() {
+    const panel = document.getElementById('hexDetailsPanel');
+    panel.innerHTML = `
+        <div class="details-header">
+            <h2>Create New Landmark</h2>
+        </div>
+        <div class="details-content">
+            <div class="form-group">
+                <label class="form-label">Landmark Name</label>
+                <input type="text" class="form-input" id="newLandmarkName" placeholder="e.g., Rivendell, Dragon's Lair">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Style</label>
+                <select class="form-select" id="newLandmarkStyle" onchange="updateLandmarkStylePreview()">
+                    <option value="circle">Circle</option>
+                    <option value="icon">Icon (URL)</option>
+                    <option value="badge">Badge</option>
+                </select>
+            </div>
+            <div class="form-group" id="landmarkIconGroup" style="display: none;">
+                <label class="form-label">Icon URL</label>
+                <input type="text" class="form-input" id="newLandmarkIcon" placeholder="https://game-icons.net/...">
+                <div style="font-size: 11px; color: #718096; margin-top: 4px;">Use game-icons.net URLs</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Color</label>
+                <input type="color" class="form-input" id="newLandmarkColor" value="#FFD700" style="height: 50px; cursor: pointer;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Size</label>
+                <div class="slider-container">
+                    <input type="range" class="slider" id="newLandmarkSize" min="0.5" max="2.5" step="0.1" value="1.0"
+                           oninput="document.getElementById('newLandmarkSizeValue').textContent = parseFloat(this.value).toFixed(1)">
+                    <span class="slider-value" id="newLandmarkSizeValue">1.0</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" id="newLandmarkShowLabel" checked style="margin-right: 8px;">
+                    Show Name Label
+                </label>
+            </div>
+            <div class="form-group" id="landmarkLabelPosGroup">
+                <label class="form-label">Label Position</label>
+                <select class="form-select" id="newLandmarkLabelPos">
+                    <option value="above">Above</option>
+                    <option value="below">Below</option>
+                    <option value="inside">Inside</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Attributes (JSON)</label>
+                <textarea class="form-input" id="newLandmarkAttributes" placeholder='{"type": "town", "population": 5000}' style="min-height: 80px; font-family: monospace; font-size: 12px;"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea class="form-input" id="newLandmarkNotes" placeholder="Additional notes..."></textarea>
+            </div>
+        </div>
+        <div class="details-actions">
+            <button class="btn btn-secondary" style="flex: 1" onclick="cancelLandmarkCreator()">Cancel</button>
+            <button class="btn btn-primary" style="flex: 1" onclick="confirmLandmarkCreator()">Create & Place</button>
+        </div>
+    `;
+    document.getElementById('newLandmarkName').focus();
+    updateLandmarkStylePreview();
+}
+
+function updateLandmarkStylePreview() {
+    const style = document.getElementById('newLandmarkStyle').value;
+    const iconGroup = document.getElementById('landmarkIconGroup');
+    
+    iconGroup.style.display = (style === 'icon') ? 'block' : 'none';
+}
+
+function cancelLandmarkCreator() {
+    deselectHex();
+}
+
+function confirmLandmarkCreator() {
+    const name = document.getElementById('newLandmarkName').value.trim();
+    const style = document.getElementById('newLandmarkStyle').value;
+    const icon = document.getElementById('newLandmarkIcon').value.trim();
+    const color = document.getElementById('newLandmarkColor').value;
+    const size = parseFloat(document.getElementById('newLandmarkSize').value);
+    const showLabel = document.getElementById('newLandmarkShowLabel').checked;
+    const labelPosition = document.getElementById('newLandmarkLabelPos').value;
+    const attributesText = document.getElementById('newLandmarkAttributes').value.trim();
+    const notes = document.getElementById('newLandmarkNotes').value.trim();
+    
+    let attributes = {};
+    if (attributesText) {
+        try {
+            attributes = JSON.parse(attributesText);
+        } catch (e) {
+            alert('Invalid JSON in attributes field. Please fix and try again.');
+            return;
+        }
+    }
+    
+    if (!name) {
+        alert('Please enter a landmark name.');
+        return;
+    }
+    
+    if (style === 'icon' && !icon) {
+        alert('Please enter an icon URL for icon style.');
+        return;
+    }
+    
+    state.hexMap.pendingLandmark = { 
+        name, 
+        style, 
+        icon, 
+        color, 
+        size, 
+        showLabel, 
+        labelPosition,
+        attributes, 
+        notes 
+    };
+    deselectHex();
+    document.getElementById('instructionText').textContent = 'Click any hex to place landmark';
+    document.getElementById('modeText').textContent = 'Landmark Placement';
+}
+
+function showLandmarkDetails(landmark) {
+    const panel = document.getElementById('hexDetailsPanel');
+    const attributesJson = JSON.stringify(landmark.attributes, null, 2);
+    
+    panel.innerHTML = `
+        <div class="minimap-container">
+            <div class="minimap-header">
+                <span class="minimap-title">Map Overview</span>
+                <span class="minimap-stats" id="minimapStats">...</span>
+            </div>
+            <div class="minimap-wrapper">
+                <canvas id="minimapCanvas" class="minimap-canvas"></canvas>
+                <div id="minimapViewport" class="minimap-viewport"></div>
+            </div>
+        </div>
+
+        <div class="details-header">
+            <h2>${landmark.name}</h2>
+            <div class="coords">Landmark · Hex (${landmark.q}, ${landmark.r})</div>
+        </div>
+        <div class="details-content">
+            <div class="form-group">
+                <label class="form-label">Landmark Name</label>
+                <input type="text" class="form-input" value="${landmark.name}" onchange="updateLandmarkField('${landmark.id}', 'name', this.value)">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Style</label>
+                <select class="form-select" onchange="updateLandmarkField('${landmark.id}', 'style', this.value); renderHex();">
+                    <option value="circle" ${landmark.style === 'circle' ? 'selected' : ''}>Circle</option>
+                    <option value="icon" ${landmark.style === 'icon' ? 'selected' : ''}>Icon</option>
+                    <option value="badge" ${landmark.style === 'badge' ? 'selected' : ''}>Badge</option>
+                </select>
+            </div>
+            ${landmark.style === 'icon' ? `
+            <div class="form-group">
+                <label class="form-label">Icon URL</label>
+                <input type="text" class="form-input" value="${landmark.icon || ''}" onchange="updateLandmarkField('${landmark.id}', 'icon', this.value); renderHex();">
+            </div>
+            ` : ''}
+            <div class="form-group">
+                <label class="form-label">Color</label>
+                <input type="color" class="form-input" value="${landmark.color}" style="height: 50px; cursor: pointer;" onchange="updateLandmarkField('${landmark.id}', 'color', this.value); renderHex();">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Size</label>
+                <div class="slider-container">
+                    <input type="range" class="slider" id="landmarkSize_${landmark.id}" min="0.5" max="2.5" step="0.1" value="${landmark.size}" oninput="updateLandmarkSize('${landmark.id}', this.value)">
+                    <span class="slider-value" id="landmarkSizeValue_${landmark.id}">${landmark.size.toFixed(1)}</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" ${landmark.showLabel ? 'checked' : ''} onchange="updateLandmarkField('${landmark.id}', 'showLabel', this.checked); renderHex();" style="margin-right: 8px;">
+                    Show Name Label
+                </label>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Label Position</label>
+                <select class="form-select" onchange="updateLandmarkField('${landmark.id}', 'labelPosition', this.value); renderHex();">
+                    <option value="above" ${landmark.labelPosition === 'above' ? 'selected' : ''}>Above</option>
+                    <option value="below" ${landmark.labelPosition === 'below' ? 'selected' : ''}>Below</option>
+                    <option value="inside" ${landmark.labelPosition === 'inside' ? 'selected' : ''}>Inside</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Attributes (JSON)</label>
+                <textarea class="form-input" id="landmarkAttributes_${landmark.id}" style="min-height: 120px; font-family: monospace; font-size: 12px;" onchange="updateLandmarkAttributes('${landmark.id}', this.value)">${attributesJson}</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea class="form-input" onchange="updateLandmarkField('${landmark.id}', 'notes', this.value)">${landmark.notes}</textarea>
+            </div>
+        </div>
+        <div class="details-actions">
+            <button class="btn btn-secondary" style="flex: 1" onclick="deselectLandmark()">Close</button>
+            <button class="btn btn-danger" style="flex: 1" onclick="deleteCurrentLandmark()">Delete Landmark</button>
+        </div>
+    `;
+    
+    setTimeout(initializeMinimap, 0);
+}
+
+function updateLandmarkField(landmarkId, field, value) {
+    const landmark = getLandmarkById(landmarkId);
+    if (landmark) {
+        landmark[field] = value;
+        markUnsaved();
+    }
+}
+
+function updateLandmarkSize(landmarkId, value) {
+    const landmark = getLandmarkById(landmarkId);
+    if (landmark) {
+        landmark.size = parseFloat(value);
+        document.getElementById(`landmarkSizeValue_${landmarkId}`).textContent = parseFloat(value).toFixed(1);
+        renderHex();
+        markUnsaved();
+    }
+}
+
+function updateLandmarkAttributes(landmarkId, jsonText) {
+    const landmark = getLandmarkById(landmarkId);
+    if (!landmark) return;
+    
+    try {
+        landmark.attributes = JSON.parse(jsonText);
+        markUnsaved();
+    } catch (e) {
+        alert('Invalid JSON in attributes field.');
+    }
+}
+
+function deselectLandmark() {
+    state.hexMap.selectedLandmark = null;
+    deselectHex();
+}
+
+function deleteCurrentLandmark() {
+    if (state.hexMap.selectedLandmark && confirm('Delete this landmark? This cannot be undone.')) {
+        deleteLandmarkById(state.hexMap.selectedLandmark.id);
+        deselectLandmark();
+    }
+}
+
+// ============================================================================
+// PATHFINDING SYSTEM
+// ============================================================================
+
+let pathfindingState = {
+    selectingDestination: false,
+    tokenId: null
+};
+
+function selectPathfindingDestination(tokenId) {
+    pathfindingState.selectingDestination = true;
+    pathfindingState.tokenId = tokenId;
+    
+    // Close the panel temporarily
+    const token = getToken(tokenId);
+    if (token) {
+        state.hexMap.selectedToken = null;
+        document.getElementById('hexDetailsPanel').innerHTML = `
+            <div class="no-selection">
+                <div class="no-selection-icon">📍</div>
+                <p style="font-size: 16px; font-weight: 600;">Click destination hex</p>
+                <p style="margin-top: 8px; font-size: 12px;">The token will pathfind to this location</p>
+                <button class="btn btn-secondary" style="margin-top: 16px;" onclick="cancelPathfindingSelection()">Cancel</button>
+            </div>
+        `;
+    }
+}
+
+function cancelPathfindingSelection() {
+    pathfindingState.selectingDestination = false;
+    const token = getToken(pathfindingState.tokenId);
+    pathfindingState.tokenId = null;
+    if (token) {
+        state.hexMap.selectedToken = token;
+        showTokenDetails(token);
+    }
+}
+
+function stopPathfinding(tokenId) {
+    const token = getToken(tokenId);
+    if (token) {
+        token.pathfindingRoute = null;
+        token.pathfindingIndex = 0;
+        showTokenDetails(token);
+        renderHex();
+    }
+}
+
+// Build a graph of all hexes connected by paths
+function buildRoadNetwork() {
+    const network = new Map(); // key: "q,r", value: Set of neighbor "q,r" strings
+    
+    state.hexMap.paths.forEach(path => {
+        const hexes = getPathHexes(path);
+        
+        // Connect consecutive hexes along the path
+        for (let i = 0; i < hexes.length - 1; i++) {
+            const h1 = `${hexes[i].q},${hexes[i].r}`;
+            const h2 = `${hexes[i + 1].q},${hexes[i + 1].r}`;
+            
+            if (!network.has(h1)) network.set(h1, new Set());
+            if (!network.has(h2)) network.set(h2, new Set());
+            
+            network.get(h1).add(h2);
+            network.get(h2).add(h1);
+        }
+    });
+    
+    console.log(`Road network built: ${network.size} hexes with paths, ${state.hexMap.paths.length} paths total`);
+    return network;
+}
+
+// A* pathfinding algorithm
+function findPath(startQ, startR, endQ, endR) {
+    const network = buildRoadNetwork();
+    const startKey = `${startQ},${startR}`;
+    const endKey = `${endQ},${endR}`;
+    
+    // Check if start and end are on the road network
+    if (!network.has(startKey)) {
+        console.log('Start hex is not on any path');
+        return null;
+    }
+    if (!network.has(endKey)) {
+        console.log('End hex is not on any path');
+        return null;
+    }
+    
+    const openSet = new Set([startKey]);
+    const cameFrom = new Map();
+    const gScore = new Map();
+    const fScore = new Map();
+    
+    gScore.set(startKey, 0);
+    fScore.set(startKey, heuristic(startQ, startR, endQ, endR));
+    
+    while (openSet.size > 0) {
+        // Find node in openSet with lowest fScore
+        let current = null;
+        let lowestF = Infinity;
+        openSet.forEach(key => {
+            const f = fScore.get(key) || Infinity;
+            if (f < lowestF) {
+                lowestF = f;
+                current = key;
+            }
+        });
+        
+        if (current === endKey) {
+            // Reconstruct path
+            return reconstructPath(cameFrom, current);
+        }
+        
+        openSet.delete(current);
+        
+        const neighbors = network.get(current) || new Set();
+        neighbors.forEach(neighborKey => {
+            const tentativeG = (gScore.get(current) || Infinity) + 1;
+            
+            if (tentativeG < (gScore.get(neighborKey) || Infinity)) {
+                cameFrom.set(neighborKey, current);
+                gScore.set(neighborKey, tentativeG);
+                
+                const [nq, nr] = neighborKey.split(',').map(Number);
+                fScore.set(neighborKey, tentativeG + heuristic(nq, nr, endQ, endR));
+                
+                openSet.add(neighborKey);
+            }
+        });
+    }
+    
+    // No path found
+    return null;
+}
+
+function heuristic(q1, r1, q2, r2) {
+    // Hex distance
+    return Math.max(
+        Math.abs(q1 - q2),
+        Math.abs(r1 - r2),
+        Math.abs((-q1 - r1) - (-q2 - r2))
+    );
+}
+
+function reconstructPath(cameFrom, current) {
+    const path = [current];
+    while (cameFrom.has(current)) {
+        current = cameFrom.get(current);
+        path.unshift(current);
+    }
+    return path.map(key => {
+        const [q, r] = key.split(',').map(Number);
+        return { q, r };
+    });
+}
+
+function startTokenPathfinding(tokenId, destQ, destR) {
+    const token = getToken(tokenId);
+    if (!token) {
+        alert('Token not found!');
+        return;
+    }
+    
+    // Build network to check what's available
+    const network = buildRoadNetwork();
+    
+    if (network.size === 0) {
+        alert('No paths on the map! Draw some roads first.');
+        return;
+    }
+    
+    // Find nearest path hex to start position
+    const startKey = `${token.q},${token.r}`;
+    let actualStartQ = token.q;
+    let actualStartR = token.r;
+    
+    if (!network.has(startKey)) {
+        // Token is not on a path, find nearest path hex
+        const nearestStart = findNearestPathHex(token.q, token.r, network);
+        if (!nearestStart) {
+            alert('Token is not near any path! Place the token on or near a road first.');
+            return;
+        }
+        actualStartQ = nearestStart.q;
+        actualStartR = nearestStart.r;
+        console.log(`Token moved from (${token.q},${token.r}) to nearest path at (${actualStartQ},${actualStartR})`);
+    }
+    
+    // Find nearest path hex to destination
+    const destKey = `${destQ},${destR}`;
+    let actualDestQ = destQ;
+    let actualDestR = destR;
+    
+    if (!network.has(destKey)) {
+        const nearestDest = findNearestPathHex(destQ, destR, network);
+        if (!nearestDest) {
+            alert('Destination is not near any path! Click on or near a road.');
+            return;
+        }
+        actualDestQ = nearestDest.q;
+        actualDestR = nearestDest.r;
+        console.log(`Destination moved from (${destQ},${destR}) to nearest path at (${actualDestQ},${actualDestR})`);
+    }
+    
+    const path = findPath(actualStartQ, actualStartR, actualDestQ, actualDestR);
+    
+    if (!path) {
+        alert('No route found! Make sure the roads are connected between start and destination.');
+        return;
+    }
+    
+    console.log(`Path found with ${path.length} hexes`);
+    
+    token.pathfindingRoute = path;
+    token.pathfindingIndex = 0;
+    
+    // Start the movement animation
+    animateTokenAlongPath(tokenId);
+    
+    // Update UI
+    state.hexMap.selectedToken = token;
+    showTokenDetails(token);
+    renderHex();
+}
+
+function findNearestPathHex(q, r, network) {
+    let nearestHex = null;
+    let nearestDist = Infinity;
+    
+    network.forEach((neighbors, key) => {
+        const [hq, hr] = key.split(',').map(Number);
+        const dist = heuristic(q, r, hq, hr);
+        if (dist < nearestDist) {
+            nearestDist = dist;
+            nearestHex = { q: hq, r: hr };
+        }
+    });
+    
+    // Only return if within reasonable distance (5 hexes)
+    return nearestDist <= 5 ? nearestHex : null;
+}
+
+function animateTokenAlongPath(tokenId) {
+    const token = getToken(tokenId);
+    if (!token || !token.pathfindingRoute) return;
+    
+    // Move to next hex
+    token.pathfindingIndex++;
+    
+    if (token.pathfindingIndex >= token.pathfindingRoute.length) {
+        // Reached destination
+        token.pathfindingRoute = null;
+        token.pathfindingIndex = 0;
+        if (state.hexMap.selectedToken?.id === tokenId) {
+            showTokenDetails(token);
+        }
+        renderHex();
+        return;
+    }
+    
+    const nextHex = token.pathfindingRoute[token.pathfindingIndex];
+    token.q = nextHex.q;
+    token.r = nextHex.r;
+    renderHex();
+    
+    // Continue animation
+    setTimeout(() => animateTokenAlongPath(tokenId), 500); // Move every 500ms
+}
+
+// Painting Functions
+function paintHex(q, r) {
+    const hexes = getHexesInRadius(q, r, state.hexMap.brushSize - 1);
+    hexes.forEach(hex => {
+        setHex(hex.q, hex.r, state.hexMap.selectedTerrain);
+    });
+}
+
+function eraseHex(q, r) {
+    const hexes = getHexesInRadius(q, r, state.hexMap.brushSize - 1);
+    hexes.forEach(hex => {
+        deleteHex(hex.q, hex.r);
+    });
+}
+
+function floodFill(startQ, startR, targetTerrain) {
+    const startHex = getHex(startQ, startR);
+    const startTerrain = startHex ? startHex.terrain : null;
+    
+    if (startTerrain === targetTerrain) return;
+    
+    const queue = [{ q: startQ, r: startR }];
+    const visited = new Set();
+    const maxFill = 5000;
+    let filled = 0;
+    
+    while (queue.length > 0 && filled < maxFill) {
+        const { q, r } = queue.shift();
+        const key = `${q},${r}`;
+        
+        if (visited.has(key)) continue;
+        visited.add(key);
+        
+        const hex = getHex(q, r);
+        const currentTerrain = hex ? hex.terrain : null;
+        
+        if (currentTerrain !== startTerrain) continue;
+        
+        setHex(q, r, targetTerrain);
+        filled++;
+        
+        const neighbors = [
+            { q: q + 1, r: r },
+            { q: q - 1, r: r },
+            { q: q, r: r + 1 },
+            { q: q, r: r - 1 },
+            { q: q + 1, r: r - 1 },
+            { q: q - 1, r: r + 1 }
+        ];
+        
+        neighbors.forEach(n => {
+            if (!visited.has(`${n.q},${n.r}`)) {
+                queue.push(n);
+            }
+        });
+    }
+    
+    renderHex();
+}
+
+function checkAutoPan(mouseX, mouseY) {
+    const edgeThreshold = 50;
+    const panSpeed = 10;
+    
+    let didPan = false;
+    
+    if (mouseX < edgeThreshold) {
+        state.hexMap.viewport.offsetX += panSpeed;
+        didPan = true;
+    } else if (mouseX > canvas.width - edgeThreshold) {
+        state.hexMap.viewport.offsetX -= panSpeed;
+        didPan = true;
+    }
+    
+    if (mouseY < edgeThreshold) {
+        state.hexMap.viewport.offsetY += panSpeed;
+        didPan = true;
+    } else if (mouseY > canvas.height - edgeThreshold) {
+        state.hexMap.viewport.offsetY -= panSpeed;
+        didPan = true;
+    }
+    
+    return didPan;
+}
+
+function getVisibleHexRange() {
+    const margin = 5;
+    
+    const corners = [
+        { x: 0, y: 0 },
+        { x: canvas.width, y: 0 },
+        { x: 0, y: canvas.height },
+        { x: canvas.width, y: canvas.height }
+    ];
+    
+    const hexCorners = corners.map(corner => pixelToHex(corner.x, corner.y));
+    
+    let minQ = Infinity, maxQ = -Infinity;
+    let minR = Infinity, maxR = -Infinity;
+    
+    hexCorners.forEach(hex => {
+        minQ = Math.min(minQ, hex.q);
+        maxQ = Math.max(maxQ, hex.q);
+        minR = Math.min(minR, hex.r);
+        maxR = Math.max(maxR, hex.r);
+    });
+    
+    return { 
+        minQ: minQ - margin, 
+        maxQ: maxQ + margin, 
+        minR: minR - margin, 
+        maxR: maxR + margin 
+    };
+}
+
+async function loadHexIcon(terrain) {
+    if (hexIconCache.has(terrain)) {
+        return hexIconCache.get(terrain);
+    }
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            hexIconCache.set(terrain, img);
+            resolve(img);
+        };
+        img.onerror = () => resolve(null);
+        img.src = TERRAINS[terrain].icon;
+    });
+}
+
+async function preloadHexIcons() {
+    const promises = Object.keys(TERRAINS).map(terrain => loadHexIcon(terrain));
+    await Promise.all(promises);
+    renderHex();
+}
+
+function renderHex() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const { minQ, maxQ, minR, maxR } = getVisibleHexRange();
+    const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
+    
+    // Draw grid
+    ctx.strokeStyle = '#1a1f26';
+    ctx.lineWidth = 1;
+    for (let q = minQ; q <= maxQ; q++) {
+        for (let r = minR; r <= maxR; r++) {
+            const hex = getHex(q, r);
+            if (!hex) {
+                const { x, y } = hexToPixel(q, r);
+                drawHexagon(ctx, x, y, size);
+                ctx.stroke();
+            }
+        }
+    }
+    
+    // Draw painted hexes
+    for (let q = minQ; q <= maxQ; q++) {
+        for (let r = minR; r <= maxR; r++) {
+            const hex = getHex(q, r);
+            if (hex) {
+                drawHexTile(hex);
+            }
+        }
+    }
+    
+    // Draw completed paths
+    state.hexMap.paths.forEach(path => drawPath(path));
+    
+    // Draw current path being created
+    if (state.hexMap.currentPath) {
+        drawPath(state.hexMap.currentPath);
+    }
+    
+    // Draw hovered path highlight (lighter)
+    if (state.hexMap.hoveredPath && state.hexMap.hoveredPath !== state.hexMap.selectedPath) {
+        drawPathHoverHighlight(state.hexMap.hoveredPath);
+    }
+    
+    // Draw selected path highlight (brighter)
+    if (state.hexMap.selectedPath) {
+        drawPathHighlight(state.hexMap.selectedPath);
+    }
+    
+    // Draw landmarks
+    state.hexMap.landmarks.forEach(landmark => {
+        if (landmark.visible) drawLandmark(landmark);
+    });
+    
+    // Draw tokens
+    state.hexMap.tokens.forEach(token => {
+        if (token.visible) drawToken(token);
+    });
+    
+    // Draw brush preview
+    if (state.hexMap.brushPreviewHexes.length > 0 && (state.hexMap.mode === 'paint' || state.hexMap.mode === 'erase')) {
+        ctx.strokeStyle = '#667eea';
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 0.5;
+        state.hexMap.brushPreviewHexes.forEach(({ q, r }) => {
+            const { x, y } = hexToPixel(q, r);
             drawHexagon(ctx, x, y, size);
+            ctx.stroke();
+        });
+        ctx.globalAlpha = 1;
+    }
+    
+    // Draw selected hex
+    if (state.hexMap.selectedHex) {
+        const { x, y } = hexToPixel(state.hexMap.selectedHex.q, state.hexMap.selectedHex.r);
+        ctx.strokeStyle = '#667eea';
+        ctx.lineWidth = 3;
+        drawHexagon(ctx, x, y, size);
+        ctx.stroke();
+    }
+    
+    // Draw selected token highlight
+    if (state.hexMap.selectedToken) {
+        const { x, y } = hexToPixel(state.hexMap.selectedToken.q, state.hexMap.selectedToken.r);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 4;
+        ctx.setLineDash([8, 4]);
+        drawHexagon(ctx, x, y, size);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+    
+    // Draw pathfinding routes for tokens
+    state.hexMap.tokens.forEach(token => {
+        if (token.pathfindingRoute && token.pathfindingRoute.length > 0) {
+            drawPathfindingRoute(token);
+        }
+    });
+    
+    // Draw path points when in edit mode
+    if (state.hexMap.pathEditMode && state.hexMap.selectedPath) {
+        drawPathPoints(state.hexMap.selectedPath);
+    }
+    
+    // Update minimap if it exists
+    if (document.getElementById('minimapCanvas')) {
+        updateMinimapViewport();
+    }
+}
+
+function drawPathfindingRoute(token) {
+    if (!token.pathfindingRoute || token.pathfindingRoute.length < 2) return;
+    
+    ctx.save();
+    ctx.strokeStyle = token.color;
+    ctx.lineWidth = 6 * state.hexMap.viewport.scale;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.globalAlpha = 0.6;
+    ctx.setLineDash([10, 5]);
+    
+    ctx.beginPath();
+    token.pathfindingRoute.forEach((point, index) => {
+        const { x, y } = hexToPixel(point.q, point.r);
+        if (index === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    });
+    ctx.stroke();
+    
+    // Draw destination marker
+    const dest = token.pathfindingRoute[token.pathfindingRoute.length - 1];
+    const { x, y } = hexToPixel(dest.q, dest.r);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = token.color;
+    ctx.beginPath();
+    ctx.arc(x, y, 8 * state.hexMap.viewport.scale, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    ctx.restore();
+}
+
+function drawPathPoints(path) {
+    path.points.forEach((point, index) => {
+        const { x, y } = hexToPixel(point.q, point.r);
+        const isHovered = state.hexMap.hoveredPathPoint?.pointIndex === index;
+        const isDragging = state.hexMap.draggingPathPoint?.pointIndex === index;
+        
+        // Point circle
+        ctx.save();
+        ctx.fillStyle = isDragging ? '#f59e0b' : isHovered ? '#667eea' : '#ffffff';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        
+        const radius = isDragging ? 10 : isHovered ? 9 : 7;
+        
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Point number
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 10px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText((index + 1).toString(), x, y);
+        
+        // Start/End indicators
+        if (index === 0) {
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(x, y, 12, 0, Math.PI * 2);
+            ctx.globalAlpha = 0.3;
             ctx.fill();
-            
-            ctx.strokeStyle = '#2d3748';
+            ctx.globalAlpha = 1;
+        } else if (index === path.points.length - 1) {
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(x, y, 12, 0, Math.PI * 2);
+            ctx.globalAlpha = 0.3;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
+        
+        ctx.restore();
+    });
+}
+
+function drawHexTile(hex) {
+    const { x, y } = hexToPixel(hex.q, hex.r);
+    const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
+    
+    ctx.fillStyle = TERRAINS[hex.terrain].color;
+    drawHexagon(ctx, x, y, size);
+    ctx.fill();
+    
+    ctx.strokeStyle = '#2d3748';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    const icon = hexIconCache.get(hex.terrain);
+    if (icon && size > 15) {
+        const iconSize = size * 0.8;
+        ctx.drawImage(icon, x - iconSize/2, y - iconSize/2, iconSize, iconSize);
+    }
+    
+    if (hex.dungeon) {
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(x + size * 0.4, y - size * 0.4, size * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function drawToken(token) {
+    const { x, y } = hexToPixel(token.q, token.r);
+    const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
+    const tokenSize = size * 0.85 * token.size * token.scale;
+    
+    // Safety check: don't render if too small
+    if (tokenSize <= 0 || size <= 0) return;
+    
+    const radius = Math.max(1, tokenSize / 2); // Ensure minimum radius of 1
+    
+    ctx.save();
+    // Shadow
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.beginPath();
+    ctx.arc(x + 2, y + 2, radius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Token circle
+    ctx.fillStyle = token.color;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = Math.max(1, 2 * token.scale);
+    ctx.stroke();
+    
+    // Display text based on size
+    let displayText = token.label;
+    if (token.size < 0.8) {
+        displayText = token.label.charAt(0).toUpperCase();
+    } else if (token.size < 1.3) {
+        if (token.label.length > 3) {
+            const words = token.label.trim().split(/\s+/);
+            displayText = words.length > 1 ? words.map(w => w.charAt(0).toUpperCase()).join('').slice(0, 3) : token.label.slice(0, 3).toUpperCase();
+        } else {
+            displayText = token.label.toUpperCase();
+        }
+    } else {
+        displayText = token.label.length > 10 ? token.label.slice(0, 10) : token.label;
+    }
+    
+    // Only render text if token is large enough
+    if (tokenSize > 10) {
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const fontSize = Math.max(10, tokenSize * 0.35);
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 3;
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 1;
+        ctx.fillText(displayText, x, y);
+    }
+    ctx.restore();
+}
+
+function drawLandmark(landmark) {
+    const { x, y } = hexToPixel(landmark.q, landmark.r);
+    const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
+    const landmarkSize = size * 0.75 * landmark.size;
+    
+    // Safety check: don't render if too small
+    if (landmarkSize <= 0 || size <= 0) return;
+    
+    const radius = Math.max(1, landmarkSize / 2); // Ensure minimum radius of 1
+    
+    ctx.save();
+    
+    if (landmark.style === 'circle') {
+        // Outer glow
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius + 8);
+        gradient.addColorStop(0, landmark.color);
+        gradient.addColorStop(0.7, landmark.color);
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gradient;
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.arc(x, y, radius + 8, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Main circle with gradient
+        ctx.globalAlpha = 0.85;
+        const mainGradient = ctx.createRadialGradient(
+            x - landmarkSize * 0.2, 
+            y - landmarkSize * 0.2, 
+            0, 
+            x, 
+            y, 
+            radius
+        );
+        mainGradient.addColorStop(0, lightenColor(landmark.color, 30));
+        mainGradient.addColorStop(1, landmark.color);
+        ctx.fillStyle = mainGradient;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Border
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = darkenColor(landmark.color, 30);
+        ctx.lineWidth = Math.max(1, 3);
+        ctx.stroke();
+        
+        // Inner highlight (only if large enough)
+        if (radius > 5) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
             ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            const icon = hexIconCache.get(hex.terrain);
-            if (icon && size > 15) {
-                const iconSize = size * 0.8;
-                ctx.drawImage(icon, x - iconSize/2, y - iconSize/2, iconSize, iconSize);
-            }
-            
-            if (hex.dungeon) {
-                ctx.fillStyle = '#f59e0b';
-                ctx.beginPath();
-                ctx.arc(x + size * 0.4, y - size * 0.4, size * 0.15, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-        
-        function drawToken(token) {
-            const { x, y } = hexToPixel(token.q, token.r);
-            const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
-            const tokenSize = size * 0.85 * token.size * token.scale;
-            
-            // Safety check: don't render if too small
-            if (tokenSize <= 0 || size <= 0) return;
-            
-            const radius = Math.max(1, tokenSize / 2); // Ensure minimum radius of 1
-            
-            ctx.save();
-            // Shadow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             ctx.beginPath();
-            ctx.arc(x + 2, y + 2, radius, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Token circle
-            ctx.fillStyle = token.color;
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = Math.max(1, 2 * token.scale);
+            ctx.arc(x - landmarkSize * 0.15, y - landmarkSize * 0.15, radius - 5, Math.PI, Math.PI * 1.5);
             ctx.stroke();
-            
-            // Display text based on size
-            let displayText = token.label;
-            if (token.size < 0.8) {
-                displayText = token.label.charAt(0).toUpperCase();
-            } else if (token.size < 1.3) {
-                if (token.label.length > 3) {
-                    const words = token.label.trim().split(/\s+/);
-                    displayText = words.length > 1 ? words.map(w => w.charAt(0).toUpperCase()).join('').slice(0, 3) : token.label.slice(0, 3).toUpperCase();
-                } else {
-                    displayText = token.label.toUpperCase();
-                }
-            } else {
-                displayText = token.label.length > 10 ? token.label.slice(0, 10) : token.label;
-            }
-            
-            // Only render text if token is large enough
-            if (tokenSize > 10) {
-                ctx.fillStyle = '#ffffff';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                const fontSize = Math.max(10, tokenSize * 0.35);
-                ctx.font = `bold ${fontSize}px Arial`;
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-                ctx.shadowBlur = 3;
-                ctx.shadowOffsetX = 1;
-                ctx.shadowOffsetY = 1;
-                ctx.fillText(displayText, x, y);
-            }
-            ctx.restore();
-        }
-
-        function drawLandmark(landmark) {
-            const { x, y } = hexToPixel(landmark.q, landmark.r);
-            const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
-            const landmarkSize = size * 0.75 * landmark.size;
-            
-            // Safety check: don't render if too small
-            if (landmarkSize <= 0 || size <= 0) return;
-            
-            const radius = Math.max(1, landmarkSize / 2); // Ensure minimum radius of 1
-            
-            ctx.save();
-            
-            if (landmark.style === 'circle') {
-                // Outer glow
-                const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius + 8);
-                gradient.addColorStop(0, landmark.color);
-                gradient.addColorStop(0.7, landmark.color);
-                gradient.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.fillStyle = gradient;
-                ctx.globalAlpha = 0.3;
-                ctx.beginPath();
-                ctx.arc(x, y, radius + 8, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Main circle with gradient
-                ctx.globalAlpha = 0.85;
-                const mainGradient = ctx.createRadialGradient(
-                    x - landmarkSize * 0.2, 
-                    y - landmarkSize * 0.2, 
-                    0, 
-                    x, 
-                    y, 
-                    radius
-                );
-                mainGradient.addColorStop(0, lightenColor(landmark.color, 30));
-                mainGradient.addColorStop(1, landmark.color);
-                ctx.fillStyle = mainGradient;
-                ctx.beginPath();
-                ctx.arc(x, y, radius, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Border
-                ctx.globalAlpha = 1;
-                ctx.strokeStyle = darkenColor(landmark.color, 30);
-                ctx.lineWidth = Math.max(1, 3);
-                ctx.stroke();
-                
-                // Inner highlight (only if large enough)
-                if (radius > 5) {
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(x - landmarkSize * 0.15, y - landmarkSize * 0.15, radius - 5, Math.PI, Math.PI * 1.5);
-                    ctx.stroke();
-                }
-                
-            } else if (landmark.style === 'icon' && landmark.icon) {
-                // Icon style - draw placeholder for now
-                ctx.fillStyle = landmark.color;
-                ctx.globalAlpha = 0.9;
-                ctx.beginPath();
-                ctx.arc(x, y, radius, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.globalAlpha = 1;
-                ctx.strokeStyle = '#000000';
-                ctx.lineWidth = Math.max(1, 2);
-                ctx.stroke();
-                
-                // Icon placeholder (only if large enough)
-                if (landmarkSize > 10) {
-                    ctx.fillStyle = '#000000';
-                    ctx.font = `bold ${landmarkSize * 0.5}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('🏛️', x, y);
-                }
-            } else if (landmark.style === 'badge') {
-                // Badge style - small corner indicator
-                const badgeSize = size * 0.4 * landmark.size;
-                const badgeRadius = Math.max(1, badgeSize / 2);
-                const offsetX = size * 0.3;
-                const offsetY = -size * 0.3;
-                
-                // Glow
-                ctx.globalAlpha = 0.3;
-                ctx.fillStyle = landmark.color;
-                ctx.beginPath();
-                ctx.arc(x + offsetX, y + offsetY, badgeRadius + 4, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Main badge
-                ctx.globalAlpha = 1;
-                ctx.fillStyle = landmark.color;
-                ctx.beginPath();
-                ctx.arc(x + offsetX, y + offsetY, badgeRadius, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = '#000000';
-                ctx.lineWidth = Math.max(1, 2);
-                ctx.stroke();
-            }
-            
-            // Draw label if enabled (only if landmark is large enough)
-            if (landmark.showLabel && landmark.name && landmarkSize > 10) {
-                const fontSize = Math.max(11, size * 0.28);
-                ctx.font = `bold ${fontSize}px Arial`;
-                ctx.textAlign = 'center';
-                
-                let labelY = y;
-                if (landmark.labelPosition === 'above') {
-                    labelY = y - radius - fontSize / 2 - 4;
-                    ctx.textBaseline = 'bottom';
-                } else if (landmark.labelPosition === 'below') {
-                    labelY = y + radius + fontSize / 2 + 4;
-                    ctx.textBaseline = 'top';
-                } else { // inside
-                    labelY = y;
-                    ctx.textBaseline = 'middle';
-                }
-                
-                // Text outline (thicker for better visibility)
-                ctx.globalAlpha = 1;
-                ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 4;
-                ctx.strokeText(landmark.name, x, labelY);
-                
-                // Text fill
-                ctx.fillStyle = '#ffffff';
-                ctx.fillText(landmark.name, x, labelY);
-            }
-            
-            ctx.restore();
         }
         
-        // Helper functions for color manipulation
-        function lightenColor(color, percent) {
-            const num = parseInt(color.replace("#",""), 16);
-            const amt = Math.round(2.55 * percent);
-            const R = Math.min(255, (num >> 16) + amt);
-            const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
-            const B = Math.min(255, (num & 0x0000FF) + amt);
-            return "#" + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+    } else if (landmark.style === 'icon' && landmark.icon) {
+        // Icon style - draw placeholder for now
+        ctx.fillStyle = landmark.color;
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = Math.max(1, 2);
+        ctx.stroke();
+        
+        // Icon placeholder (only if large enough)
+        if (landmarkSize > 10) {
+            ctx.fillStyle = '#000000';
+            ctx.font = `bold ${landmarkSize * 0.5}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🏛️', x, y);
+        }
+    } else if (landmark.style === 'badge') {
+        // Badge style - small corner indicator
+        const badgeSize = size * 0.4 * landmark.size;
+        const badgeRadius = Math.max(1, badgeSize / 2);
+        const offsetX = size * 0.3;
+        const offsetY = -size * 0.3;
+        
+        // Glow
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = landmark.color;
+        ctx.beginPath();
+        ctx.arc(x + offsetX, y + offsetY, badgeRadius + 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Main badge
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = landmark.color;
+        ctx.beginPath();
+        ctx.arc(x + offsetX, y + offsetY, badgeRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = Math.max(1, 2);
+        ctx.stroke();
+    }
+    
+    // Draw label if enabled (only if landmark is large enough)
+    if (landmark.showLabel && landmark.name && landmarkSize > 10) {
+        const fontSize = Math.max(11, size * 0.28);
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.textAlign = 'center';
+        
+        let labelY = y;
+        if (landmark.labelPosition === 'above') {
+            labelY = y - radius - fontSize / 2 - 4;
+            ctx.textBaseline = 'bottom';
+        } else if (landmark.labelPosition === 'below') {
+            labelY = y + radius + fontSize / 2 + 4;
+            ctx.textBaseline = 'top';
+        } else { // inside
+            labelY = y;
+            ctx.textBaseline = 'middle';
         }
         
-        function darkenColor(color, percent) {
-            const num = parseInt(color.replace("#",""), 16);
-            const amt = Math.round(2.55 * percent);
-            const R = Math.max(0, (num >> 16) - amt);
-            const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
-            const B = Math.max(0, (num & 0x0000FF) - amt);
-            return "#" + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
-        }
-
-        // Mode Management
-        function setViewMode(viewMode) {
-            state.hexMap.viewMode = viewMode;
-            
-            // Update view mode buttons
-            document.querySelectorAll('.view-mode-option').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.viewMode === viewMode);
-            });
-            
-            // Show/hide tools section based on view mode
-            const toolsSection = document.getElementById('toolsSection');
-            const brushSection = document.getElementById('brushSettingsSection');
-            const terrainSection = document.getElementById('terrainPaletteSection');
-            const tokenSection = document.getElementById('tokenCreatorSection');
-            const pathSection = document.getElementById('pathCreatorSection');
-            
-            if (viewMode === 'explorer') {
-                // Hide all builder tools
-                toolsSection.style.display = 'none';
-                brushSection.style.display = 'none';
-                terrainSection.style.display = 'none';
-                tokenSection.style.display = 'none';
-                pathSection.style.display = 'none';
-                
-                // Cancel any in-progress actions
-                state.hexMap.isPainting = false;
-                state.hexMap.pendingToken = null;
-                if (state.hexMap.currentPath) {
-                    cancelPath();
-                }
-            } else {
-                // Show builder tools
-                toolsSection.style.display = 'block';
-                // Let setHexMode handle which sections to show
-                setHexMode(state.hexMap.mode);
-            }
-            
-            updateUI();
-            renderHex();
-        }
-
-        function setHexMode(mode) {
-            state.hexMap.mode = mode;
-            state.hexMap.pendingToken = null;
-            state.hexMap.pendingLandmark = null;
-            state.hexMap.hoveredPath = null;
-            
-            // Cancel any in-progress path
-            if (state.hexMap.currentPath) {
-                cancelPath();
-            }
-            
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.mode === mode);
-            });
-            
-            const tokenSection = document.getElementById('tokenCreatorSection');
-            const landmarkSection = document.getElementById('landmarkCreatorSection');
-            const brushSection = document.getElementById('brushSettingsSection');
-            const terrainSection = document.getElementById('terrainPaletteSection');
-            const pathSection = document.getElementById('pathCreatorSection');
-            
-            tokenSection.style.display = 'none';
-            landmarkSection.style.display = 'none';
-            brushSection.style.display = 'none';
-            terrainSection.style.display = 'none';
-            pathSection.style.display = 'none';
-            
-            if (mode === 'token') {
-                tokenSection.style.display = 'block';
-            } else if (mode === 'landmark') {
-                landmarkSection.style.display = 'block';
-            } else if (mode === 'path') {
-                pathSection.style.display = 'block';
-                selectPathType(state.hexMap.pathType);
-                selectPathStyle(state.hexMap.pathStyle);
-            } else if (mode === 'paint') {
-                brushSection.style.display = 'block';
-                terrainSection.style.display = 'block';
-            }
-            updateUI();
-        }
-
-        function selectTerrain(terrain) {
-            if (terrain === 'clear') {
-                state.hexMap.selectedTerrain = 'clear';
-                document.querySelectorAll('.terrain-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.terrain === 'clear');
-                });
-                document.getElementById('terrainText').textContent = 'Clear Hex';
-                return;
-            }
-            
-            state.hexMap.selectedTerrain = terrain;
-            document.querySelectorAll('.terrain-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.terrain === terrain);
-            });
-            document.getElementById('terrainText').textContent = TERRAINS[terrain].name;
-        }
-
-        function updateBrushSize(value) {
-            state.hexMap.brushSize = parseInt(value);
-            document.getElementById('brushSizeValue').textContent = value;
-        }
-
-        function updatePaintSpeed(value) {
-            state.hexMap.paintSpeed = parseInt(value);
-            document.getElementById('paintSpeedValue').textContent = value;
-        }
+        // Text outline (thicker for better visibility)
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 4;
+        ctx.strokeText(landmark.name, x, labelY);
         
-        function toggleFillMode(enabled) {
-            state.hexMap.fillMode = enabled;
-        }
+        // Text fill
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(landmark.name, x, labelY);
+    }
+    
+    ctx.restore();
+}
 
-        function updateUI() {
-            const modeText = document.getElementById('modeText');
-            const instructionText = document.getElementById('instructionText');
-            
-            // If in Explorer mode, show different instructions
-            if (state.hexMap.viewMode === 'explorer') {
-                modeText.textContent = 'Explorer Mode';
-                instructionText.textContent = 'Click hexes/tokens/landmarks to view info · Drag tokens to move · Right-click drag to pan';
-                canvas.style.cursor = 'default';
-                return;
-            }
-            
-            const cursorMap = {
-                paint: 'crosshair',
-                token: 'crosshair',
-                path: 'crosshair',
-                landmark: 'crosshair'
-            };
-            
-            const instructions = {
-                paint: 'Click to paint · Shift+Click to select hex · Drag for continuous painting · Right-click drag to pan',
-                token: state.hexMap.pendingToken ? 'Click a hex to place token · ESC to cancel' : 'Click to place token · Shift+Click token to select · Drag token to move',
-                landmark: state.hexMap.pendingLandmark ? 'Click a hex to place landmark · ESC to cancel' : 'Click to create landmark · Shift+Click landmark to select',
-                path: state.hexMap.pathEditMode ? 'Drag points to move · Click + to insert · Click × to delete · Right-click to pan' : 
-                      state.hexMap.currentPath ? 'Click to add waypoints · Double-click to finish · ESC to cancel' : 
-                      'Click to draw new path · Shift+Click path to select/edit'
-            };
-            
-            canvas.style.cursor = cursorMap[state.hexMap.mode] || 'default';
-            modeText.textContent = state.hexMap.mode.charAt(0).toUpperCase() + state.hexMap.mode.slice(1) + ' Tool';
-            instructionText.textContent = instructions[state.hexMap.mode];
-        }
+// Helper functions for color manipulation
+function lightenColor(color, percent) {
+    const num = parseInt(color.replace("#",""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = Math.min(255, (num >> 16) + amt);
+    const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
+    const B = Math.min(255, (num & 0x0000FF) + amt);
+    return "#" + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+}
 
-        // Mouse Events
-        canvas.addEventListener('mousedown', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const hex = pixelToHex(x, y);
-            
-            if (e.button === 2 || e.button === 1) {
-                e.preventDefault();
-                state.hexMap.isPanning = true;
-                state.hexMap.lastPanPos = { x, y };
+function darkenColor(color, percent) {
+    const num = parseInt(color.replace("#",""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = Math.max(0, (num >> 16) - amt);
+    const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
+    const B = Math.max(0, (num & 0x0000FF) - amt);
+    return "#" + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+}
+
+// Mode Management
+function setViewMode(viewMode) {
+    state.hexMap.viewMode = viewMode;
+    
+    // Update view mode buttons
+    document.querySelectorAll('.view-mode-option').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.viewMode === viewMode);
+    });
+    
+    // Show/hide tools section based on view mode
+    const toolsSection = document.getElementById('toolsSection');
+    const brushSection = document.getElementById('brushSettingsSection');
+    const terrainSection = document.getElementById('terrainPaletteSection');
+    const tokenSection = document.getElementById('tokenCreatorSection');
+    const pathSection = document.getElementById('pathCreatorSection');
+    
+    if (viewMode === 'explorer') {
+        // Hide all builder tools
+        toolsSection.style.display = 'none';
+        brushSection.style.display = 'none';
+        terrainSection.style.display = 'none';
+        tokenSection.style.display = 'none';
+        pathSection.style.display = 'none';
+        
+        // Cancel any in-progress actions
+        state.hexMap.isPainting = false;
+        state.hexMap.pendingToken = null;
+        if (state.hexMap.currentPath) {
+            cancelPath();
+        }
+    } else {
+        // Show builder tools
+        toolsSection.style.display = 'block';
+        // Let setHexMode handle which sections to show
+        setHexMode(state.hexMap.mode);
+    }
+    
+    updateUI();
+    renderHex();
+}
+
+function setHexMode(mode) {
+    state.hexMap.mode = mode;
+    state.hexMap.pendingToken = null;
+    state.hexMap.pendingLandmark = null;
+    state.hexMap.hoveredPath = null;
+    
+    // Cancel any in-progress path
+    if (state.hexMap.currentPath) {
+        cancelPath();
+    }
+    
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+    
+    const tokenSection = document.getElementById('tokenCreatorSection');
+    const landmarkSection = document.getElementById('landmarkCreatorSection');
+    const brushSection = document.getElementById('brushSettingsSection');
+    const terrainSection = document.getElementById('terrainPaletteSection');
+    const pathSection = document.getElementById('pathCreatorSection');
+    
+    tokenSection.style.display = 'none';
+    landmarkSection.style.display = 'none';
+    brushSection.style.display = 'none';
+    terrainSection.style.display = 'none';
+    pathSection.style.display = 'none';
+    
+    if (mode === 'token') {
+        tokenSection.style.display = 'block';
+    } else if (mode === 'landmark') {
+        landmarkSection.style.display = 'block';
+    } else if (mode === 'path') {
+        pathSection.style.display = 'block';
+        selectPathType(state.hexMap.pathType);
+        selectPathStyle(state.hexMap.pathStyle);
+    } else if (mode === 'paint') {
+        brushSection.style.display = 'block';
+        terrainSection.style.display = 'block';
+    }
+    updateUI();
+}
+
+function selectTerrain(terrain) {
+    if (terrain === 'clear') {
+        state.hexMap.selectedTerrain = 'clear';
+        document.querySelectorAll('.terrain-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.terrain === 'clear');
+        });
+        document.getElementById('terrainText').textContent = 'Clear Hex';
+        return;
+    }
+    
+    state.hexMap.selectedTerrain = terrain;
+    document.querySelectorAll('.terrain-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.terrain === terrain);
+    });
+    document.getElementById('terrainText').textContent = TERRAINS[terrain].name;
+}
+
+function updateBrushSize(value) {
+    state.hexMap.brushSize = parseInt(value);
+    document.getElementById('brushSizeValue').textContent = value;
+}
+
+function updatePaintSpeed(value) {
+    state.hexMap.paintSpeed = parseInt(value);
+    document.getElementById('paintSpeedValue').textContent = value;
+}
+
+function toggleFillMode(enabled) {
+    state.hexMap.fillMode = enabled;
+}
+
+function updateUI() {
+    const modeText = document.getElementById('modeText');
+    const instructionText = document.getElementById('instructionText');
+    
+    // If in Explorer mode, show different instructions
+    if (state.hexMap.viewMode === 'explorer') {
+        modeText.textContent = 'Explorer Mode';
+        instructionText.textContent = 'Click hexes/tokens/landmarks to view info · Drag tokens to move · Right-click drag to pan';
+        canvas.style.cursor = 'default';
+        return;
+    }
+    
+    const cursorMap = {
+        paint: 'crosshair',
+        token: 'crosshair',
+        path: 'crosshair',
+        landmark: 'crosshair'
+    };
+    
+    const instructions = {
+        paint: 'Click to paint · Shift+Click to select hex · Drag for continuous painting · Right-click drag to pan',
+        token: state.hexMap.pendingToken ? 'Click a hex to place token · ESC to cancel' : 'Click to place token · Shift+Click token to select · Drag token to move',
+        landmark: state.hexMap.pendingLandmark ? 'Click a hex to place landmark · ESC to cancel' : 'Click to create landmark · Shift+Click landmark to select',
+        path: state.hexMap.pathEditMode ? 'Drag points to move · Click + to insert · Click × to delete · Right-click to pan' : 
+              state.hexMap.currentPath ? 'Click to add waypoints · Double-click to finish · ESC to cancel' : 
+              'Click to draw new path · Shift+Click path to select/edit'
+    };
+    
+    canvas.style.cursor = cursorMap[state.hexMap.mode] || 'default';
+    modeText.textContent = state.hexMap.mode.charAt(0).toUpperCase() + state.hexMap.mode.slice(1) + ' Tool';
+    instructionText.textContent = instructions[state.hexMap.mode];
+}
+
+// Mouse Events
+canvas.addEventListener('mousedown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const hex = pixelToHex(x, y);
+    
+    if (e.button === 2 || e.button === 1) {
+        e.preventDefault();
+        state.hexMap.isPanning = true;
+        state.hexMap.lastPanPos = { x, y };
+        canvas.style.cursor = 'grabbing';
+        return;
+    }
+    
+    if (e.button === 0) {
+        // EXPLORER MODE - simple click to view, drag tokens to move
+        if (state.hexMap.viewMode === 'explorer') {
+            const clickedToken = findTokenAtPixel(x, y);
+            if (clickedToken) {
+                // Check if clicking to drag or to select
+                state.hexMap.draggingToken = clickedToken;
+                state.hexMap.selectedToken = clickedToken;
+                state.hexMap.selectedHex = null;
+                animateTokenScale(clickedToken.id, 1.3, 150);
+                showTokenDetails(clickedToken);
                 canvas.style.cursor = 'grabbing';
-                return;
-            }
-            
-            if (e.button === 0) {
-                // EXPLORER MODE - simple click to view, drag tokens to move
-                if (state.hexMap.viewMode === 'explorer') {
-                    const clickedToken = findTokenAtPixel(x, y);
-                    if (clickedToken) {
-                        // Check if clicking to drag or to select
-                        state.hexMap.draggingToken = clickedToken;
-                        state.hexMap.selectedToken = clickedToken;
-                        state.hexMap.selectedHex = null;
-                        animateTokenScale(clickedToken.id, 1.3, 150);
-                        showTokenDetails(clickedToken);
-                        canvas.style.cursor = 'grabbing';
-                    } else {
-                        // Click on hex to view info
-                        const existingHex = getHex(hex.q, hex.r);
-                        if (existingHex) {
-                            state.hexMap.selectedToken = null;
-                            selectHex(existingHex);
-                        }
-                    }
-                    return;
-                }
-                
-                // BUILDER MODE - rest of the logic
-                // Check if we're selecting a pathfinding destination (works in any mode)
-                if (pathfindingState.selectingDestination) {
-                    pathfindingState.selectingDestination = false;
-                    startTokenPathfinding(pathfindingState.tokenId, hex.q, hex.r);
-                    pathfindingState.tokenId = null;
-                    return;
-                }
-                
-                // SHIFT+CLICK SELECTION (tool-specific)
-                if (e.shiftKey) {
-                    if (state.hexMap.mode === 'paint') {
-                        // Select hex in terrain mode
-                        const existingHex = getHex(hex.q, hex.r);
-                        if (existingHex) {
-                            state.hexMap.selectedToken = null;
-                            selectHex(existingHex);
-                        }
-                        return;
-                    } else if (state.hexMap.mode === 'token') {
-                        // Select token in token mode
-                        const clickedToken = findTokenAtPixel(x, y);
-                        if (clickedToken) {
-                            state.hexMap.selectedToken = clickedToken;
-                            state.hexMap.selectedHex = null;
-                            animateTokenScale(clickedToken.id, 1.2, 200);
-                            setTimeout(() => animateTokenScale(clickedToken.id, 1.0, 200), 200);
-                            showTokenDetails(clickedToken);
-                            renderHex();
-                        }
-                        return;
-                    } else if (state.hexMap.mode === 'landmark') {
-                        // Select landmark in landmark mode
-                        const clickedLandmark = findLandmarkAtPixel(x, y);
-                        if (clickedLandmark) {
-                            state.hexMap.selectedLandmark = clickedLandmark;
-                            state.hexMap.selectedHex = null;
-                            state.hexMap.selectedToken = null;
-                            showLandmarkDetails(clickedLandmark);
-                            renderHex();
-                        }
-                        return;
-                    } else if (state.hexMap.mode === 'path') {
-                        // Select path in path mode
-                        const clickedPath = findPathAtPixel(x, y);
-                        if (clickedPath) {
-                            state.hexMap.selectedPath = clickedPath;
-                            state.hexMap.selectedHex = null;
-                            state.hexMap.selectedToken = null;
-                            showPathDetails(clickedPath);
-                            renderHex();
-                        }
-                        return;
-                    }
-                }
-                
-                // Path mode
-                if (state.hexMap.mode === 'path') {
-                    // Check if in edit mode and clicking on a path point
-                    if (state.hexMap.pathEditMode && state.hexMap.selectedPath) {
-                        const clickedPoint = findPathPointAtPixel(x, y, state.hexMap.selectedPath);
-                        if (clickedPoint) {
-                            state.hexMap.draggingPathPoint = clickedPoint;
-                            canvas.style.cursor = 'grabbing';
-                            return;
-                        }
-                        
-                        // Check for double-click on path line in edit mode to insert point
-                        if (e.detail === 2) {
-                            const segmentIndex = findPathSegmentAtPixel(x, y, state.hexMap.selectedPath);
-                            if (segmentIndex !== null) {
-                                insertPointAfter(state.hexMap.selectedPath.id, segmentIndex);
-                                return;
-                            }
-                        }
-                        // In edit mode but didn't click a point - do nothing (don't add points)
-                        return;
-                    }
-                    
-                    if (e.detail === 2) { // Double-click
-                        // If we're currently drawing a path, finish it
-                        if (state.hexMap.currentPath) {
-                            finishPath();
-                            return;
-                        }
-                        
-                        // If we have a selected path (not in edit mode), double-click to insert point
-                        if (state.hexMap.selectedPath) {
-                            const segmentIndex = findPathSegmentAtPixel(x, y, state.hexMap.selectedPath);
-                            if (segmentIndex !== null) {
-                                insertPointAfter(state.hexMap.selectedPath.id, segmentIndex);
-                                return;
-                            }
-                        }
-                    } else {
-                        // Single click (non-shift)
-                        // Check if clicking on existing path first (only when not drawing)
-                        if (!state.hexMap.currentPath && !e.shiftKey) {
-                            const clickedPath = findPathAtPixel(x, y);
-                            if (clickedPath) {
-                                state.hexMap.selectedPath = clickedPath;
-                                state.hexMap.selectedHex = null;
-                                state.hexMap.selectedToken = null;
-                                showPathDetails(clickedPath);
-                                renderHex();
-                                return; // Don't add point after selecting
-                            }
-                        }
-                        
-                        // Only add points if we're actively drawing (currentPath exists) or starting new
-                        if (state.hexMap.currentPath || !state.hexMap.selectedPath) {
-                            addPathPoint(hex.q, hex.r);
-                        }
-                    }
-                    return;
-                }
-                
-                // Token mode
-                if (state.hexMap.mode === 'token') {
-                    const clickedToken = findTokenAtPixel(x, y);
-                    if (clickedToken && !e.shiftKey) {
-                        state.hexMap.draggingToken = clickedToken;
-                        animateTokenScale(clickedToken.id, 1.3, 150);
-                        canvas.style.cursor = 'grabbing';
-                    } else if (state.hexMap.pendingToken) {
-                        const newToken = createToken(hex.q, hex.r, state.hexMap.pendingToken);
-                        state.hexMap.pendingToken = null;
-                        newToken.scale = 0;
-                        animateTokenScale(newToken.id, 1, 300);
-                        renderHex();
-                        updateUI();
-                    } else if (!e.shiftKey) {
-                        showTokenCreator();
-                    }
-                    return;
-                }
-                
-                // Landmark mode
-                if (state.hexMap.mode === 'landmark') {
-                    if (state.hexMap.pendingLandmark) {
-                        // Place the landmark
-                        const newLandmark = createLandmark(hex.q, hex.r, state.hexMap.pendingLandmark);
-                        state.hexMap.pendingLandmark = null;
-                        renderHex();
-                        updateUI();
-                    } else if (!e.shiftKey) {
-                        // Check if clicking on existing landmark first
-                        const clickedLandmark = findLandmarkAtPixel(x, y);
-                        if (clickedLandmark) {
-                            // Show landmark details  (not implemented with shift - just select it)
-                            state.hexMap.selectedLandmark = clickedLandmark;
-                            state.hexMap.selectedHex = null;
-                            state.hexMap.selectedToken = null;
-                            showLandmarkDetails(clickedLandmark);
-                            renderHex();
-                        } else {
-                            // No landmark, show creator
-                            showLandmarkCreator();
-                        }
-                    }
-                    return;
-                }
-                
-                if (state.hexMap.mode === 'paint') {
-                    // Check if fill mode is enabled
-                    if (state.hexMap.fillMode && state.hexMap.selectedTerrain !== 'clear') {
-                        floodFill(hex.q, hex.r, state.hexMap.selectedTerrain);
-                    } else {
-                        state.hexMap.isPainting = true;
-                        
-                        // Handle clear terrain
-                        if (state.hexMap.selectedTerrain === 'clear') {
-                            const hexesToClear = getHexesInRadius(hex.q, hex.r, state.hexMap.brushSize - 1);
-                            hexesToClear.forEach(h => deleteHex(h.q, h.r));
-                        } else {
-                            paintHex(hex.q, hex.r);
-                        }
-                        
-                        state.hexMap.lastPaintPos = hex;
-                        state.hexMap.paintThrottle = 0;
-                    }
-                    renderHex();
-                }
-            }
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const hex = pixelToHex(x, y);
-            
-            if (state.hexMap.isPanning) {
-                const dx = x - state.hexMap.lastPanPos.x;
-                const dy = y - state.hexMap.lastPanPos.y;
-                state.hexMap.viewport.offsetX += dx;
-                state.hexMap.viewport.offsetY += dy;
-                state.hexMap.lastPanPos = { x, y };
-                renderHex();
-                return;
-            }
-            
-            if (state.hexMap.draggingToken) {
-                const targetHex = pixelToHex(x, y);
-                if (targetHex.q !== state.hexMap.draggingToken.q || targetHex.r !== state.hexMap.draggingToken.r) {
-                    state.hexMap.draggingToken.q = targetHex.q;
-                    state.hexMap.draggingToken.r = targetHex.r;
-                }
-                renderHex();
-                return;
-            }
-            
-            // Prevent all other editing actions in Explorer mode
-            if (state.hexMap.viewMode === 'explorer') {
-                // Only show hover cursor for tokens
-                const hoverToken = findTokenAtPixel(x, y);
-                canvas.style.cursor = hoverToken ? 'pointer' : 'default';
-                return;
-            }
-            
-            // Path point dragging (Builder mode only)
-            if (state.hexMap.draggingPathPoint) {
-                const targetHex = pixelToHex(x, y);
-                const point = state.hexMap.selectedPath.points[state.hexMap.draggingPathPoint.pointIndex];
-                if (point.q !== targetHex.q || point.r !== targetHex.r) {
-                    point.q = targetHex.q;
-                    point.r = targetHex.r;
-                    renderHex();
-                }
-                return;
-            }
-            
-            // Path mode hover detection
-            if (state.hexMap.mode === 'path') {
-                // Check for path point hover in edit mode
-                if (state.hexMap.pathEditMode && state.hexMap.selectedPath) {
-                    const hoveredPoint = findPathPointAtPixel(x, y, state.hexMap.selectedPath);
-                    if (hoveredPoint !== state.hexMap.hoveredPathPoint) {
-                        state.hexMap.hoveredPathPoint = hoveredPoint;
-                        canvas.style.cursor = hoveredPoint ? 'move' : 'crosshair';
-                        renderHex();
-                    }
-                } else if (!state.hexMap.currentPath) {
-                    // Regular path hover when not in edit mode
-                    const hoveredPath = findPathAtPixel(x, y);
-                    if (hoveredPath !== state.hexMap.hoveredPath) {
-                        state.hexMap.hoveredPath = hoveredPath;
-                        canvas.style.cursor = hoveredPath ? 'pointer' : 'crosshair';
-                        renderHex();
-                    }
-                }
-            }
-            
-            if (state.hexMap.mode === 'paint') {
-                state.hexMap.brushPreviewHexes = getHexesInRadius(hex.q, hex.r, state.hexMap.brushSize - 1);
-                if (!state.hexMap.isPainting) {
-                    renderHex();
-                }
-            }
-            
-            if (state.hexMap.mode === 'token' && !state.hexMap.draggingToken) {
-                const hoverToken = findTokenAtPixel(x, y);
-                canvas.style.cursor = hoverToken ? 'pointer' : 'crosshair';
-            }
-            
-            if (state.hexMap.isPainting) {
-                const didPan = checkAutoPan(x, y);
-                const speedMultiplier = 11 - state.hexMap.paintSpeed;
-                state.hexMap.paintThrottle++;
-                
-                if (state.hexMap.paintThrottle >= speedMultiplier || didPan) {
-                    const shouldPaint = (hex.q !== state.hexMap.lastPaintPos.q || hex.r !== state.hexMap.lastPaintPos.r);
-                    
-                    if (shouldPaint) {
-                        if (state.hexMap.mode === 'paint') {
-                            if (state.hexMap.selectedTerrain === 'clear') {
-                                const hexesToClear = getHexesInRadius(hex.q, hex.r, state.hexMap.brushSize - 1);
-                                hexesToClear.forEach(h => deleteHex(h.q, h.r));
-                            } else {
-                                paintHex(hex.q, hex.r);
-                            }
-                        }
-                        state.hexMap.lastPaintPos = hex;
-                        renderHex();
-                    } else if (didPan) {
-                        renderHex();
-                    }
-                    state.hexMap.paintThrottle = 0;
-                }
-            }
-        });
-
-        canvas.addEventListener('mouseup', () => {
-            if (state.hexMap.draggingToken) {
-                animateTokenScale(state.hexMap.draggingToken.id, 1.0, 200);
-                state.hexMap.draggingToken = null;
-            }
-            if (state.hexMap.draggingPathPoint) {
-                state.hexMap.draggingPathPoint = null;
-                if (state.hexMap.selectedPath) {
-                    showPathDetails(state.hexMap.selectedPath);
-                }
-            }
-            state.hexMap.isPainting = false;
-            state.hexMap.isPanning = false;
-            
-            // Set cursor based on mode
-            if (state.hexMap.viewMode === 'explorer') {
-                canvas.style.cursor = 'default';
             } else {
-                const cursorMap = {
-                    paint: 'crosshair',
-                    token: 'crosshair',
-                    path: 'crosshair'
-                };
-                canvas.style.cursor = cursorMap[state.hexMap.mode] || 'default';
+                // Click on hex to view info
+                const existingHex = getHex(hex.q, hex.r);
+                if (existingHex) {
+                    state.hexMap.selectedToken = null;
+                    selectHex(existingHex);
+                }
             }
-        });
-
-        canvas.addEventListener('mouseleave', () => {
-            state.hexMap.isPainting = false;
-            state.hexMap.isPanning = false;
-            state.hexMap.brushPreviewHexes = [];
-            state.hexMap.hoveredPath = null;
-            state.hexMap.hoveredPathPoint = null;
-            state.hexMap.draggingPathPoint = null;
-            if (state.hexMap.draggingToken) {
-                animateTokenScale(state.hexMap.draggingToken.id, 1.0, 200);
-                state.hexMap.draggingToken = null;
+            return;
+        }
+        
+        // BUILDER MODE - rest of the logic
+        // Check if we're selecting a pathfinding destination (works in any mode)
+        if (pathfindingState.selectingDestination) {
+            pathfindingState.selectingDestination = false;
+            startTokenPathfinding(pathfindingState.tokenId, hex.q, hex.r);
+            pathfindingState.tokenId = null;
+            return;
+        }
+        
+        // SHIFT+CLICK SELECTION (tool-specific)
+        if (e.shiftKey) {
+            if (state.hexMap.mode === 'paint') {
+                // Select hex in terrain mode
+                const existingHex = getHex(hex.q, hex.r);
+                if (existingHex) {
+                    state.hexMap.selectedToken = null;
+                    selectHex(existingHex);
+                }
+                return;
+            } else if (state.hexMap.mode === 'token') {
+                // Select token in token mode
+                const clickedToken = findTokenAtPixel(x, y);
+                if (clickedToken) {
+                    state.hexMap.selectedToken = clickedToken;
+                    state.hexMap.selectedHex = null;
+                    animateTokenScale(clickedToken.id, 1.2, 200);
+                    setTimeout(() => animateTokenScale(clickedToken.id, 1.0, 200), 200);
+                    showTokenDetails(clickedToken);
+                    renderHex();
+                }
+                return;
+            } else if (state.hexMap.mode === 'landmark') {
+                // Select landmark in landmark mode
+                const clickedLandmark = findLandmarkAtPixel(x, y);
+                if (clickedLandmark) {
+                    state.hexMap.selectedLandmark = clickedLandmark;
+                    state.hexMap.selectedHex = null;
+                    state.hexMap.selectedToken = null;
+                    showLandmarkDetails(clickedLandmark);
+                    renderHex();
+                }
+                return;
+            } else if (state.hexMap.mode === 'path') {
+                // Select path in path mode
+                const clickedPath = findPathAtPixel(x, y);
+                if (clickedPath) {
+                    state.hexMap.selectedPath = clickedPath;
+                    state.hexMap.selectedHex = null;
+                    state.hexMap.selectedToken = null;
+                    showPathDetails(clickedPath);
+                    renderHex();
+                }
+                return;
+            }
+        }
+        
+        // Path mode
+        if (state.hexMap.mode === 'path') {
+            // Check if in edit mode and clicking on a path point
+            if (state.hexMap.pathEditMode && state.hexMap.selectedPath) {
+                const clickedPoint = findPathPointAtPixel(x, y, state.hexMap.selectedPath);
+                if (clickedPoint) {
+                    state.hexMap.draggingPathPoint = clickedPoint;
+                    canvas.style.cursor = 'grabbing';
+                    return;
+                }
+                
+                // Check for double-click on path line in edit mode to insert point
+                if (e.detail === 2) {
+                    const segmentIndex = findPathSegmentAtPixel(x, y, state.hexMap.selectedPath);
+                    if (segmentIndex !== null) {
+                        insertPointAfter(state.hexMap.selectedPath.id, segmentIndex);
+                        return;
+                    }
+                }
+                // In edit mode but didn't click a point - do nothing (don't add points)
+                return;
+            }
+            
+            if (e.detail === 2) { // Double-click
+                // If we're currently drawing a path, finish it
+                if (state.hexMap.currentPath) {
+                    finishPath();
+                    return;
+                }
+                
+                // If we have a selected path (not in edit mode), double-click to insert point
+                if (state.hexMap.selectedPath) {
+                    const segmentIndex = findPathSegmentAtPixel(x, y, state.hexMap.selectedPath);
+                    if (segmentIndex !== null) {
+                        insertPointAfter(state.hexMap.selectedPath.id, segmentIndex);
+                        return;
+                    }
+                }
+            } else {
+                // Single click (non-shift)
+                // Check if clicking on existing path first (only when not drawing)
+                if (!state.hexMap.currentPath && !e.shiftKey) {
+                    const clickedPath = findPathAtPixel(x, y);
+                    if (clickedPath) {
+                        state.hexMap.selectedPath = clickedPath;
+                        state.hexMap.selectedHex = null;
+                        state.hexMap.selectedToken = null;
+                        showPathDetails(clickedPath);
+                        renderHex();
+                        return; // Don't add point after selecting
+                    }
+                }
+                
+                // Only add points if we're actively drawing (currentPath exists) or starting new
+                if (state.hexMap.currentPath || !state.hexMap.selectedPath) {
+                    addPathPoint(hex.q, hex.r);
+                }
+            }
+            return;
+        }
+        
+        // Token mode
+        if (state.hexMap.mode === 'token') {
+            const clickedToken = findTokenAtPixel(x, y);
+            if (clickedToken && !e.shiftKey) {
+                state.hexMap.draggingToken = clickedToken;
+                animateTokenScale(clickedToken.id, 1.3, 150);
+                canvas.style.cursor = 'grabbing';
+            } else if (state.hexMap.pendingToken) {
+                const newToken = createToken(hex.q, hex.r, state.hexMap.pendingToken);
+                state.hexMap.pendingToken = null;
+                newToken.scale = 0;
+                animateTokenScale(newToken.id, 1, 300);
+                renderHex();
+                updateUI();
+            } else if (!e.shiftKey) {
+                showTokenCreator();
+            }
+            return;
+        }
+        
+        // Landmark mode
+        if (state.hexMap.mode === 'landmark') {
+            if (state.hexMap.pendingLandmark) {
+                // Place the landmark
+                const newLandmark = createLandmark(hex.q, hex.r, state.hexMap.pendingLandmark);
+                state.hexMap.pendingLandmark = null;
+                renderHex();
+                updateUI();
+            } else if (!e.shiftKey) {
+                // Check if clicking on existing landmark first
+                const clickedLandmark = findLandmarkAtPixel(x, y);
+                if (clickedLandmark) {
+                    // Show landmark details  (not implemented with shift - just select it)
+                    state.hexMap.selectedLandmark = clickedLandmark;
+                    state.hexMap.selectedHex = null;
+                    state.hexMap.selectedToken = null;
+                    showLandmarkDetails(clickedLandmark);
+                    renderHex();
+                } else {
+                    // No landmark, show creator
+                    showLandmarkCreator();
+                }
+            }
+            return;
+        }
+        
+        if (state.hexMap.mode === 'paint') {
+            // Check if fill mode is enabled
+            if (state.hexMap.fillMode && state.hexMap.selectedTerrain !== 'clear') {
+                floodFill(hex.q, hex.r, state.hexMap.selectedTerrain);
+            } else {
+                state.hexMap.isPainting = true;
+                
+                // Handle clear terrain
+                if (state.hexMap.selectedTerrain === 'clear') {
+                    const hexesToClear = getHexesInRadius(hex.q, hex.r, state.hexMap.brushSize - 1);
+                    hexesToClear.forEach(h => deleteHex(h.q, h.r));
+                } else {
+                    paintHex(hex.q, hex.r);
+                }
+                
+                state.hexMap.lastPaintPos = hex;
+                state.hexMap.paintThrottle = 0;
             }
             renderHex();
-        });
+        }
+    }
+});
 
-        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const hex = pixelToHex(x, y);
+    
+    if (state.hexMap.isPanning) {
+        const dx = x - state.hexMap.lastPanPos.x;
+        const dy = y - state.hexMap.lastPanPos.y;
+        state.hexMap.viewport.offsetX += dx;
+        state.hexMap.viewport.offsetY += dy;
+        state.hexMap.lastPanPos = { x, y };
+        renderHex();
+        return;
+    }
+    
+    if (state.hexMap.draggingToken) {
+        const targetHex = pixelToHex(x, y);
+        if (targetHex.q !== state.hexMap.draggingToken.q || targetHex.r !== state.hexMap.draggingToken.r) {
+            state.hexMap.draggingToken.q = targetHex.q;
+            state.hexMap.draggingToken.r = targetHex.r;
+        }
+        renderHex();
+        return;
+    }
+    
+    // Prevent all other editing actions in Explorer mode
+    if (state.hexMap.viewMode === 'explorer') {
+        // Only show hover cursor for tokens
+        const hoverToken = findTokenAtPixel(x, y);
+        canvas.style.cursor = hoverToken ? 'pointer' : 'default';
+        return;
+    }
+    
+    // Path point dragging (Builder mode only)
+    if (state.hexMap.draggingPathPoint) {
+        const targetHex = pixelToHex(x, y);
+        const point = state.hexMap.selectedPath.points[state.hexMap.draggingPathPoint.pointIndex];
+        if (point.q !== targetHex.q || point.r !== targetHex.r) {
+            point.q = targetHex.q;
+            point.r = targetHex.r;
+            renderHex();
+        }
+        return;
+    }
+    
+    // Path mode hover detection
+    if (state.hexMap.mode === 'path') {
+        // Check for path point hover in edit mode
+        if (state.hexMap.pathEditMode && state.hexMap.selectedPath) {
+            const hoveredPoint = findPathPointAtPixel(x, y, state.hexMap.selectedPath);
+            if (hoveredPoint !== state.hexMap.hoveredPathPoint) {
+                state.hexMap.hoveredPathPoint = hoveredPoint;
+                canvas.style.cursor = hoveredPoint ? 'move' : 'crosshair';
+                renderHex();
+            }
+        } else if (!state.hexMap.currentPath) {
+            // Regular path hover when not in edit mode
+            const hoveredPath = findPathAtPixel(x, y);
+            if (hoveredPath !== state.hexMap.hoveredPath) {
+                state.hexMap.hoveredPath = hoveredPath;
+                canvas.style.cursor = hoveredPath ? 'pointer' : 'crosshair';
+                renderHex();
+            }
+        }
+    }
+    
+    if (state.hexMap.mode === 'paint') {
+        state.hexMap.brushPreviewHexes = getHexesInRadius(hex.q, hex.r, state.hexMap.brushSize - 1);
+        if (!state.hexMap.isPainting) {
+            renderHex();
+        }
+    }
+    
+    if (state.hexMap.mode === 'token' && !state.hexMap.draggingToken) {
+        const hoverToken = findTokenAtPixel(x, y);
+        canvas.style.cursor = hoverToken ? 'pointer' : 'crosshair';
+    }
+    
+    if (state.hexMap.isPainting) {
+        const didPan = checkAutoPan(x, y);
+        const speedMultiplier = 11 - state.hexMap.paintSpeed;
+        state.hexMap.paintThrottle++;
+        
+        if (state.hexMap.paintThrottle >= speedMultiplier || didPan) {
+            const shouldPaint = (hex.q !== state.hexMap.lastPaintPos.q || hex.r !== state.hexMap.lastPaintPos.r);
+            
+            if (shouldPaint) {
+                if (state.hexMap.mode === 'paint') {
+                    if (state.hexMap.selectedTerrain === 'clear') {
+                        const hexesToClear = getHexesInRadius(hex.q, hex.r, state.hexMap.brushSize - 1);
+                        hexesToClear.forEach(h => deleteHex(h.q, h.r));
+                    } else {
+                        paintHex(hex.q, hex.r);
+                    }
+                }
+                state.hexMap.lastPaintPos = hex;
+                renderHex();
+            } else if (didPan) {
+                renderHex();
+            }
+            state.hexMap.paintThrottle = 0;
+        }
+    }
+});
+
+canvas.addEventListener('mouseup', () => {
+    if (state.hexMap.draggingToken) {
+        animateTokenScale(state.hexMap.draggingToken.id, 1.0, 200);
+        state.hexMap.draggingToken = null;
+    }
+    if (state.hexMap.draggingPathPoint) {
+        state.hexMap.draggingPathPoint = null;
+        if (state.hexMap.selectedPath) {
+            showPathDetails(state.hexMap.selectedPath);
+        }
+    }
+    state.hexMap.isPainting = false;
+    state.hexMap.isPanning = false;
+    
+    // Set cursor based on mode
+    if (state.hexMap.viewMode === 'explorer') {
+        canvas.style.cursor = 'default';
+    } else {
+        const cursorMap = {
+            paint: 'crosshair',
+            token: 'crosshair',
+            path: 'crosshair'
+        };
+        canvas.style.cursor = cursorMap[state.hexMap.mode] || 'default';
+    }
+});
+
+canvas.addEventListener('mouseleave', () => {
+    state.hexMap.isPainting = false;
+    state.hexMap.isPanning = false;
+    state.hexMap.brushPreviewHexes = [];
+    state.hexMap.hoveredPath = null;
+    state.hexMap.hoveredPathPoint = null;
+    state.hexMap.draggingPathPoint = null;
+    if (state.hexMap.draggingToken) {
+        animateTokenScale(state.hexMap.draggingToken.id, 1.0, 200);
+        state.hexMap.draggingToken = null;
+    }
+    renderHex();
+});
+
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
    canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
@@ -2801,26 +2857,26 @@ const TERRAINS = {
     document.getElementById('zoomLevel').textContent = Math.round(state.hexMap.viewport.scale * 100) + '%';
 });
 
-        document.addEventListener('keydown', (e) => {
-            // Don't trigger shortcuts when typing in input fields
-            const isTyping = document.activeElement.tagName === 'INPUT' || 
-                           document.activeElement.tagName === 'TEXTAREA' ||
-                           document.activeElement.isContentEditable;
-            
-            if (isTyping) return;
-            
-            if (e.key === 'Escape') {
-                if (state.hexMap.currentPath) {
-                    cancelPath();
-                    updateUI();
-                } else if (state.hexMap.pendingToken) {
-                    state.hexMap.pendingToken = null;
-                    updateUI();
-                } else if (state.hexMap.selectedPath) {
-                    deselectPath();
-                }
-            }
-        });
+document.addEventListener('keydown', (e) => {
+    // Don't trigger shortcuts when typing in input fields
+    const isTyping = document.activeElement.tagName === 'INPUT' || 
+                   document.activeElement.tagName === 'TEXTAREA' ||
+                   document.activeElement.isContentEditable;
+    
+    if (isTyping) return;
+    
+    if (e.key === 'Escape') {
+        if (state.hexMap.currentPath) {
+            cancelPath();
+            updateUI();
+        } else if (state.hexMap.pendingToken) {
+            state.hexMap.pendingToken = null;
+            updateUI();
+        } else if (state.hexMap.selectedPath) {
+            deselectPath();
+        }
+    }
+});
 
      function zoomIn() {
     // Zoom towards center of viewport
@@ -2864,684 +2920,1157 @@ const TERRAINS = {
     document.getElementById('zoomLevel').textContent = Math.round(state.hexMap.viewport.scale * 100) + '%';
 }
 
-        function selectHex(hex) {
-            state.hexMap.selectedHex = hex;
-            renderHex();
-            showHexDetails(hex);
-        }
+function selectHex(hex) {
+    state.hexMap.selectedHex = hex;
+    renderHex();
+    showHexDetails(hex);
+}
 
-        function showHexDetails(hex) {
-            const panel = document.getElementById('hexDetailsPanel');
-            const hasDungeon = hex.dungeon ? true : false;
+function showHexDetails(hex) {
+    const panel = document.getElementById('hexDetailsPanel');
+    const hasDungeon = hex.dungeon ? true : false;
+    
+    panel.innerHTML = `
+        <div class="minimap-container">
+            <div class="minimap-header">
+                <span class="minimap-title">Map Overview</span>
+                <span class="minimap-stats" id="minimapStats">...</span>
+            </div>
+            <div class="minimap-wrapper">
+                <canvas id="minimapCanvas" class="minimap-canvas"></canvas>
+                <div id="minimapViewport" class="minimap-viewport"></div>
+            </div>
+        </div>
+
+        <div class="details-header">
+            <h2>${hex.name || 'Unnamed Hex'}</h2>
+            <div class="coords">Hex (${hex.q}, ${hex.r}) · ${TERRAINS[hex.terrain].name}</div>
+        </div>
+        
+        <div class="details-content">
+            <div class="form-group">
+                <label class="form-label">Hex Name</label>
+                <input type="text" class="form-input" value="${hex.name}" 
+                       onchange="updateHexName('${hex.q}', '${hex.r}', this.value)"
+                       placeholder="Unnamed hex">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Terrain Type</label>
+                <select class="form-select" onchange="updateHexTerrain('${hex.q}', '${hex.r}', this.value)">
+                    ${Object.keys(TERRAINS).map(t => `
+                        <option value="${t}" ${t === hex.terrain ? 'selected' : ''}>
+                            ${TERRAINS[t].name}
+                        </option>
+                    `).join('')}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-input" 
+                          onchange="updateHexDescription('${hex.q}', '${hex.r}', this.value)"
+                          placeholder="Add description...">${hex.description}</textarea>
+            </div>
+        </div>
+
+        <div class="details-actions">
+            <button class="btn btn-secondary" style="flex: 1" onclick="deselectHex()">Close</button>
+            <button class="btn btn-danger" style="flex: 1" onclick="deleteCurrentHex()">Delete Hex</button>
+        </div>
+    `;
+    
+    // Initialize minimap after DOM is ready
+    setTimeout(initializeMinimap, 0);
+}
+
+function updateHexName(q, r, name) {
+    const hex = getHex(parseInt(q), parseInt(r));
+    if (hex) {
+        hex.name = name;
+        markUnsaved();
+    }
+}
+
+function updateHexTerrain(q, r, terrain) {
+    const hex = getHex(parseInt(q), parseInt(r));
+    if (hex) {
+        hex.terrain = terrain;
+        renderHex();
+        showHexDetails(hex);
+        markUnsaved();
+    }
+}
+
+function updateHexDescription(q, r, description) {
+    const hex = getHex(parseInt(q), parseInt(r));
+    if (hex) {
+        hex.description = description;
+        markUnsaved();
+    }
+}
+
+function deselectHex() {
+    state.hexMap.selectedHex = null;
+    renderHex();
+    document.getElementById('hexDetailsPanel').innerHTML = `
+        <div class="minimap-container">
+            <div class="minimap-header">
+                <span class="minimap-title">Map Overview</span>
+                <span class="minimap-stats" id="minimapStats">...</span>
+            </div>
+            <div class="minimap-wrapper">
+                <canvas id="minimapCanvas" class="minimap-canvas"></canvas>
+                <div id="minimapViewport" class="minimap-viewport"></div>
+            </div>
+        </div>
+        
+        <div class="no-selection">
+            <div class="no-selection-icon">⬡</div>
+            <p>Select a hex to view details</p>
+            <p style="margin-top: 8px; font-size: 12px;">Click any hex on the map</p>
+        </div>
+    `;
+    
+    setTimeout(initializeMinimap, 0);
+}
+
+function deleteCurrentHex() {
+    if (state.hexMap.selectedHex) {
+        deleteHex(state.hexMap.selectedHex.q, state.hexMap.selectedHex.r);
+        deselectHex();
+    }
+}
+
+// MINIMAP FUNCTIONALITY
+let minimapState = {
+    dragging: false,
+    lastRenderTime: 0,
+    renderScheduled: false,
+    renderTimeout: null
+};
+
+function refreshMinimapDebounced() {
+    // Clear any existing timeout
+    if (minimapState.renderTimeout) {
+        clearTimeout(minimapState.renderTimeout);
+    }
+    
+    // Set a new timeout to render after painting stops
+    minimapState.renderTimeout = setTimeout(() => {
+        if (document.getElementById('minimapCanvas')) {
+            renderMinimap();
+        }
+        minimapState.renderTimeout = null;
+    }, 150); // Wait 150ms after last change
+}
+
+function initializeMinimap() {
+    const canvas = document.getElementById('minimapCanvas');
+    const viewport = document.getElementById('minimapViewport');
+    const wrapper = document.querySelector('.minimap-wrapper');
+    
+    if (!canvas || !viewport || !wrapper) return;
+    
+    renderMinimap();
+    
+    // Dragging state
+    let isDragging = false;
+    
+    // Start dragging viewport
+    viewport.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        minimapState.dragging = true;
+        
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    
+    // Handle dragging
+    const handleMouseMove = (e) => {
+        if (!isDragging) return;
+        
+        const scale = parseFloat(canvas.dataset.scale);
+        const minX = parseFloat(canvas.dataset.minX);
+        const minY = parseFloat(canvas.dataset.minY);
+        
+        const canvasRect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - canvasRect.left;
+        const mouseY = e.clientY - canvasRect.top;
+        
+        // Convert mouse position to world coordinates
+        const worldX = (mouseX / scale) + minX;
+        const worldY = (mouseY / scale) + minY;
+        
+        // Set viewport to center on this world position
+        // offsetX/offsetY represent the negative of the world position we're viewing
+        state.hexMap.viewport.offsetX = -worldX * state.hexMap.viewport.scale;
+        state.hexMap.viewport.offsetY = -worldY * state.hexMap.viewport.scale;
+        
+        renderHex();
+    };
+    
+    const handleMouseUp = () => {
+        isDragging = false;
+        minimapState.dragging = false;
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    // Click to jump
+    canvas.addEventListener('mousedown', (e) => {
+        if (e.target !== canvas) return; // Only on canvas, not viewport
+        
+        const scale = parseFloat(canvas.dataset.scale);
+        const minX = parseFloat(canvas.dataset.minX);
+        const minY = parseFloat(canvas.dataset.minY);
+        
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        // Convert to world coordinates
+        const worldX = (mouseX / scale) + minX;
+        const worldY = (mouseY / scale) + minY;
+        
+        // Center viewport on clicked position
+        state.hexMap.viewport.offsetX = -worldX * state.hexMap.viewport.scale;
+        state.hexMap.viewport.offsetY = -worldY * state.hexMap.viewport.scale;
+        
+        renderHex();
+    });
+}
+
+function getMapBounds() {
+    let minQ = Infinity, maxQ = -Infinity;
+    let minR = Infinity, maxR = -Infinity;
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    
+    const hexSize = state.hexMap.hexSize;
+    
+    // Calculate both Q/R bounds and pixel bounds
+    state.hexMap.hexes.forEach(hex => {
+        minQ = Math.min(minQ, hex.q);
+        maxQ = Math.max(maxQ, hex.q);
+        minR = Math.min(minR, hex.r);
+        maxR = Math.max(maxR, hex.r);
+        
+        const x = hex.q * hexSize * 1.5;
+        const y = (hex.r * hexSize * Math.sqrt(3)) + (hex.q * hexSize * Math.sqrt(3) / 2);
+        
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+    });
+    
+    return { minQ, maxQ, minR, maxR, minX, maxX, minY, maxY };
+}
+
+function getMinimapScale(bounds, canvasSize) {
+    const hexSize = state.hexMap.hexSize;
+    const worldWidth = bounds.maxX - bounds.minX + hexSize * 2;
+    const worldHeight = bounds.maxY - bounds.minY + hexSize * 2;
+    const scale = Math.min(canvasSize / worldWidth, canvasSize / worldHeight);
+    return scale;
+}
+
+function renderMinimap() {
+    const canvas = document.getElementById('minimapCanvas');
+    const stats = document.getElementById('minimapStats');
+    
+    if (!canvas || !stats) return;
+    
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const rect = canvas.getBoundingClientRect();
+    
+    if (state.hexMap.hexes.size === 0) {
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        ctx.fillStyle = '#0a0e13';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        stats.textContent = 'No hexes';
+        return;
+    }
+    
+    const bounds = getMapBounds();
+    const hexSize = state.hexMap.hexSize;
+    
+    // Use ACTUAL pixel bounds from placed hexes - no calculation tricks
+    const actualWidth = bounds.maxX - bounds.minX;
+    const actualHeight = bounds.maxY - bounds.minY;
+    
+    // Add ONLY enough padding for one hex radius on each side
+    const padding = hexSize * 0.5;
+    const totalWidth = actualWidth + padding * 2;
+    const totalHeight = actualHeight + padding * 2;
+    
+    // Scale to fill 98% of available space
+    const scale = Math.min((rect.width * 0.98) / totalWidth, (rect.height * 0.98) / totalHeight);
+    
+    // Calculate map extent for styling decisions
+    const mapExtentQ = Math.max(Math.abs(bounds.minQ), Math.abs(bounds.maxQ));
+    const mapExtentR = Math.max(Math.abs(bounds.minR), Math.abs(bounds.maxR));
+    const mapExtent = Math.max(mapExtentQ, mapExtentR);
+    
+    // Determine pixel size per hex based on extent
+    let pixelsPerHex;
+    let renderAsHexagons = false;
+    
+    if (mapExtent <= 5) {
+        pixelsPerHex = Math.max(10, 10 * scale);
+        renderAsHexagons = true;
+    } else if (mapExtent <= 10) {
+        pixelsPerHex = Math.max(8, 8 * scale);
+        renderAsHexagons = true;
+    } else if (mapExtent <= 15) {
+        pixelsPerHex = Math.max(6, 6 * scale);
+        renderAsHexagons = true;
+    } else if (mapExtent <= 25) {
+        pixelsPerHex = 5;
+    } else if (mapExtent <= 40) {
+        pixelsPerHex = 4;
+    } else if (mapExtent <= 70) {
+        pixelsPerHex = 3;
+    } else if (mapExtent <= 120) {
+        pixelsPerHex = 2;
+    } else {
+        pixelsPerHex = 1;
+    }
+    
+    // Set canvas to exact scaled size
+    canvas.width = Math.ceil(totalWidth * scale);
+    canvas.height = Math.ceil(totalHeight * scale);
+    
+    // Store transform data
+    canvas.dataset.scale = scale;
+    canvas.dataset.minX = bounds.minX - padding;
+    canvas.dataset.minY = bounds.minY - padding;
+    
+    stats.textContent = `${state.hexMap.hexes.size} hexes`;
+    
+    // Clear
+    ctx.fillStyle = '#0a0e13';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = false;
+    
+    const offsetX = bounds.minX - padding;
+    const offsetY = bounds.minY - padding;
+    
+    // Render hexes
+    if (renderAsHexagons) {
+        // Small maps: draw actual mini hexagons
+        state.hexMap.hexes.forEach(hex => {
+            const worldX = hex.q * hexSize * 1.5;
+            const worldY = (hex.r * hexSize * Math.sqrt(3)) + (hex.q * hexSize * Math.sqrt(3) / 2);
             
-            panel.innerHTML = `
-                <div class="details-header">
-                    <h2>${hex.name || 'Unnamed Hex'}</h2>
-                    <div class="coords">Hex (${hex.q}, ${hex.r}) · ${TERRAINS[hex.terrain].name}</div>
-                </div>
-                
-                <div class="details-content">
-                    <div class="form-group">
-                        <label class="form-label">Hex Name</label>
-                        <input type="text" class="form-input" value="${hex.name}" 
-                               onchange="updateHexName('${hex.q}', '${hex.r}', this.value)"
-                               placeholder="Unnamed hex">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Terrain Type</label>
-                        <select class="form-select" onchange="updateHexTerrain('${hex.q}', '${hex.r}', this.value)">
-                            ${Object.keys(TERRAINS).map(t => `
-                                <option value="${t}" ${t === hex.terrain ? 'selected' : ''}>
-                                    ${TERRAINS[t].name}
-                                </option>
-                            `).join('')}
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-input" 
-                                  onchange="updateHexDescription('${hex.q}', '${hex.r}', this.value)"
-                                  placeholder="Add description...">${hex.description}</textarea>
-                    </div>
-                </div>
-
-                <div class="details-actions">
-                    <button class="btn btn-secondary" style="flex: 1" onclick="deselectHex()">Close</button>
-                    <button class="btn btn-danger" style="flex: 1" onclick="deleteCurrentHex()">Delete Hex</button>
-                </div>
-            `;
-        }
-
-        function updateHexName(q, r, name) {
-            const hex = getHex(parseInt(q), parseInt(r));
-            if (hex) hex.name = name;
-        }
-
-        function updateHexTerrain(q, r, terrain) {
-            const hex = getHex(parseInt(q), parseInt(r));
-            if (hex) {
-                hex.terrain = terrain;
-                renderHex();
-                showHexDetails(hex);
+            const x = (worldX - offsetX) * scale;
+            const y = (worldY - offsetY) * scale;
+            
+            const terrain = TERRAINS[hex.terrain];
+            ctx.fillStyle = terrain ? terrain.color : '#4a5568';
+            
+            // Draw hexagon
+            const hexRadius = pixelsPerHex * 0.45;
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i;
+                const hx = x + hexRadius * Math.cos(angle);
+                const hy = y + hexRadius * Math.sin(angle);
+                if (i === 0) ctx.moveTo(hx, hy);
+                else ctx.lineTo(hx, hy);
             }
-        }
+            ctx.closePath();
+            ctx.fill();
+            
+            // Border
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+        });
+    } else {
+        // Large maps: solid pixel blocks
+        state.hexMap.hexes.forEach(hex => {
+            const worldX = hex.q * hexSize * 1.5;
+            const worldY = (hex.r * hexSize * Math.sqrt(3)) + (hex.q * hexSize * Math.sqrt(3) / 2);
+            
+            const x = Math.floor((worldX - offsetX) * scale);
+            const y = Math.floor((worldY - offsetY) * scale);
+            
+            const terrain = TERRAINS[hex.terrain];
+            ctx.fillStyle = terrain ? terrain.color : '#4a5568';
+            ctx.fillRect(x, y, pixelsPerHex, pixelsPerHex);
+        });
+    }
+    
+    // Landmarks
+    if (state.hexMap.landmarks.size > 0) {
+        state.hexMap.landmarks.forEach(landmark => {
+            const worldX = landmark.q * hexSize * 1.5;
+            const worldY = (landmark.r * hexSize * Math.sqrt(3)) + (landmark.q * hexSize * Math.sqrt(3) / 2);
+            
+            const x = (worldX - offsetX) * scale;
+            const y = (worldY - offsetY) * scale;
+            
+            ctx.fillStyle = landmark.color || '#ff6b6b';
+            const landmarkRadius = (pixelsPerHex * 0.6);
+            ctx.beginPath();
+            ctx.arc(x, y, landmarkRadius, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+    
+    updateMinimapViewport();
+}
 
-        function updateHexDescription(q, r, description) {
-            const hex = getHex(parseInt(q), parseInt(r));
-            if (hex) hex.description = description;
-        }
+function updateMinimapViewport() {
+    const viewport = document.getElementById('minimapViewport');
+    const canvas = document.getElementById('minimapCanvas');
+    const wrapper = document.querySelector('.minimap-wrapper');
+    
+    if (!viewport || !canvas || !wrapper) return;
+    if (state.hexMap.hexes.size === 0) return;
+    
+    // Get stored transform data
+    const scale = parseFloat(canvas.dataset.scale);
+    const minX = parseFloat(canvas.dataset.minX);
+    const minY = parseFloat(canvas.dataset.minY);
+    
+    // Get canvas position within wrapper (it's centered)
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    const canvasOffsetX = canvasRect.left - wrapperRect.left;
+    const canvasOffsetY = canvasRect.top - wrapperRect.top;
+    
+    // Get main canvas visible area in world coordinates
+    const mainCanvas = document.getElementById('hexCanvas');
+    const visibleWidth = mainCanvas.width / state.hexMap.viewport.scale;
+    const visibleHeight = mainCanvas.height / state.hexMap.viewport.scale;
+    
+    // Current viewport center in world coordinates
+    // The viewport offset represents how much the world is shifted
+    // Negative offset means we're looking at positive world coords
+    const viewCenterX = -state.hexMap.viewport.offsetX / state.hexMap.viewport.scale;
+    const viewCenterY = -state.hexMap.viewport.offsetY / state.hexMap.viewport.scale;
+    
+    // Convert to minimap pixel coordinates (on canvas)
+    const minimapCenterX = (viewCenterX - minX) * scale;
+    const minimapCenterY = (viewCenterY - minY) * scale;
+    
+    // Calculate viewport size on minimap
+    const viewWidth = visibleWidth * scale;
+    const viewHeight = visibleHeight * scale;
+    
+    // Position viewport (centered on view center, offset by canvas position in wrapper)
+    const left = canvasOffsetX + minimapCenterX - viewWidth / 2;
+    const top = canvasOffsetY + minimapCenterY - viewHeight / 2;
+    
+    viewport.style.left = left + 'px';
+    viewport.style.top = top + 'px';
+    viewport.style.width = viewWidth + 'px';
+    viewport.style.height = viewHeight + 'px';
+}
 
-        function deselectHex() {
-            state.hexMap.selectedHex = null;
-            renderHex();
-            document.getElementById('hexDetailsPanel').innerHTML = `
-                <div class="no-selection">
-                    <div class="no-selection-icon">⬡</div>
-                    <p>Select a hex to view details</p>
-                    <p style="margin-top: 8px; font-size: 12px;">Click any hex on the map</p>
-                </div>
-            `;
-        }
+function exportHexMap() {
+    const worldData = {
+        version: '1.2',
+        exportDate: new Date().toISOString(),
+        metadata: {
+            totalHexes: state.hexMap.hexes.size,
+            totalLandmarks: state.hexMap.landmarks.size,
+            totalTokens: state.hexMap.tokens.size,
+            totalPaths: state.hexMap.paths.length
+        },
+        viewport: state.hexMap.viewport,
+        hexes: [],
+        landmarks: [],
+        tokens: [],
+        paths: []
+    };
+    
+    Array.from(state.hexMap.hexes.values()).forEach(hex => {
+        const hexData = {
+            q: hex.q,
+            r: hex.r,
+            terrain: hex.terrain,
+            name: hex.name || '',
+            description: hex.description || ''
+        };
+        worldData.hexes.push(hexData);
+    });
+    
+    Array.from(state.hexMap.landmarks.values()).forEach(landmark => {
+        worldData.landmarks.push({
+            id: landmark.id,
+            q: landmark.q,
+            r: landmark.r,
+            name: landmark.name,
+            type: landmark.type,
+            style: landmark.style,
+            icon: landmark.icon,
+            color: landmark.color,
+            showLabel: landmark.showLabel,
+            labelPosition: landmark.labelPosition,
+            size: landmark.size,
+            attributes: landmark.attributes,
+            notes: landmark.notes,
+            visible: landmark.visible,
+            created: landmark.created
+        });
+    });
+    
+    Array.from(state.hexMap.tokens.values()).forEach(token => {
+        worldData.tokens.push({
+            id: token.id,
+            q: token.q,
+            r: token.r,
+            name: token.name,
+            type: token.type,
+            color: token.color,
+            label: token.label,
+            size: token.size,
+            attributes: token.attributes,
+            notes: token.notes,
+            visible: token.visible,
+            created: token.created
+        });
+    });
+    
+    state.hexMap.paths.forEach(path => {
+        const pathHexes = getPathHexes(path);
+        worldData.paths.push({
+            id: path.id,
+            type: path.type,
+            style: path.style,
+            width: path.width,
+            color: path.color || PATH_STYLES[path.type].color,
+            points: path.points,
+            hexes: pathHexes, // All hexes this path passes through
+            created: path.created
+        });
+    });
+    
+    const json = JSON.stringify(worldData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    a.download = `hexworld-${timestamp}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    alert(`World exported successfully!\n\n${worldData.metadata.totalHexes} hexes\n${worldData.metadata.totalLandmarks} landmarks\n${worldData.metadata.totalTokens} tokens\n${worldData.metadata.totalPaths} paths`);
+}
 
-        function deleteCurrentHex() {
-            if (state.hexMap.selectedHex) {
-                deleteHex(state.hexMap.selectedHex.q, state.hexMap.selectedHex.r);
-                deselectHex();
+function importHexMap() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+            
+            if (!data.hexes || !Array.isArray(data.hexes)) {
+                alert('Invalid world file format');
+                return;
             }
-        }
-
-        function exportHexMap() {
-            const worldData = {
-                version: '1.2',
-                exportDate: new Date().toISOString(),
-                metadata: {
-                    totalHexes: state.hexMap.hexes.size,
-                    totalLandmarks: state.hexMap.landmarks.size,
-                    totalTokens: state.hexMap.tokens.size,
-                    totalPaths: state.hexMap.paths.length
-                },
-                viewport: state.hexMap.viewport,
-                hexes: [],
-                landmarks: [],
-                tokens: [],
-                paths: []
-            };
             
-            Array.from(state.hexMap.hexes.values()).forEach(hex => {
-                const hexData = {
-                    q: hex.q,
-                    r: hex.r,
-                    terrain: hex.terrain,
-                    name: hex.name || '',
-                    description: hex.description || ''
-                };
-                worldData.hexes.push(hexData);
-            });
-            
-            Array.from(state.hexMap.landmarks.values()).forEach(landmark => {
-                worldData.landmarks.push({
-                    id: landmark.id,
-                    q: landmark.q,
-                    r: landmark.r,
-                    name: landmark.name,
-                    type: landmark.type,
-                    style: landmark.style,
-                    icon: landmark.icon,
-                    color: landmark.color,
-                    showLabel: landmark.showLabel,
-                    labelPosition: landmark.labelPosition,
-                    size: landmark.size,
-                    attributes: landmark.attributes,
-                    notes: landmark.notes,
-                    visible: landmark.visible,
-                    created: landmark.created
-                });
-            });
-            
-            Array.from(state.hexMap.tokens.values()).forEach(token => {
-                worldData.tokens.push({
-                    id: token.id,
-                    q: token.q,
-                    r: token.r,
-                    name: token.name,
-                    type: token.type,
-                    color: token.color,
-                    label: token.label,
-                    size: token.size,
-                    attributes: token.attributes,
-                    notes: token.notes,
-                    visible: token.visible,
-                    created: token.created
-                });
-            });
-            
-            state.hexMap.paths.forEach(path => {
-                const pathHexes = getPathHexes(path);
-                worldData.paths.push({
-                    id: path.id,
-                    type: path.type,
-                    style: path.style,
-                    width: path.width,
-                    color: path.color || PATH_STYLES[path.type].color,
-                    points: path.points,
-                    hexes: pathHexes, // All hexes this path passes through
-                    created: path.created
-                });
-            });
-            
-            const json = JSON.stringify(worldData, null, 2);
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-            a.download = `hexworld-${timestamp}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            alert(`World exported successfully!\n\n${worldData.metadata.totalHexes} hexes\n${worldData.metadata.totalLandmarks} landmarks\n${worldData.metadata.totalTokens} tokens\n${worldData.metadata.totalPaths} paths`);
-        }
-
-        function importHexMap() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.onchange = async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                try {
-                    const text = await file.text();
-                    const data = JSON.parse(text);
-                    
-                    if (!data.hexes || !Array.isArray(data.hexes)) {
-                        alert('Invalid world file format');
-                        return;
-                    }
-                    
-                    state.hexMap.hexes.clear();
-                    state.hexMap.landmarks.clear();
-                    state.hexMap.tokens.clear();
-                    state.hexMap.paths = [];
-                    state.hexMap.selectedHex = null;
-                    state.hexMap.selectedLandmark = null;
-                    state.hexMap.selectedToken = null;
-                    state.hexMap.currentPath = null;
-                    
-                    data.hexes.forEach(hexData => {
-                        const key = `${hexData.q},${hexData.r}`;
-                        state.hexMap.hexes.set(key, {
-                            q: hexData.q,
-                            r: hexData.r,
-                            terrain: hexData.terrain,
-                            name: hexData.name || '',
-                            description: hexData.description || ''
-                        });
-                    });
-                    
-                    if (data.landmarks && Array.isArray(data.landmarks)) {
-                        data.landmarks.forEach(landmarkData => {
-                            const key = `${landmarkData.q},${landmarkData.r}`;
-                            state.hexMap.landmarks.set(key, {
-                                id: landmarkData.id,
-                                q: landmarkData.q,
-                                r: landmarkData.r,
-                                name: landmarkData.name,
-                                type: landmarkData.type,
-                                style: landmarkData.style,
-                                icon: landmarkData.icon,
-                                color: landmarkData.color,
-                                showLabel: landmarkData.showLabel !== false,
-                                labelPosition: landmarkData.labelPosition || 'above',
-                                size: landmarkData.size || 1.0,
-                                attributes: landmarkData.attributes || {},
-                                notes: landmarkData.notes || '',
-                                visible: landmarkData.visible !== false,
-                                created: landmarkData.created
-                            });
-                            const idNum = parseInt(landmarkData.id.split('_')[1]);
-                            if (idNum >= state.nextLandmarkId) {
-                                state.nextLandmarkId = idNum + 1;
-                            }
-                        });
-                    }
-                    
-                    if (data.tokens && Array.isArray(data.tokens)) {
-                        data.tokens.forEach(tokenData => {
-                            state.hexMap.tokens.set(tokenData.id, {
-                                id: tokenData.id,
-                                q: tokenData.q,
-                                r: tokenData.r,
-                                name: tokenData.name,
-                                type: tokenData.type,
-                                color: tokenData.color,
-                                label: tokenData.label,
-                                size: tokenData.size,
-                                attributes: tokenData.attributes || {},
-                                notes: tokenData.notes || '',
-                                visible: tokenData.visible !== false,
-                                scale: 1,
-                                created: tokenData.created
-                            });
-                            const idNum = parseInt(tokenData.id.split('_')[1]);
-                            if (idNum >= state.nextTokenId) {
-                                state.nextTokenId = idNum + 1;
-                            }
-                        });
-                    }
-                    
-                    if (data.paths && Array.isArray(data.paths)) {
-                        data.paths.forEach(pathData => {
-                            state.hexMap.paths.push({
-                                id: pathData.id,
-                                type: pathData.type,
-                                style: pathData.style,
-                                width: pathData.width,
-                                color: pathData.color || PATH_STYLES[pathData.type].color,
-                                points: pathData.points,
-                                created: pathData.created
-                            });
-                            const idNum = parseInt(pathData.id.split('_')[1]);
-                            if (idNum >= state.nextPathId) {
-                                state.nextPathId = idNum + 1;
-                            }
-                        });
-                    }
-                    
-                    if (data.viewport) {
-                        state.hexMap.viewport = data.viewport;
-                    }
-                    
-                    updateHexCount();
-                    deselectHex();
-                    renderHex();
-                    
-                    // Save imported map to cache
-                    autoSaveToCache();
-                    
-                    const landmarkCount = data.landmarks ? data.landmarks.length : 0;
-                    const tokenCount = data.tokens ? data.tokens.length : 0;
-                    const pathCount = data.paths ? data.paths.length : 0;
-                    alert(`World imported successfully!\n\n${data.hexes.length} hexes\n${landmarkCount} landmarks\n${tokenCount} tokens\n${pathCount} paths`);
-                    
-                } catch (error) {
-                    console.error('Import error:', error);
-                    alert('Error importing world file. Please check the file format.');
-                }
-            };
-            input.click();
-        }
-
-        function clearHexMap() {
-            if (confirm('Clear all hexes, tokens, and paths? This will also clear your auto-saved cache. This cannot be undone.')) {
-                state.hexMap.hexes.clear();
-                state.hexMap.landmarks.clear();
-                state.hexMap.tokens.clear();
-                state.hexMap.paths = [];
-                state.hexMap.selectedHex = null;
-                state.hexMap.selectedLandmark = null;
-                state.hexMap.selectedToken = null;
-                state.hexMap.selectedPath = null;
-                state.hexMap.currentPath = null;
-                clearCache();
-                updateHexCount();
-                deselectHex();
-                renderHex();
-            }
-        }
-
-        function createStarterMap() {
             state.hexMap.hexes.clear();
+            state.hexMap.landmarks.clear();
             state.hexMap.tokens.clear();
             state.hexMap.paths = [];
             state.hexMap.selectedHex = null;
+            state.hexMap.selectedLandmark = null;
             state.hexMap.selectedToken = null;
             state.hexMap.currentPath = null;
             
-            const mapWidth = 10;
-            const mapHeight = 10;
+            data.hexes.forEach(hexData => {
+                const key = `${hexData.q},${hexData.r}`;
+                state.hexMap.hexes.set(key, {
+                    q: hexData.q,
+                    r: hexData.r,
+                    terrain: hexData.terrain,
+                    name: hexData.name || '',
+                    description: hexData.description || ''
+                });
+            });
             
-            for (let col = 0; col < mapWidth; col++) {
-                for (let row = 0; row < mapHeight; row++) {
-                    const q = col - Math.floor(mapWidth / 2);
-                    const r = row - Math.floor(mapHeight / 2) - Math.floor(col / 2);
-                    
-                    let terrain;
-                    const centerQ = 0;
-                    const centerR = 0;
-                    const distance = Math.sqrt((q - centerQ) ** 2 + (r - centerR) ** 2);
-                    
-                    if (distance < 2) {
-                        terrain = 'grassland';
-                    } else if (distance < 3) {
-                        terrain = Math.random() > 0.5 ? 'plains' : 'forest';
-                    } else if (distance < 4) {
-                        terrain = Math.random() > 0.7 ? 'hills' : 'forest';
-                    } else if (distance < 5) {
-                        const rand = Math.random();
-                        if (rand > 0.7) terrain = 'mountain';
-                        else if (rand > 0.4) terrain = 'hills';
-                        else terrain = 'forest';
-                    } else {
-                        const rand = Math.random();
-                        if (rand > 0.8) terrain = 'mountain';
-                        else if (rand > 0.6) terrain = 'water';
-                        else if (rand > 0.4) terrain = 'desert';
-                        else terrain = 'tundra';
+            if (data.landmarks && Array.isArray(data.landmarks)) {
+                data.landmarks.forEach(landmarkData => {
+                    const key = `${landmarkData.q},${landmarkData.r}`;
+                    state.hexMap.landmarks.set(key, {
+                        id: landmarkData.id,
+                        q: landmarkData.q,
+                        r: landmarkData.r,
+                        name: landmarkData.name,
+                        type: landmarkData.type,
+                        style: landmarkData.style,
+                        icon: landmarkData.icon,
+                        color: landmarkData.color,
+                        showLabel: landmarkData.showLabel !== false,
+                        labelPosition: landmarkData.labelPosition || 'above',
+                        size: landmarkData.size || 1.0,
+                        attributes: landmarkData.attributes || {},
+                        notes: landmarkData.notes || '',
+                        visible: landmarkData.visible !== false,
+                        created: landmarkData.created
+                    });
+                    const idNum = parseInt(landmarkData.id.split('_')[1]);
+                    if (idNum >= state.nextLandmarkId) {
+                        state.nextLandmarkId = idNum + 1;
                     }
-                    setHex(q, r, terrain);
-                }
+                });
+            }
+            
+            if (data.tokens && Array.isArray(data.tokens)) {
+                data.tokens.forEach(tokenData => {
+                    state.hexMap.tokens.set(tokenData.id, {
+                        id: tokenData.id,
+                        q: tokenData.q,
+                        r: tokenData.r,
+                        name: tokenData.name,
+                        type: tokenData.type,
+                        color: tokenData.color,
+                        label: tokenData.label,
+                        size: tokenData.size,
+                        attributes: tokenData.attributes || {},
+                        notes: tokenData.notes || '',
+                        visible: tokenData.visible !== false,
+                        scale: 1,
+                        created: tokenData.created
+                    });
+                    const idNum = parseInt(tokenData.id.split('_')[1]);
+                    if (idNum >= state.nextTokenId) {
+                        state.nextTokenId = idNum + 1;
+                    }
+                });
+            }
+            
+            if (data.paths && Array.isArray(data.paths)) {
+                data.paths.forEach(pathData => {
+                    state.hexMap.paths.push({
+                        id: pathData.id,
+                        type: pathData.type,
+                        style: pathData.style,
+                        width: pathData.width,
+                        color: pathData.color || PATH_STYLES[pathData.type].color,
+                        points: pathData.points,
+                        created: pathData.created
+                    });
+                    const idNum = parseInt(pathData.id.split('_')[1]);
+                    if (idNum >= state.nextPathId) {
+                        state.nextPathId = idNum + 1;
+                    }
+                });
+            }
+            
+            if (data.viewport) {
+                state.hexMap.viewport = data.viewport;
             }
             
             updateHexCount();
             deselectHex();
             renderHex();
+            
+            const landmarkCount = data.landmarks ? data.landmarks.length : 0;
+            const tokenCount = data.tokens ? data.tokens.length : 0;
+            const pathCount = data.paths ? data.paths.length : 0;
+            alert(`World imported successfully!\n\n${data.hexes.length} hexes\n${landmarkCount} landmarks\n${tokenCount} tokens\n${pathCount} paths`);
+            
+        } catch (error) {
+            console.error('Import error:', error);
+            alert('Error importing world file. Please check the file format.');
         }
+    };
+    input.click();
+}
 
-        function updateHexTopBar() {
-            const actions = document.getElementById('topbarActions');
-            actions.innerHTML = `
-                <button class="btn btn-secondary" onclick="importHexMap()">📥 Import World</button>
-                <button class="btn btn-secondary" onclick="exportHexMap()">💾 Export World</button>
-                <button class="btn btn-danger" onclick="clearHexMap()">Clear Map</button>
-            `;
+function clearHexMap() {
+    if (confirm('Clear all hexes, tokens, and paths? This cannot be undone.')) {
+        state.hexMap.hexes.clear();
+        state.hexMap.tokens.clear();
+        state.hexMap.paths = [];
+        state.hexMap.selectedHex = null;
+        state.hexMap.selectedToken = null;
+        state.hexMap.selectedPath = null;
+        state.hexMap.currentPath = null;
+        
+        // Clear the cached data
+        clearMapCache().then(() => {
+            console.log('Map and cache cleared');
+            updateSaveIndicator('idle');
+        }).catch(err => {
+            console.error('Error clearing cache:', err);
+        });
+        
+        updateHexCount();
+        deselectHex();
+        renderHex();
+    }
+}
+
+function createStarterMap() {
+    state.hexMap.hexes.clear();
+    state.hexMap.tokens.clear();
+    state.hexMap.paths = [];
+    state.hexMap.selectedHex = null;
+    state.hexMap.selectedToken = null;
+    state.hexMap.currentPath = null;
+    
+    const mapWidth = 10;
+    const mapHeight = 10;
+    
+    for (let col = 0; col < mapWidth; col++) {
+        for (let row = 0; row < mapHeight; row++) {
+            const q = col - Math.floor(mapWidth / 2);
+            const r = row - Math.floor(mapHeight / 2) - Math.floor(col / 2);
+            
+            let terrain;
+            const centerQ = 0;
+            const centerR = 0;
+            const distance = Math.sqrt((q - centerQ) ** 2 + (r - centerR) ** 2);
+            
+            if (distance < 2) {
+                terrain = 'grassland';
+            } else if (distance < 3) {
+                terrain = Math.random() > 0.5 ? 'plains' : 'forest';
+            } else if (distance < 4) {
+                terrain = Math.random() > 0.7 ? 'hills' : 'forest';
+            } else if (distance < 5) {
+                const rand = Math.random();
+                if (rand > 0.7) terrain = 'mountain';
+                else if (rand > 0.4) terrain = 'hills';
+                else terrain = 'forest';
+            } else {
+                const rand = Math.random();
+                if (rand > 0.8) terrain = 'mountain';
+                else if (rand > 0.6) terrain = 'water';
+                else if (rand > 0.4) terrain = 'desert';
+                else terrain = 'tundra';
+            }
+            setHex(q, r, terrain);
         }
+    }
+    
+    updateHexCount();
+    deselectHex();
+    renderHex();
+}
 
-        function resizeCanvas() {
-            canvas.width = canvas.parentElement.offsetWidth;
-            canvas.height = canvas.parentElement.offsetHeight;
-            renderHex();
+function updateHexTopBar() {
+    const actions = document.getElementById('topbarActions');
+    actions.innerHTML = `
+        <button class="btn btn-secondary" onclick="importHexMap()">📥 Import World</button>
+        <button class="btn btn-secondary" onclick="exportHexMap()">💾 Export World</button>
+        <button class="btn btn-danger" onclick="clearHexMap()">Clear Map</button>
+    `;
+}
+
+// ===== INDEXEDDB AUTO-SAVE SYSTEM =====
+const DB_NAME = 'HexWorldsDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'mapData';
+const AUTO_SAVE_INTERVAL = 3000; // Auto-save every 3 seconds
+
+let db = null;
+let autoSaveTimer = null;
+let hasUnsavedChanges = false;
+
+// Initialize IndexedDB
+function initDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        
+        request.onerror = () => {
+            console.error('Failed to open database');
+            reject(request.error);
+        };
+        
+        request.onsuccess = () => {
+            db = request.result;
+            console.log('Database initialized successfully');
+            resolve(db);
+        };
+        
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            }
+        };
+    });
+}
+
+// Save map data to IndexedDB
+function saveMapToCache() {
+    if (!db) return;
+    
+    updateSaveIndicator('saving');
+    
+    const mapData = {
+        id: 'currentMap',
+        timestamp: Date.now(),
+        data: {
+            hexes: Array.from(state.hexMap.hexes.entries()).map(([key, hex]) => ({
+                q: hex.q,
+                r: hex.r,
+                terrain: hex.terrain,
+                name: hex.name,
+                description: hex.description
+            })),
+            landmarks: Array.from(state.hexMap.landmarks.entries()).map(([key, landmark]) => ({
+                id: landmark.id,
+                q: landmark.q,
+                r: landmark.r,
+                name: landmark.name,
+                type: landmark.type,
+                style: landmark.style,
+                icon: landmark.icon,
+                color: landmark.color,
+                showLabel: landmark.showLabel,
+                labelPosition: landmark.labelPosition,
+                size: landmark.size,
+                attributes: landmark.attributes,
+                notes: landmark.notes,
+                visible: landmark.visible,
+                created: landmark.created
+            })),
+            tokens: Array.from(state.hexMap.tokens.entries()).map(([id, token]) => ({
+                id: token.id,
+                q: token.q,
+                r: token.r,
+                name: token.name,
+                type: token.type,
+                color: token.color,
+                label: token.label,
+                size: token.size,
+                attributes: token.attributes,
+                notes: token.notes,
+                visible: token.visible,
+                created: token.created
+            })),
+            paths: state.hexMap.paths.map(path => ({
+                id: path.id,
+                type: path.type,
+                style: path.style,
+                width: path.width,
+                color: path.color,
+                points: path.points,
+                created: path.created
+            })),
+            viewport: state.hexMap.viewport,
+            nextLandmarkId: state.nextLandmarkId,
+            nextTokenId: state.nextTokenId,
+            nextPathId: state.nextPathId
         }
+    };
+    
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.put(mapData);
+    
+    request.onsuccess = () => {
+        hasUnsavedChanges = false;
+        updateSaveIndicator('saved');
+        setTimeout(() => updateSaveIndicator('idle'), 2000);
+    };
+    
+    request.onerror = () => {
+        console.error('Failed to save map to cache');
+        updateSaveIndicator('error');
+    };
+}
 
-        function init() {
-            const terrainPalette = document.getElementById('terrainPalette');
-            Object.entries(TERRAINS).forEach(([key, terrain]) => {
-                const btn = document.createElement('button');
-                btn.className = `terrain-btn ${key === 'plains' ? 'active' : ''}`;
-                btn.dataset.terrain = key;
-                btn.onclick = () => selectTerrain(key);
-                btn.innerHTML = `
-                    <div class="terrain-icon" style="background: ${terrain.color}">
-                        <img src="${terrain.icon}" alt="${terrain.name}">
-                    </div>
-                    <span class="terrain-name">${terrain.name}</span>
-                `;
-                terrainPalette.appendChild(btn);
+// Load map data from IndexedDB
+function loadMapFromCache() {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject('Database not initialized');
+            return;
+        }
+        
+        const transaction = db.transaction([STORE_NAME], 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.get('currentMap');
+        
+        request.onsuccess = () => {
+            if (request.result) {
+                resolve(request.result.data);
+            } else {
+                resolve(null);
+            }
+        };
+        
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
+}
+
+// Clear cached data from IndexedDB
+function clearMapCache() {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            resolve();
+            return;
+        }
+        
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.delete('currentMap');
+        
+        request.onsuccess = () => {
+            console.log('Cache cleared successfully');
+            resolve();
+        };
+        
+        request.onerror = () => {
+            console.error('Failed to clear cache');
+            reject(request.error);
+        };
+    });
+}
+
+// Update save indicator UI
+function updateSaveIndicator(status) {
+    const indicator = document.getElementById('saveIndicator');
+    const text = document.getElementById('saveIndicatorText');
+    
+    if (!indicator || !text) return;
+    
+    indicator.className = 'save-indicator';
+    
+    switch (status) {
+        case 'saving':
+            indicator.classList.add('saving');
+            text.textContent = 'Saving...';
+            break;
+        case 'saved':
+            indicator.classList.add('saved');
+            text.textContent = 'Saved';
+            break;
+        case 'error':
+            text.textContent = 'Save failed';
+            break;
+        case 'idle':
+        default:
+            text.textContent = 'Auto-save enabled';
+            break;
+    }
+}
+
+// Mark that changes have been made
+function markUnsaved() {
+    hasUnsavedChanges = true;
+}
+
+// Start auto-save timer
+function startAutoSave() {
+    if (autoSaveTimer) {
+        clearInterval(autoSaveTimer);
+    }
+    
+    autoSaveTimer = setInterval(() => {
+        if (hasUnsavedChanges) {
+            saveMapToCache();
+        }
+    }, AUTO_SAVE_INTERVAL);
+}
+
+// Stop auto-save timer
+function stopAutoSave() {
+    if (autoSaveTimer) {
+        clearInterval(autoSaveTimer);
+        autoSaveTimer = null;
+    }
+}
+
+// Restore map from cache
+async function restoreMapFromCache() {
+    try {
+        const cachedData = await loadMapFromCache();
+        
+        if (!cachedData) {
+            console.log('No cached data found');
+            return false;
+        }
+        
+        // Clear current state
+        state.hexMap.hexes.clear();
+        state.hexMap.landmarks.clear();
+        state.hexMap.tokens.clear();
+        state.hexMap.paths = [];
+        state.hexMap.selectedHex = null;
+        state.hexMap.selectedToken = null;
+        state.hexMap.selectedPath = null;
+        state.hexMap.currentPath = null;
+        
+        // Restore hexes
+        cachedData.hexes.forEach(hexData => {
+            const key = `${hexData.q},${hexData.r}`;
+            state.hexMap.hexes.set(key, {
+                q: hexData.q,
+                r: hexData.r,
+                terrain: hexData.terrain,
+                name: hexData.name || '',
+                description: hexData.description || ''
             });
-            
-            // Add Clear Hex button
-            const clearBtn = document.createElement('button');
-            clearBtn.className = 'terrain-btn';
-            clearBtn.dataset.terrain = 'clear';
-            clearBtn.onclick = () => selectTerrain('clear');
-            clearBtn.innerHTML = `
-                <div class="terrain-icon" style="background: #2d3748; border: 2px dashed #4a5568;">
-                    <svg style="width: 24px; height: 24px; fill: #a0aec0;" viewBox="0 0 24 24">
-                        <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
-                    </svg>
-                </div>
-                <span class="terrain-name">Clear Hex</span>
-            `;
-            terrainPalette.appendChild(clearBtn);
-            
-            // Try to load from cache first, create starter map if no cache exists
-            const loadedFromCache = loadFromCache();
-            if (!loadedFromCache) {
-                createStarterMap();
-            }
-            
-            preloadHexIcons();
-            window.addEventListener('resize', resizeCanvas);
-            resizeCanvas();
-            updateUI();
-            updateHexTopBar();
-        }
-
-        // ============================================================================
-        // AUTO-SAVE TO LOCALSTORAGE
-        // ============================================================================
+        });
         
-        const AUTOSAVE_KEY = 'hexworlds_autosave';
-        const AUTOSAVE_INTERVAL = 5000; // Auto-save every 5 seconds
-        let lastSaveTime = null;
-        
-        function showSaveIndicator() {
-            const breadcrumb = document.querySelector('.breadcrumb');
-            const indicator = document.createElement('span');
-            indicator.style.color = '#48bb78';
-            indicator.style.fontSize = '12px';
-            indicator.style.marginLeft = '8px';
-            indicator.textContent = '✓ Auto-saved';
-            indicator.id = 'saveIndicator';
-            
-            // Remove old indicator if exists
-            const oldIndicator = document.getElementById('saveIndicator');
-            if (oldIndicator) {
-                oldIndicator.remove();
-            }
-            
-            breadcrumb.appendChild(indicator);
-            
-            // Fade out after 2 seconds
-            setTimeout(() => {
-                indicator.style.transition = 'opacity 1s';
-                indicator.style.opacity = '0';
-                setTimeout(() => indicator.remove(), 1000);
-            }, 2000);
-        }
-        
-        function autoSaveToCache() {
-            try {
-                const saveData = {
-                    hexes: Array.from(state.hexMap.hexes.entries()).map(([key, hex]) => ({
-                        q: hex.q,
-                        r: hex.r,
-                        terrain: hex.terrain,
-                        name: hex.name,
-                        description: hex.description
-                    })),
-                    landmarks: Array.from(state.hexMap.landmarks.entries()).map(([key, landmark]) => ({
-                        id: landmark.id,
-                        q: landmark.q,
-                        r: landmark.r,
-                        name: landmark.name,
-                        type: landmark.type,
-                        style: landmark.style,
-                        icon: landmark.icon,
-                        color: landmark.color,
-                        showLabel: landmark.showLabel,
-                        labelPosition: landmark.labelPosition,
-                        size: landmark.size,
-                        attributes: landmark.attributes,
-                        notes: landmark.notes,
-                        visible: landmark.visible,
-                        created: landmark.created
-                    })),
-                    tokens: Array.from(state.hexMap.tokens.entries()).map(([id, token]) => ({
-                        id: token.id,
-                        q: token.q,
-                        r: token.r,
-                        name: token.name,
-                        type: token.type,
-                        color: token.color,
-                        label: token.label,
-                        size: token.size,
-                        attributes: token.attributes,
-                        notes: token.notes,
-                        visible: token.visible,
-                        created: token.created
-                    })),
-                    paths: state.hexMap.paths.map(path => ({
-                        id: path.id,
-                        type: path.type,
-                        style: path.style,
-                        width: path.width,
-                        color: path.color,
-                        points: path.points,
-                        created: path.created
-                    })),
-                    viewport: state.hexMap.viewport,
-                    savedAt: new Date().toISOString()
-                };
-                
-                localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(saveData));
-                lastSaveTime = new Date();
-                showSaveIndicator();
-                console.log('Auto-saved to cache');
-            } catch (error) {
-                console.error('Auto-save failed:', error);
-            }
-        }
-        
-        function loadFromCache() {
-            try {
-                const savedData = localStorage.getItem(AUTOSAVE_KEY);
-                if (!savedData) {
-                    console.log('No cached map found');
-                    return false;
-                }
-                
-                const data = JSON.parse(savedData);
-                
-                // Clear existing data
-                state.hexMap.hexes.clear();
-                state.hexMap.landmarks.clear();
-                state.hexMap.tokens.clear();
-                state.hexMap.paths = [];
-                state.hexMap.selectedHex = null;
-                state.hexMap.selectedLandmark = null;
-                state.hexMap.selectedToken = null;
-                state.hexMap.currentPath = null;
-                
-                // Load hexes
-                data.hexes.forEach(hexData => {
-                    const key = `${hexData.q},${hexData.r}`;
-                    state.hexMap.hexes.set(key, {
-                        q: hexData.q,
-                        r: hexData.r,
-                        terrain: hexData.terrain,
-                        name: hexData.name || '',
-                        description: hexData.description || ''
-                    });
+        // Restore landmarks
+        if (cachedData.landmarks) {
+            cachedData.landmarks.forEach(landmarkData => {
+                const key = `${landmarkData.q},${landmarkData.r}`;
+                state.hexMap.landmarks.set(key, {
+                    id: landmarkData.id,
+                    q: landmarkData.q,
+                    r: landmarkData.r,
+                    name: landmarkData.name,
+                    type: landmarkData.type,
+                    style: landmarkData.style,
+                    icon: landmarkData.icon,
+                    color: landmarkData.color,
+                    showLabel: landmarkData.showLabel !== false,
+                    labelPosition: landmarkData.labelPosition || 'above',
+                    size: landmarkData.size || 1.0,
+                    attributes: landmarkData.attributes || {},
+                    notes: landmarkData.notes || '',
+                    visible: landmarkData.visible !== false,
+                    created: landmarkData.created
                 });
-                
-                // Load landmarks
-                if (data.landmarks && Array.isArray(data.landmarks)) {
-                    data.landmarks.forEach(landmarkData => {
-                        const key = `${landmarkData.q},${landmarkData.r}`;
-                        state.hexMap.landmarks.set(key, {
-                            id: landmarkData.id,
-                            q: landmarkData.q,
-                            r: landmarkData.r,
-                            name: landmarkData.name,
-                            type: landmarkData.type,
-                            style: landmarkData.style,
-                            icon: landmarkData.icon,
-                            color: landmarkData.color,
-                            showLabel: landmarkData.showLabel !== false,
-                            labelPosition: landmarkData.labelPosition || 'above',
-                            size: landmarkData.size || 1.0,
-                            attributes: landmarkData.attributes || {},
-                            notes: landmarkData.notes || '',
-                            visible: landmarkData.visible !== false,
-                            created: landmarkData.created
-                        });
-                        const idNum = parseInt(landmarkData.id.split('_')[1]);
-                        if (idNum >= state.nextLandmarkId) {
-                            state.nextLandmarkId = idNum + 1;
-                        }
-                    });
-                }
-                
-                // Load tokens
-                if (data.tokens && Array.isArray(data.tokens)) {
-                    data.tokens.forEach(tokenData => {
-                        state.hexMap.tokens.set(tokenData.id, {
-                            id: tokenData.id,
-                            q: tokenData.q,
-                            r: tokenData.r,
-                            name: tokenData.name,
-                            type: tokenData.type,
-                            color: tokenData.color,
-                            label: tokenData.label,
-                            size: tokenData.size,
-                            attributes: tokenData.attributes || {},
-                            notes: tokenData.notes || '',
-                            visible: tokenData.visible !== false,
-                            scale: 1,
-                            created: tokenData.created
-                        });
-                        const idNum = parseInt(tokenData.id.split('_')[1]);
-                        if (idNum >= state.nextTokenId) {
-                            state.nextTokenId = idNum + 1;
-                        }
-                    });
-                }
-                
-                // Load paths
-                if (data.paths && Array.isArray(data.paths)) {
-                    data.paths.forEach(pathData => {
-                        state.hexMap.paths.push({
-                            id: pathData.id,
-                            type: pathData.type,
-                            style: pathData.style,
-                            width: pathData.width,
-                            color: pathData.color || PATH_STYLES[pathData.type].color,
-                            points: pathData.points,
-                            created: pathData.created
-                        });
-                        const idNum = parseInt(pathData.id.split('_')[1]);
-                        if (idNum >= state.nextPathId) {
-                            state.nextPathId = idNum + 1;
-                        }
-                    });
-                }
-                
-                // Load viewport
-                if (data.viewport) {
-                    state.hexMap.viewport = data.viewport;
-                }
-                
-                updateHexCount();
-                deselectHex();
-                renderHex();
-                
-                const savedDate = new Date(data.savedAt);
-                const timeAgo = Math.round((Date.now() - savedDate.getTime()) / 1000 / 60);
-                console.log(`Loaded cached map from ${timeAgo} minutes ago`);
-                
-                return true;
-            } catch (error) {
-                console.error('Failed to load from cache:', error);
-                return false;
-            }
+            });
         }
         
-        function clearCache() {
-            try {
-                localStorage.removeItem(AUTOSAVE_KEY);
-                console.log('Cache cleared');
-            } catch (error) {
-                console.error('Failed to clear cache:', error);
-            }
+        // Restore tokens
+        if (cachedData.tokens) {
+            cachedData.tokens.forEach(tokenData => {
+                state.hexMap.tokens.set(tokenData.id, {
+                    id: tokenData.id,
+                    q: tokenData.q,
+                    r: tokenData.r,
+                    name: tokenData.name,
+                    type: tokenData.type,
+                    color: tokenData.color,
+                    label: tokenData.label,
+                    size: tokenData.size,
+                    attributes: tokenData.attributes || {},
+                    notes: tokenData.notes || '',
+                    visible: tokenData.visible !== false,
+                    scale: 1,
+                    created: tokenData.created
+                });
+            });
         }
         
-        // Start auto-save interval
-        setInterval(autoSaveToCache, AUTOSAVE_INTERVAL);
+        // Restore paths
+        if (cachedData.paths) {
+            state.hexMap.paths = cachedData.paths.map(pathData => ({
+                id: pathData.id,
+                type: pathData.type,
+                style: pathData.style,
+                width: pathData.width,
+                color: pathData.color,
+                points: pathData.points,
+                created: pathData.created
+            }));
+        }
         
-        // Also save on major actions
-        const originalSetHex = setHex;
-        setHex = function(q, r, terrain) {
-            originalSetHex(q, r, terrain);
-            autoSaveToCache();
-        };
+        // Restore viewport
+        if (cachedData.viewport) {
+            state.hexMap.viewport = cachedData.viewport;
+        }
         
-        const originalDeleteHex = deleteHex;
-        deleteHex = function(q, r) {
-            originalDeleteHex(q, r);
-            autoSaveToCache();
-        };
+        // Restore ID counters
+        if (cachedData.nextLandmarkId) state.nextLandmarkId = cachedData.nextLandmarkId;
+        if (cachedData.nextTokenId) state.nextTokenId = cachedData.nextTokenId;
+        if (cachedData.nextPathId) state.nextPathId = cachedData.nextPathId;
+        
+        updateHexCount();
+        deselectHex();
+        renderHex();
+        
+        console.log('Map restored from cache successfully');
+        return true;
+        
+    } catch (error) {
+        console.error('Failed to restore map from cache:', error);
+        return false;
+    }
+}
 
-        init();
+function resizeCanvas() {
+    canvas.width = canvas.parentElement.offsetWidth;
+    canvas.height = canvas.parentElement.offsetHeight;
+    renderHex();
+}
+
+async function init() {
+    const terrainPalette = document.getElementById('terrainPalette');
+    Object.entries(TERRAINS).forEach(([key, terrain]) => {
+        const btn = document.createElement('button');
+        btn.className = `terrain-btn ${key === 'plains' ? 'active' : ''}`;
+        btn.dataset.terrain = key;
+        btn.onclick = () => selectTerrain(key);
+        btn.innerHTML = `
+            <div class="terrain-icon" style="background: ${terrain.color}">
+                <img src="${terrain.icon}" alt="${terrain.name}">
+            </div>
+            <span class="terrain-name">${terrain.name}</span>
+        `;
+        terrainPalette.appendChild(btn);
+    });
+    
+    // Add Clear Hex button
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'terrain-btn';
+    clearBtn.dataset.terrain = 'clear';
+    clearBtn.onclick = () => selectTerrain('clear');
+    clearBtn.innerHTML = `
+        <div class="terrain-icon" style="background: #2d3748; border: 2px dashed #4a5568;">
+            <svg style="width: 24px; height: 24px; fill: #a0aec0;" viewBox="0 0 24 24">
+                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+            </svg>
+        </div>
+        <span class="terrain-name">Clear Hex</span>
+    `;
+    terrainPalette.appendChild(clearBtn);
+    
+    // Initialize database
+    try {
+        await initDatabase();
+        
+        // Try to restore from cache
+        const restored = await restoreMapFromCache();
+        
+        // If no cached data, create starter map
+        if (!restored) {
+            createStarterMap();
+        }
+        
+        // Start auto-save
+        startAutoSave();
+        
+    } catch (error) {
+        console.error('Database initialization failed:', error);
+        // Fallback to starter map if database fails
+        createStarterMap();
+    }
+    
+    preloadHexIcons();
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    updateUI();
+    updateHexTopBar();
+    
+    // Initialize minimap
+    setTimeout(initializeMinimap, 100);
+}
+
+init();

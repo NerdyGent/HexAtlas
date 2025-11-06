@@ -86,7 +86,11 @@ const state = {
         brushSize: 1,
         paintSpeed: 8,
         paintThrottle: 0,
-        brushPreviewHexes: []
+        brushPreviewHexes: [],
+        // Cached bounds for performance
+        //
+        cachedBounds: null,
+boundsNeedRecalc: true
     },
     dungeonEditor: null,
     nextTokenId: 1,
@@ -167,7 +171,92 @@ function getHexesInRadius(q, r, radius) {
     }
     return hexes;
 }
+// ============================================================================
+// SMART BOUNDS CACHING SYSTEM
+// ============================================================================
 
+function wouldExpandBounds(q, r) {
+    if (state.hexMap.hexes.size === 0 || state.hexMap.boundsNeedRecalc) {
+        return true;
+    }
+    
+    const bounds = state.hexMap.cachedBounds;
+    if (!bounds) return true;
+    
+    return q < bounds.minQ || q > bounds.maxQ || r < bounds.minR || r > bounds.maxR;
+}
+
+function wouldShrinkBounds(q, r) {
+    if (state.hexMap.hexes.size <= 1) return true;
+    
+    const bounds = state.hexMap.cachedBounds;
+    if (!bounds) return true;
+    
+    const isOnBoundary = (q === bounds.minQ || q === bounds.maxQ || 
+                          r === bounds.minR || r === bounds.maxR);
+    
+    return isOnBoundary;
+}
+
+function recalculateBounds() {
+    if (state.hexMap.hexes.size === 0) {
+        state.hexMap.cachedBounds = null;
+        state.hexMap.boundsNeedRecalc = false;
+        return null;
+    }
+    
+    let minQ = Infinity, maxQ = -Infinity;
+    let minR = Infinity, maxR = -Infinity;
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    
+    const hexSize = state.hexMap.hexSize;
+    
+    state.hexMap.hexes.forEach(hex => {
+        minQ = Math.min(minQ, hex.q);
+        maxQ = Math.max(maxQ, hex.q);
+        minR = Math.min(minR, hex.r);
+        maxR = Math.max(maxR, hex.r);
+        
+        const x = hex.q * hexSize * 1.5;
+        const y = (hex.r * hexSize * Math.sqrt(3)) + (hex.q * hexSize * Math.sqrt(3) / 2);
+        
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+    });
+    
+    state.hexMap.cachedBounds = { minQ, maxQ, minR, maxR, minX, maxX, minY, maxY };
+    state.hexMap.boundsNeedRecalc = false;
+    
+    return state.hexMap.cachedBounds;
+}
+
+function updateBoundsForNewHex(q, r) {
+    const hexSize = state.hexMap.hexSize;
+    const x = q * hexSize * 1.5;
+    const y = (r * hexSize * Math.sqrt(3)) + (q * hexSize * Math.sqrt(3) / 2);
+    
+    if (!state.hexMap.cachedBounds) {
+        state.hexMap.cachedBounds = {
+            minQ: q, maxQ: q,
+            minR: r, maxR: r,
+            minX: x, maxX: x,
+            minY: y, maxY: y
+        };
+    } else {
+        const bounds = state.hexMap.cachedBounds;
+        bounds.minQ = Math.min(bounds.minQ, q);
+        bounds.maxQ = Math.max(bounds.maxQ, q);
+        bounds.minR = Math.min(bounds.minR, r);
+        bounds.maxR = Math.max(bounds.maxR, r);
+        bounds.minX = Math.min(bounds.minX, x);
+        bounds.maxX = Math.max(bounds.maxX, x);
+        bounds.minY = Math.min(bounds.minY, y);
+        bounds.maxY = Math.max(bounds.maxY, y);
+    }
+}
 // Hex Management
 function getHex(q, r) {
     return state.hexMap.hexes.get(`${q},${r}`);
@@ -176,22 +265,40 @@ function getHex(q, r) {
 function setHex(q, r, terrain) {
     const key = `${q},${r}`;
     const existing = state.hexMap.hexes.get(key);
+    const isNewHex = !existing;
+    
     state.hexMap.hexes.set(key, {
         q, r, terrain,
         name: existing?.name || '',
         description: existing?.description || '',
         dungeon: existing?.dungeon || null
     });
+    
     updateHexCount();
-    refreshMinimapDebounced();
     markUnsaved();
+    
+    // Smart bounds update: only refresh minimap if bounds changed
+    if (isNewHex) {
+        const expandedBounds = wouldExpandBounds(q, r);
+        if (expandedBounds) {
+            updateBoundsForNewHex(q, r);
+            refreshMinimapDebounced();
+        }
+    }
 }
 
 function deleteHex(q, r) {
+    const wouldShrink = wouldShrinkBounds(q, r);
+    
     state.hexMap.hexes.delete(`${q},${r}`);
     updateHexCount();
-    refreshMinimapDebounced();
     markUnsaved();
+    
+    // Only recalculate and refresh if we deleted a boundary hex
+    if (wouldShrink) {
+        state.hexMap.boundsNeedRecalc = true;
+        refreshMinimapDebounced();
+    }
 }
 
 function updateHexCount() {
@@ -1774,6 +1881,7 @@ function floodFill(startQ, startR, targetTerrain) {
     const visited = new Set();
     const maxFill = 5000;
     let filled = 0;
+    let boundsExpanded = false;
     
     while (queue.length > 0 && filled < maxFill) {
         const { q, r } = queue.shift();
@@ -1786,6 +1894,11 @@ function floodFill(startQ, startR, targetTerrain) {
         const currentTerrain = hex ? hex.terrain : null;
         
         if (currentTerrain !== startTerrain) continue;
+        
+        // Check if this will expand bounds
+        if (!boundsExpanded && wouldExpandBounds(q, r)) {
+            boundsExpanded = true;
+        }
         
         setHex(q, r, targetTerrain);
         filled++;
@@ -1804,6 +1917,11 @@ function floodFill(startQ, startR, targetTerrain) {
                 queue.push(n);
             }
         });
+    }
+    
+    // Only refresh minimap if bounds actually changed during fill
+    if (boundsExpanded) {
+        refreshMinimapDebounced();
     }
     
     renderHex();
@@ -3141,32 +3259,11 @@ function initializeMinimap() {
         renderHex();
     });
 }
-
 function getMapBounds() {
-    let minQ = Infinity, maxQ = -Infinity;
-    let minR = Infinity, maxR = -Infinity;
-    let minX = Infinity, maxX = -Infinity;
-    let minY = Infinity, maxY = -Infinity;
-    
-    const hexSize = state.hexMap.hexSize;
-    
-    // Calculate both Q/R bounds and pixel bounds
-    state.hexMap.hexes.forEach(hex => {
-        minQ = Math.min(minQ, hex.q);
-        maxQ = Math.max(maxQ, hex.q);
-        minR = Math.min(minR, hex.r);
-        maxR = Math.max(maxR, hex.r);
-        
-        const x = hex.q * hexSize * 1.5;
-        const y = (hex.r * hexSize * Math.sqrt(3)) + (hex.q * hexSize * Math.sqrt(3) / 2);
-        
-        minX = Math.min(minX, x);
-        maxX = Math.max(maxX, x);
-        minY = Math.min(minY, y);
-        maxY = Math.max(maxY, y);
-    });
-    
-    return { minQ, maxQ, minR, maxR, minX, maxX, minY, maxY };
+    if (state.hexMap.boundsNeedRecalc || !state.hexMap.cachedBounds) {
+        return recalculateBounds();
+    }
+    return state.hexMap.cachedBounds;
 }
 
 function getMinimapScale(bounds, canvasSize) {
@@ -3574,7 +3671,8 @@ function importHexMap() {
             if (data.viewport) {
                 state.hexMap.viewport = data.viewport;
             }
-            
+               // Force bounds recalculation after import
+            state.hexMap.boundsNeedRecalc = true;
             updateHexCount();
             deselectHex();
             renderHex();
@@ -3601,6 +3699,9 @@ function clearHexMap() {
         state.hexMap.selectedToken = null;
         state.hexMap.selectedPath = null;
         state.hexMap.currentPath = null;
+        // Reset bounds cache
+        state.hexMap.cachedBounds = null;
+        state.hexMap.boundsNeedRecalc = true;
         
         // Clear the cached data
         clearMapCache().then(() => {

@@ -10,17 +10,165 @@
     <div class="app">
         <div class="topbar">
             <div class="topbar-left">
-                <div class="logo"> HexWorlds</div>
+                <div class="logo">
+                    <span class="logo-hex">⬡</span>
+                    <span class="logo-text">HexWorlds</span>
+                </div>
                 <div class="breadcrumb">
                     <span id="viewName">Hex Map</span>
                 </div>
             </div>
             <div class="topbar-right">
-                <div class="save-indicator" id="saveIndicator">
-                    <div class="save-indicator-dot"></div>
-                    <span id="saveIndicatorText">Auto-save enabled</span>
+                <!-- File Dropdown -->
+                <div class="dropdown">
+                    <button class="header-btn" id="fileBtn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/>
+                        </svg>
+                        <span>File</span>
+                    </button>
+                    <div class="dropdown-menu" id="fileMenu">
+                        <div class="dropdown-item" onclick="newMap()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z"/>
+                            </svg>
+                            New Map
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item" onclick="importMapFromFile()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+                            </svg>
+                            Import Map (JSON)
+                        </div>
+                        <div class="dropdown-item" onclick="document.getElementById('importFileInput').click()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm0 4c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 12H6v-1.4c0-2 4-3.1 6-3.1s6 1.1 6 3.1V19z"/>
+                            </svg>
+                            Import from Image
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item" onclick="openExamplesModal()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+                            </svg>
+                            Example Maps
+                        </div>
+                    </div>
                 </div>
-                <div id="topbarActions" style="display: flex; gap: 12px;"></div>
+
+                <!-- Save Button with Auto-save Indicator -->
+                <button class="header-btn" id="saveBtn" title="Auto-save enabled">
+                    <svg class="icon" id="saveIcon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+                    </svg>
+                    <span id="saveText">Saved</span>
+                </button>
+
+                <!-- Export Dropdown -->
+                <div class="dropdown">
+                    <button class="header-btn" id="exportBtn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"/>
+                        </svg>
+                        <span>Export</span>
+                    </button>
+                    <div class="dropdown-menu" id="exportMenu">
+                        <div class="dropdown-item" onclick="exportAsJSON()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                            </svg>
+                            Export as JSON
+                        </div>
+                        <div class="dropdown-item" onclick="exportAsPNG()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                            </svg>
+                            Export as PNG
+                        </div>
+                        <div class="dropdown-item" onclick="exportAsCSV()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                            </svg>
+                            Export as CSV
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item" onclick="shareMap()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                            </svg>
+                            Share Link
+                        </div>
+                    </div>
+                </div>
+
+                <!-- More Menu -->
+                <div class="dropdown">
+                    <button class="header-btn-icon" id="moreBtn" title="More options">
+                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                        </svg>
+                    </button>
+                    <div class="dropdown-menu" id="moreMenu">
+                        <div class="dropdown-item" onclick="openSettingsModal()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94L14.4 2.81c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                            </svg>
+                            Settings
+                        </div>
+                        <div class="dropdown-item" onclick="openThemesModal()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                            </svg>
+                            Styles & Themes
+                        </div>
+                        <div class="dropdown-item" onclick="openShortcutsModal()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/>
+                            </svg>
+                            Keyboard Shortcuts
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item" onclick="window.open('https://docs.hexworlds.app', '_blank')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                            </svg>
+                            Documentation
+                        </div>
+                        <div class="dropdown-item" onclick="window.open('https://support.hexworlds.app', '_blank')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>
+                            </svg>
+                            Help & Support
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Dropdown (placeholder for future) -->
+                <div class="dropdown" style="display: none;" id="profileDropdown">
+                    <button class="header-btn-profile" id="profileBtn">
+                        <div class="avatar">JD</div>
+                    </button>
+                    <div class="dropdown-menu" id="profileMenu">
+                        <div class="dropdown-user-info">
+                            <div class="name">John Doe</div>
+                            <div class="email">john@example.com</div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            Profile
+                        </div>
+                        <div class="dropdown-item">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                            </svg>
+                            Sign Out
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -133,13 +281,13 @@
                     <h3>Create Token</h3>
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <button class="btn btn-primary" style="width: 100%;" onclick="showTokenCreator()">
-                            âž• New Token
+                            ➕ New Token
                         </button>
                         <div style="font-size: 11px; color: #718096; line-height: 1.5;">
                             <strong>Token Mode:</strong><br>
-                            â€¢ Click hex to place new token<br>
-                            â€¢ Click token to select/view<br>
-                            â€¢ Drag token to move it<br>
+                            • Click hex to place new token<br>
+                            • Click token to select/view<br>
+                            • Drag token to move it<br>
                         </div>
                     </div>
                 </div>
@@ -149,13 +297,13 @@
                     <h3>Create Landmark</h3>
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <button class="btn btn-primary" style="width: 100%;" onclick="showLandmarkCreator()">
-                            âž• New Landmark
+                            ➕ New Landmark
                         </button>
                         <div style="font-size: 11px; color: #718096; line-height: 1.5;">
                             <strong>Landmark Mode:</strong><br>
-                            â€¢ Click hex to place landmark<br>
-                            â€¢ Shift+Click landmark to select<br>
-                            â€¢ Landmarks appear on hex terrain<br>
+                            • Click hex to place landmark<br>
+                            • Shift+Click landmark to select<br>
+                            • Landmarks appear on hex terrain<br>
                         </div>
                     </div>
                 </div>
@@ -191,11 +339,11 @@
                     <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
                         <button class="btn btn-secondary" style="width: 100%; justify-content: center;" 
                                 onclick="selectPathStyle('straight')" id="pathStyle_straight">
-                            â” Straight
+                            ━ Straight
                         </button>
                         <button class="btn btn-secondary" style="width: 100%; justify-content: center;" 
                                 onclick="selectPathStyle('curved')" id="pathStyle_curved">
-                            âŒ¢ Curved
+                            ⌢ Curved
                         </button>
                     </div>
                     
@@ -222,11 +370,11 @@
                     
                     <div style="font-size: 11px; color: #718096; line-height: 1.5; margin-top: 16px;">
                         <strong>Path Mode:</strong><br>
-                        â€¢ Click hexes to draw path<br>
-                        â€¢ Paths auto-connect at intersections<br>
-                        â€¢ Double-click to finish<br>
-                        â€¢ Click existing path to edit/delete<br>
-                        â€¢ ESC to cancel current path<br>
+                        • Click hexes to draw path<br>
+                        • Paths auto-connect at intersections<br>
+                        • Double-click to finish<br>
+                        • Click existing path to edit/delete<br>
+                        • ESC to cancel current path<br>
                     </div>
                 </div>
             </div>
@@ -235,14 +383,14 @@
                 <canvas id="hexCanvas"></canvas>
                 
                 <div class="canvas-overlay">
-                    <strong id="modeText">Paint Mode</strong> Â· <span id="terrainText">Plains</span> selected<br>
-                    <span id="instructionText">Click to paint Â· Drag for multiple Â· Keys 1-5 for brush size</span>
+                    <strong id="modeText">Paint Mode</strong> · <span id="terrainText">Plains</span> selected<br>
+                    <span id="instructionText">Click to paint · Drag for multiple · Keys 1-5 for brush size</span>
                 </div>
 
                 <div class="zoom-controls">
                     <button class="zoom-btn" onclick="zoomIn()">+</button>
                     <button class="zoom-btn zoom-level" id="zoomLevel">100%</button>
-                    <button class="zoom-btn" onclick="zoomOut()">âˆ’</button>
+                    <button class="zoom-btn" onclick="zoomOut()">−</button>
                 </div>
             </div>
 
@@ -266,6 +414,300 @@
             </div>
         </div>
     </div>
+
+    <!-- Modals -->
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg class="icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94L14.4 2.81c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                    </svg>
+                    Settings
+                </div>
+                <button class="modal-close" onclick="closeModal('settingsModal')">
+                    <svg class="icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-content">
+                    <div class="settings-sidebar">
+                        <div class="settings-nav-item active" onclick="switchSettingsTab('map')">
+                            <span>🗺️</span> Map
+                        </div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab('display')">
+                            <span>🎨</span> Display
+                        </div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab('controls')">
+                            <span>⌨️</span> Controls
+                        </div>
+                    </div>
+                    <div class="settings-panel">
+                        <div class="setting-group">
+                            <h3>Grid Settings</h3>
+                            <div class="setting-item">
+                                <div>
+                                    <div class="setting-label">Show Coordinates</div>
+                                    <div class="setting-description">Display hex coordinates on hover</div>
+                                </div>
+                                <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div class="setting-label">Show Grid Lines</div>
+                                    <div class="setting-description">Show hex borders on the map</div>
+                                </div>
+                                <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <h3>Performance</h3>
+                            <div class="setting-item">
+                                <div>
+                                    <div class="setting-label">Hardware Acceleration</div>
+                                    <div class="setting-description">Use GPU for rendering (recommended)</div>
+                                </div>
+                                <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('settingsModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Themes Modal -->
+    <div class="modal-overlay" id="themesModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg class="icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                    </svg>
+                    Styles & Themes
+                </div>
+                <button class="modal-close" onclick="closeModal('themesModal')">
+                    <svg class="icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <h3>Application Theme</h3>
+                    <div class="theme-grid">
+                        <div class="theme-card active" onclick="selectTheme(this, 'dark')">
+                            <div class="theme-preview dark"></div>
+                            <div class="theme-name">Dark ✓</div>
+                        </div>
+                        <div class="theme-card" onclick="selectTheme(this, 'light')">
+                            <div class="theme-preview light"></div>
+                            <div class="theme-name">Light</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <h3>Accent Color</h3>
+                    <div class="theme-grid">
+                        <div class="theme-card active" onclick="selectAccent(this, 'purple')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                            <div class="theme-name">Purple ✓</div>
+                        </div>
+                        <div class="theme-card" onclick="selectAccent(this, 'blue')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);"></div>
+                            <div class="theme-name">Blue</div>
+                        </div>
+                        <div class="theme-card" onclick="selectAccent(this, 'green')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);"></div>
+                            <div class="theme-name">Green</div>
+                        </div>
+                        <div class="theme-card" onclick="selectAccent(this, 'amber')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);"></div>
+                            <div class="theme-name">Amber</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('themesModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="applyTheme()">Apply Theme</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal-overlay" id="shortcutsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg class="icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/>
+                    </svg>
+                    Keyboard Shortcuts
+                </div>
+                <button class="modal-close" onclick="closeModal('shortcutsModal')">
+                    <svg class="icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="keyboard-shortcuts">
+                    <div class="shortcut-group">
+                        <h3>General</h3>
+                        <div class="shortcut-item">
+                            <span class="shortcut-action">Save</span>
+                            <div class="shortcut-keys">
+                                <span class="key">Ctrl</span>
+                                <span class="key">S</span>
+                            </div>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-action">Undo</span>
+                            <div class="shortcut-keys">
+                                <span class="key">Ctrl</span>
+                                <span class="key">Z</span>
+                            </div>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-action">Redo</span>
+                            <div class="shortcut-keys">
+                                <span class="key">Ctrl</span>
+                                <span class="key">Y</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="shortcut-group">
+                        <h3>Tools</h3>
+                        <div class="shortcut-item">
+                            <span class="shortcut-action">Paint/Terrain Mode</span>
+                            <div class="shortcut-keys">
+                                <span class="key">P</span>
+                            </div>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-action">Token Mode</span>
+                            <div class="shortcut-keys">
+                                <span class="key">T</span>
+                            </div>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-action">Landmark Mode</span>
+                            <div class="shortcut-keys">
+                                <span class="key">L</span>
+                            </div>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-action">Path Mode</span>
+                            <div class="shortcut-keys">
+                                <span class="key">H</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="shortcut-group">
+                        <h3>View</h3>
+                        <div class="shortcut-item">
+                            <span class="shortcut-action">Pan Canvas</span>
+                            <div class="shortcut-keys">
+                                <span class="key">Space</span>
+                                <span>+</span>
+                                <span class="key">Drag</span>
+                            </div>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-action">Zoom In/Out</span>
+                            <div class="shortcut-keys">
+                                <span class="key">Scroll</span>
+                            </div>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-action">Set Brush Size</span>
+                            <div class="shortcut-keys">
+                                <span class="key">1</span>
+                                <span>-</span>
+                                <span class="key">5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModal('shortcutsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Example Maps Modal -->
+    <div class="modal-overlay" id="examplesModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg class="icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+                    </svg>
+                    Example Maps
+                </div>
+                <button class="modal-close" onclick="closeModal('examplesModal')">
+                    <svg class="icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="example-maps-grid">
+                    <div class="example-map-card" onclick="loadExampleMap('island')">
+                        <div class="example-map-preview" style="background: linear-gradient(135deg, #4299e1 0%, #48bb78 50%, #f6ad55 100%);">
+                            <div class="example-map-icon">🏝️</div>
+                        </div>
+                        <div class="example-map-info">
+                            <div class="example-map-name">Island Adventure</div>
+                            <div class="example-map-desc">Tropical island with beaches and jungle</div>
+                        </div>
+                    </div>
+                    <div class="example-map-card" onclick="loadExampleMap('dungeon')">
+                        <div class="example-map-preview" style="background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);">
+                            <div class="example-map-icon">🏰</div>
+                        </div>
+                        <div class="example-map-info">
+                            <div class="example-map-name">Dungeon Depths</div>
+                            <div class="example-map-desc">Underground cavern system</div>
+                        </div>
+                    </div>
+                    <div class="example-map-card" onclick="loadExampleMap('village')">
+                        <div class="example-map-preview" style="background: linear-gradient(135deg, #48bb78 0%, #68d391 100%);">
+                            <div class="example-map-icon">🏘️</div>
+                        </div>
+                        <div class="example-map-info">
+                            <div class="example-map-name">Village Square</div>
+                            <div class="example-map-desc">Peaceful town with shops and homes</div>
+                        </div>
+                    </div>
+                    <div class="example-map-card" onclick="loadExampleMap('wilderness')">
+                        <div class="example-map-preview" style="background: linear-gradient(135deg, #38a169 0%, #276749 100%);">
+                            <div class="example-map-icon">🌲</div>
+                        </div>
+                        <div class="example-map-info">
+                            <div class="example-map-name">Wilderness Trek</div>
+                            <div class="example-map-desc">Forest paths and clearings</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('examplesModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for importing -->
+    <input type="file" id="importFileInput" accept=".json,image/*" style="display: none;" onchange="handleFileImport(event)">
 
     <script src="game.js"></script>
 </body>

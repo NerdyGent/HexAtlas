@@ -557,13 +557,13 @@ function showPathDetails(path) {
     };
     
     const editModeButton = state.hexMap.pathEditMode 
-        ? '<button class="btn btn-primary" style="width: 100%;" onclick="togglePathEditMode()">âœ“ Done Editing</button>'
-        : '<button class="btn btn-secondary" style="width: 100%;" onclick="togglePathEditMode()">âœï¸ Edit Points</button>';
+        ? '<button class="btn btn-primary" style="width: 100%;" onclick="togglePathEditMode()">✓ Done Editing</button>'
+        : '<button class="btn btn-secondary" style="width: 100%;" onclick="togglePathEditMode()">✏️ Edit Points</button>';
     
     panel.innerHTML = `
         <div class="details-header">
             <h2>${pathTypeNames[path.type]} Path</h2>
-            <div class="coords">${path.points.length} waypoints Â· ${path.style} style</div>
+            <div class="coords">${path.points.length} waypoints · ${path.style} style</div>
         </div>
         <div class="details-content">
             <div class="form-group">
@@ -580,8 +580,8 @@ function showPathDetails(path) {
             <div class="form-group">
                 <label class="form-label">Path Style</label>
                 <select class="form-select" onchange="updatePathStyleField('${path.id}', this.value)">
-                    <option value="straight" ${path.style === 'straight' ? 'selected' : ''}>â” Straight</option>
-                    <option value="curved" ${path.style === 'curved' ? 'selected' : ''}>âŒ¢ Curved</option>
+                    <option value="straight" ${path.style === 'straight' ? 'selected' : ''}>━ Straight</option>
+                    <option value="curved" ${path.style === 'curved' ? 'selected' : ''}>⌢ Curved</option>
                 </select>
             </div>
             <div class="form-group">
@@ -606,7 +606,7 @@ function showPathDetails(path) {
                             <span>${i === 0 ? 'ðŸŸ¢' : i === path.points.length - 1 ? 'ðŸ”´' : 'ðŸ”µ'} Point ${i + 1}: (${p.q}, ${p.r})</span>
                             <div style="display: flex; gap: 4px;">
                                 ${i < path.points.length - 1 ? `<button onclick="insertPointAfter('${path.id}', ${i})" style="padding: 2px 6px; font-size: 10px; background: #667eea; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Add point after">+</button>` : ''}
-                                ${path.points.length > 2 ? `<button onclick="deletePathPoint('${path.id}', ${i})" style="padding: 2px 6px; font-size: 10px; background: #f56565; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Delete point">Ã—</button>` : ''}
+                                ${path.points.length > 2 ? `<button onclick="deletePathPoint('${path.id}', ${i})" style="padding: 2px 6px; font-size: 10px; background: #f56565; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Delete point">×</button>` : ''}
                             </div>
                         </div>
                     `).join('')}
@@ -623,7 +623,7 @@ function showPathDetails(path) {
                                     style="width: 100%; padding: 8px; margin-bottom: 4px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; text-align: left;"
                                     onmouseover="this.style.background='#5568d3'" 
                                     onmouseout="this.style.background='#667eea'">
-                                âœ‚ï¸ Split at Point ${i + 1} (${p.q}, ${p.r})
+                                ✂️ Split at Point ${i + 1} (${p.q}, ${p.r})
                             </button>
                         `;
                     }).join('')}
@@ -632,8 +632,8 @@ function showPathDetails(path) {
             <div style="font-size: 11px; color: #718096; line-height: 1.5; padding: 12px; background: #2d3748; border-radius: 6px;">
                 <strong>${state.hexMap.pathEditMode ? 'Edit Mode Tips:' : 'Path Info:'}</strong><br>
                 ${state.hexMap.pathEditMode ? 
-                    'â€¢ Drag points on the map to move them<br>â€¢ Click + to add points between segments<br>â€¢ Click Ã— to remove points<br>â€¢ Double-click path line to insert point' :
-                    'â€¢ Click "Edit Points" to modify path<br>â€¢ Use + buttons to add waypoints<br>â€¢ Split to create Y/T intersections<br>â€¢ Double-click path to insert point'
+                    '• Drag points on the map to move them<br>• Click + to add points between segments<br>• Click × to remove points<br>• Double-click path line to insert point' :
+                    '• Click "Edit Points" to modify path<br>• Use + buttons to add waypoints<br>• Split to create Y/T intersections<br>• Double-click path to insert point'
                 }
             </div>
         </div>
@@ -1219,7 +1219,7 @@ function showTokenDetails(token) {
                 <span style="display: inline-block; width: 32px; height: 32px; border-radius: 50%; background: ${token.color}; border: 2px solid #000; text-align: center; line-height: 28px; color: white; font-weight: bold; font-size: 14px;">${token.label.charAt(0).toUpperCase()}</span>
                 ${token.name}
             </h2>
-            <div class="coords">${token.type.charAt(0).toUpperCase() + token.type.slice(1)} Â· Hex (${token.q}, ${token.r})</div>
+            <div class="coords">${token.type.charAt(0).toUpperCase() + token.type.slice(1)} · Hex (${token.q}, ${token.r})</div>
         </div>
         <div class="details-content">
             ${hasPathfinding ? `
@@ -1229,7 +1229,7 @@ function showTokenDetails(token) {
                     ðŸ“ Select Destination Hex
                 </button>
                 <button class="btn btn-danger" style="width: 100%;" onclick="stopPathfinding('${token.id}')">
-                    â¹ï¸ Stop Pathfinding
+                    ℹ️ Stop Pathfinding
                 </button>
                 ${token.pathfindingRoute ? `<div style="color: white; font-size: 11px; margin-top: 8px;">Route: ${token.pathfindingRoute.length} hexes</div>` : ''}
             </div>
@@ -1481,7 +1481,7 @@ function showLandmarkDetails(landmark) {
 
         <div class="details-header">
             <h2>${landmark.name}</h2>
-            <div class="coords">Landmark Â· Hex (${landmark.q}, ${landmark.r})</div>
+            <div class="coords">Landmark · Hex (${landmark.q}, ${landmark.r})</div>
         </div>
         <div class="details-content">
             <div class="form-group">
@@ -2552,7 +2552,7 @@ function updateUI() {
     // If in Explorer mode, show different instructions
     if (state.hexMap.viewMode === 'explorer') {
         modeText.textContent = 'Explorer Mode';
-        instructionText.textContent = 'Click hexes/tokens/landmarks to view info Â· Drag tokens to move Â· Right-click drag to pan';
+        instructionText.textContent = 'Click hexes/tokens/landmarks to view info · Drag tokens to move · Right-click drag to pan';
         canvas.style.cursor = 'default';
         return;
     }
@@ -2565,12 +2565,12 @@ function updateUI() {
     };
     
     const instructions = {
-        paint: 'Click to paint Â· Shift+Click to select hex Â· Drag for continuous painting Â· Right-click drag to pan',
-        token: state.hexMap.pendingToken ? 'Click a hex to place token Â· ESC to cancel' : 'Click to place token Â· Shift+Click token to select Â· Drag token to move',
-        landmark: state.hexMap.pendingLandmark ? 'Click a hex to place landmark Â· ESC to cancel' : 'Click to create landmark Â· Shift+Click landmark to select',
-        path: state.hexMap.pathEditMode ? 'Drag points to move Â· Click + to insert Â· Click Ã— to delete Â· Right-click to pan' : 
-              state.hexMap.currentPath ? 'Click to add waypoints Â· Double-click to finish Â· ESC to cancel' : 
-              'Click to draw new path Â· Shift+Click path to select/edit'
+        paint: 'Click to paint · Shift+Click to select hex · Drag for continuous painting · Right-click drag to pan',
+        token: state.hexMap.pendingToken ? 'Click a hex to place token · ESC to cancel' : 'Click to place token · Shift+Click token to select · Drag token to move',
+        landmark: state.hexMap.pendingLandmark ? 'Click a hex to place landmark · ESC to cancel' : 'Click to create landmark · Shift+Click landmark to select',
+        path: state.hexMap.pathEditMode ? 'Drag points to move · Click + to insert · Click × to delete · Right-click to pan' : 
+              state.hexMap.currentPath ? 'Click to add waypoints · Double-click to finish · ESC to cancel' : 
+              'Click to draw new path · Shift+Click path to select/edit'
     };
     
     canvas.style.cursor = cursorMap[state.hexMap.mode] || 'default';
@@ -2808,8 +2808,36 @@ canvas.addEventListener('touchstart', (e) => {
     if (e.touches.length === 1) {
         // Single touch
         const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        const hex = pixelToHex(x, y);
+        
+        // Start long-press timer for context menu
+        mobileState.longPressTriggered = false;
+        mobileState.longPressTimer = setTimeout(() => {
+            // Long press detected
+            const existingHex = getHex(hex.q, hex.r);
+            if (existingHex && isMobile) {
+                mobileState.longPressTriggered = true;
+                
+                // Haptic feedback if available
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                
+                showContextMenu(touch.clientX, touch.clientY, existingHex);
+            }
+        }, 500); // 500ms long press
+        
         handlePointerDown(touch.clientX, touch.clientY, 0, true);
     } else if (e.touches.length === 2) {
+        // Cancel long press timer
+        if (mobileState.longPressTimer) {
+            clearTimeout(mobileState.longPressTimer);
+            mobileState.longPressTimer = null;
+        }
+        
         // Two finger touch - start pinch or pan
         touchState.isPinching = true;
         const touch1 = e.touches[0];
@@ -2932,6 +2960,12 @@ canvas.addEventListener('touchmove', (e) => {
     e.preventDefault();
     touchState.touches = Array.from(e.touches);
     
+    // Cancel long-press if finger moves
+    if (mobileState.longPressTimer) {
+        clearTimeout(mobileState.longPressTimer);
+        mobileState.longPressTimer = null;
+    }
+    
     if (e.touches.length === 2 && touchState.isPinching) {
         // Pinch zoom
         const touch1 = e.touches[0];
@@ -3032,6 +3066,18 @@ canvas.addEventListener('mouseup', () => {
 canvas.addEventListener('touchend', (e) => {
     e.preventDefault();
     touchState.touches = Array.from(e.touches);
+    
+    // Cancel long-press timer
+    if (mobileState.longPressTimer) {
+        clearTimeout(mobileState.longPressTimer);
+        mobileState.longPressTimer = null;
+    }
+    
+    // If long press was triggered, don't process normal touch action
+    if (mobileState.longPressTriggered) {
+        mobileState.longPressTriggered = false;
+        return;
+    }
     
     if (e.touches.length === 0) {
         // All fingers lifted
@@ -3181,7 +3227,7 @@ function showHexDetails(hex) {
 
         <div class="details-header">
             <h2>${hex.name || 'Unnamed Hex'}</h2>
-            <div class="coords">Hex (${hex.q}, ${hex.r}) Â· ${TERRAINS[hex.terrain].name}</div>
+            <div class="coords">Hex (${hex.q}, ${hex.r}) · ${TERRAINS[hex.terrain].name}</div>
         </div>
         
         <div class="details-content">
@@ -3263,7 +3309,7 @@ function deselectHex() {
         </div>
         
         <div class="no-selection">
-            <div class="no-selection-icon">â¬¡</div>
+            <div class="no-selection-icon">⬡</div>
             <p>Select a hex to view details</p>
             <p style="margin-top: 8px; font-size: 12px;">Click any hex on the map</p>
         </div>
@@ -4641,28 +4687,36 @@ function clearMapCache() {
 
 // Update save indicator UI
 function updateSaveIndicator(status) {
-    const indicator = document.getElementById('saveIndicator');
-    const text = document.getElementById('saveIndicatorText');
+    // Use the new save button system
+    const saveBtn = document.getElementById('saveBtn');
+    const saveText = document.getElementById('saveText');
+    const saveIcon = document.getElementById('saveIcon');
     
-    if (!indicator || !text) return;
+    if (!saveBtn || !saveText || !saveIcon) return;
     
-    indicator.className = 'save-indicator';
+    saveBtn.classList.remove('saving', 'saved');
+    saveIcon.classList.remove('spinning');
     
     switch (status) {
         case 'saving':
-            indicator.classList.add('saving');
-            text.textContent = 'Saving...';
+            saveBtn.classList.add('saving');
+            saveText.textContent = 'Saving...';
+            saveIcon.classList.add('spinning');
+            saveBtn.title = 'Saving your changes...';
             break;
         case 'saved':
-            indicator.classList.add('saved');
-            text.textContent = 'Saved';
+            saveBtn.classList.add('saved');
+            saveText.textContent = 'Saved';
+            saveBtn.title = 'All changes saved';
             break;
         case 'error':
-            text.textContent = 'Save failed';
+            saveText.textContent = 'Save Error';
+            saveBtn.title = 'Error saving changes';
             break;
         case 'idle':
         default:
-            text.textContent = 'Auto-save enabled';
+            saveText.textContent = 'Saved';
+            saveBtn.title = 'Auto-save enabled';
             break;
     }
 }
@@ -4884,7 +4938,11 @@ let mobileState = {
     sheetExpanded: false,
     currentTab: 'tools',
     touchStartY: 0,
-    touchCurrentY: 0
+    touchCurrentY: 0,
+    longPressTimer: null,
+    longPressTriggered: false,
+    contextMenuOpen: false,
+    minimapFullscreen: false
 };
 
 function detectMobile() {
@@ -4924,9 +4982,9 @@ function createMobileBottomSheet() {
         <div class="mobile-sheet-handle" id="mobileSheetHandle"></div>
         
         <div class="mobile-tabs">
-            <button class="mobile-tab active" data-tab="tools">Tools</button>
-            <button class="mobile-tab" data-tab="terrain">Terrain</button>
-            <button class="mobile-tab" data-tab="brush">Brush</button>
+            <button class="mobile-tab active" data-tab="tools">🎨 Tools</button>
+            <button class="mobile-tab" data-tab="path">🛤️ Paths</button>
+            <button class="mobile-tab" data-tab="token">🎭 Tokens</button>
         </div>
 
         <div class="mobile-content">
@@ -4935,7 +4993,7 @@ function createMobileBottomSheet() {
                 <div class="mobile-section-header">Select Tool</div>
                 
                 <div class="mobile-tool-grid">
-                    <div class="mobile-tool-card active" data-mode="paint" onclick="setHexMode('paint')">
+                    <div class="mobile-tool-card active" data-mode="paint" onclick="switchMobileTool('paint')">
                         <div class="mode-icon">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M7,14C5.9,14 5,13.1 5,12C5,10.9 5.9,10 7,10C8.1,10 9,10.9 9,12C9,13.1 8.1,14 7,14M12.6,10C11.8,7.7 9.6,6 7,6C3.7,6 1,8.7 1,12C1,15.3 3.7,18 7,18C9.6,18 11.8,16.3 12.6,14H16V18H20V14H23V10H12.6Z"/>
@@ -4943,7 +5001,7 @@ function createMobileBottomSheet() {
                         </div>
                         <span class="mobile-tool-label">Paint</span>
                     </div>
-                    <div class="mobile-tool-card" data-mode="select" onclick="setHexMode('select')">
+                    <div class="mobile-tool-card" data-mode="select" onclick="switchMobileTool('select')">
                         <div class="mode-icon">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z"/>
@@ -4951,7 +5009,7 @@ function createMobileBottomSheet() {
                         </div>
                         <span class="mobile-tool-label">Select</span>
                     </div>
-                    <div class="mobile-tool-card" data-mode="path" onclick="setHexMode('path')">
+                    <div class="mobile-tool-card" data-mode="path" onclick="switchMobileTool('path')">
                         <div class="mode-icon">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M14,16.94L8.58,11.5L14,6.06L15.06,7.12L11.18,11L19,11V13H11.18L15.06,16.88L14,16.94M2,11V13H8V11H2Z"/>
@@ -4959,7 +5017,7 @@ function createMobileBottomSheet() {
                         </div>
                         <span class="mobile-tool-label">Path</span>
                     </div>
-                    <div class="mobile-tool-card" data-mode="token" onclick="setHexMode('token')">
+                    <div class="mobile-tool-card" data-mode="token" onclick="switchMobileTool('token')">
                         <div class="mode-icon">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/>
@@ -4968,41 +5026,51 @@ function createMobileBottomSheet() {
                         <span class="mobile-tool-label">Token</span>
                     </div>
                 </div>
+
+                <!-- Dynamic Tool Options -->
+                <div id="mobileToolOptions" style="margin-top: 20px;">
+                    <!-- Brush Size (for Paint tool) -->
+                    <div id="mobileBrushSize" style="display: block;">
+                        <div class="mobile-section-header">Brush Size</div>
+                        <div class="mobile-brush-control">
+                            <div class="mobile-slider-control">
+                                <input type="range" class="slider" min="1" max="5" value="1" 
+                                       oninput="updateBrushSize(this.value); document.getElementById('mobileBrushSizeValue').textContent = this.value">
+                                <span class="slider-value" id="mobileBrushSizeValue">1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terrain Selection (for Paint tool) -->
+                    <div id="mobileTerrainPicker" style="display: block;">
+                        <div class="mobile-section-header">Select Terrain</div>
+                        <div class="mobile-terrain-scroll" id="mobileTerrainScrollInTools">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Terrain Tab -->
-            <div class="mobile-tab-content" id="mobileTerrainTab" style="display: none;">
-                <div class="mobile-section-header">Select Terrain</div>
-                
-                <div class="mobile-terrain-scroll" id="mobileTerrainScroll">
-                    <!-- Will be populated dynamically -->
-                </div>
 
+            <!-- Path Tab -->
+            <div class="mobile-tab-content" id="mobilePathTab" style="display: none;">
+                <div class="mobile-section-header">Path Tools</div>
                 <div class="mobile-info-card">
-                    <strong style="color: #667eea;">ðŸ’¡ Tip:</strong> Swipe horizontally to see all terrain types. Tap to select, then paint on the map.
+                    <strong style="color: #667eea;">🛤️ Path Mode:</strong><br>
+                    • Tap hexes to create waypoints<br>
+                    • Double-tap to finish path<br>
+                    • Paths coming soon!
                 </div>
             </div>
 
-            <!-- Brush Tab -->
-            <div class="mobile-tab-content" id="mobileBrushTab" style="display: none;">
-                <div class="mobile-section-header">Brush Settings</div>
-                
-                <div class="mobile-brush-control">
-                    <div class="mobile-brush-label">Brush Size</div>
-                    <div class="mobile-slider-control">
-                        <input type="range" class="slider" min="1" max="5" value="1" 
-                               oninput="updateBrushSize(this.value)">
-                        <span class="slider-value" id="mobileBrushSizeValue">1</span>
-                    </div>
-                </div>
-
-                <div class="mobile-brush-control">
-                    <div class="mobile-brush-label">Paint Speed</div>
-                    <div class="mobile-slider-control">
-                        <input type="range" class="slider" min="1" max="10" value="8" 
-                               oninput="updatePaintSpeed(this.value)">
-                        <span class="slider-value" id="mobilePaintSpeedValue">8</span>
-                    </div>
+            <!-- Token Tab -->
+            <div class="mobile-tab-content" id="mobileTokenTab" style="display: none;">
+                <div class="mobile-section-header">Token Tools</div>
+                <div class="mobile-info-card">
+                    <strong style="color: #667eea;">🎭 Token Mode:</strong><br>
+                    • Tap to place tokens<br>
+                    • Drag to move tokens<br>
+                    • Full UI coming soon!
                 </div>
             </div>
         </div>
@@ -5020,8 +5088,8 @@ function createMobileBottomSheet() {
     setupMobileTabSwitchers();
 }
 
-function populateMobileTerrainScroll() {
-    const scroll = document.getElementById('mobileTerrainScroll');
+function populateMobileTerrainScroll(scrollId = 'mobileTerrainScroll') {
+    const scroll = document.getElementById(scrollId);
     if (!scroll) return;
 
     Object.entries(TERRAINS).forEach(([key, terrain]) => {
@@ -5053,36 +5121,116 @@ function updateMobileTerrainSelection(terrain) {
 function setupMobileSheetHandlers() {
     const handle = document.getElementById('mobileSheetHandle');
     const sheet = document.getElementById('mobileBottomSheet');
+    const tabs = document.querySelector('.mobile-tabs');
     
     if (!handle || !sheet) return;
 
     let startY = 0;
     let currentY = 0;
+    let startTime = 0;
+    let isDragging = false;
+    let initialTransform = 0;
 
-    handle.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
+    // Make entire tab bar draggable
+    const dragElements = [handle, tabs];
+    
+    dragElements.forEach(element => {
+        element.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+            startTime = Date.now();
+            isDragging = false;
+            
+            // Get current transform value
+            const style = window.getComputedStyle(sheet);
+            const matrix = new DOMMatrix(style.transform);
+            initialTransform = matrix.m42; // translateY value
+            
+            e.preventDefault();
+        }, { passive: false });
+
+        element.addEventListener('touchmove', (e) => {
+            if (!startY) return;
+            
+            currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            
+            // Start dragging after 5px movement
+            if (Math.abs(diff) > 5) {
+                isDragging = true;
+                sheet.classList.add('mobile-sheet-dragging');
+                
+                // Calculate new position
+                const sheetHeight = sheet.offsetHeight;
+                const collapsedHeight = 52;
+                const maxDrag = sheetHeight - collapsedHeight;
+                
+                let newTransform = initialTransform + diff;
+                
+                // Clamp between fully expanded (0) and collapsed
+                newTransform = Math.max(0, Math.min(maxDrag, newTransform));
+                
+                sheet.style.transform = `translateY(${newTransform}px)`;
+            }
+            
+            e.preventDefault();
+        }, { passive: false });
+
+        element.addEventListener('touchend', (e) => {
+            if (!isDragging) {
+                // Just a tap, toggle
+                toggleMobileSheet();
+            } else {
+                // Drag ended, determine final position based on velocity
+                const dragDuration = Date.now() - startTime;
+                const dragDistance = currentY - startY;
+                const velocity = dragDistance / dragDuration; // px/ms
+                
+                const style = window.getComputedStyle(sheet);
+                const matrix = new DOMMatrix(style.transform);
+                const currentTransform = matrix.m42;
+                
+                const sheetHeight = sheet.offsetHeight;
+                const collapsedHeight = 52;
+                const threshold = (sheetHeight - collapsedHeight) / 2;
+                
+                // Fast swipe detection
+                const isFastSwipe = Math.abs(velocity) > 0.5;
+                
+                if (isFastSwipe) {
+                    // Fast swipe overrides position
+                    if (velocity > 0) {
+                        collapseMobileSheet();
+                    } else {
+                        expandMobileSheet();
+                    }
+                } else {
+                    // Slow drag, snap to nearest position
+                    if (currentTransform > threshold) {
+                        collapseMobileSheet();
+                    } else {
+                        expandMobileSheet();
+                    }
+                }
+                
+                // Re-enable transition
+                sheet.classList.remove('mobile-sheet-dragging');
+                sheet.style.transform = '';
+            }
+            
+            startY = 0;
+            currentY = 0;
+            isDragging = false;
+            
+            e.preventDefault();
+        }, { passive: false });
     });
 
-    handle.addEventListener('touchmove', (e) => {
-        currentY = e.touches[0].clientY;
-        const diff = startY - currentY;
-        
-        if (Math.abs(diff) > 10) {
-            if (diff > 0 && !mobileState.sheetExpanded) {
-                expandMobileSheet();
-            } else if (diff < 0 && mobileState.sheetExpanded) {
-                collapseMobileSheet();
-            }
+    // Click on handle still toggles
+    handle.addEventListener('click', (e) => {
+        if (!isDragging) {
+            toggleMobileSheet();
         }
     });
-
-    handle.addEventListener('touchend', () => {
-        startY = 0;
-        currentY = 0;
-    });
-
-    // Also allow click/tap to toggle
-    handle.addEventListener('click', toggleMobileSheet);
 }
 
 function setupMobileTabSwitchers() {
@@ -5157,6 +5305,11 @@ function createMobileMinimap() {
     
     canvasContainer.appendChild(minimap);
     
+    // Click to open fullscreen
+    minimap.addEventListener('click', () => {
+        openFullscreenMinimap();
+    });
+    
     // Render minimap periodically
     setInterval(() => {
         if (isMobile && state.hexMap.hexes.size > 0) {
@@ -5210,6 +5363,309 @@ setHexMode = function(mode) {
     }
 };
 
+// ============================================================================
+// CONTEXT MENU SYSTEM
+// ============================================================================
+
+function showContextMenu(x, y, hex) {
+    // Remove existing context menu
+    const existing = document.querySelector('.context-menu');
+    if (existing) existing.remove();
+    
+    const menu = document.createElement('div');
+    menu.className = 'context-menu';
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    
+    const menuItems = [
+        { icon: '🎨', label: 'Paint with...', action: () => {
+            mobileState.sheetExpanded = false;
+            switchMobileTab('tools');
+            expandMobileSheet();
+            closeContextMenu();
+        }},
+        { icon: '📍', label: 'Place Token', action: () => {
+            switchMobileTab('token');
+            closeContextMenu();
+            showTokenCreator();
+        }},
+        { icon: '🛤️', label: 'Start Path Here', action: () => {
+            switchMobileTab('path');
+            closeContextMenu();
+            addPathPoint(hex.q, hex.r);
+        }},
+        { icon: '👁️', label: 'View Details', action: () => {
+            selectHex(hex);
+            closeContextMenu();
+        }},
+        { icon: '🗑️', label: 'Clear Hex', danger: true, action: () => {
+            deleteHex(hex.q, hex.r);
+            closeContextMenu();
+            renderHex();
+        }}
+    ];
+    
+    menuItems.forEach(item => {
+        const menuItem = document.createElement('div');
+        menuItem.className = 'context-menu-item' + (item.danger ? ' danger' : '');
+        menuItem.innerHTML = `
+            <span class="context-menu-icon">${item.icon}</span>
+            <span>${item.label}</span>
+        `;
+        menuItem.addEventListener('click', item.action);
+        menu.appendChild(menuItem);
+    });
+    
+    document.body.appendChild(menu);
+    mobileState.contextMenuOpen = true;
+    
+    // Close on outside click
+    setTimeout(() => {
+        document.addEventListener('click', handleContextMenuOutsideClick);
+        canvas.addEventListener('touchstart', handleContextMenuOutsideClick);
+    }, 100);
+    
+    // Adjust position if off-screen
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+        menu.style.left = (window.innerWidth - rect.width - 10) + 'px';
+    }
+    if (rect.bottom > window.innerHeight) {
+        menu.style.top = (window.innerHeight - rect.height - 10) + 'px';
+    }
+}
+
+function handleContextMenuOutsideClick(e) {
+    const menu = document.querySelector('.context-menu');
+    if (menu && !menu.contains(e.target)) {
+        closeContextMenu();
+    }
+}
+
+function closeContextMenu() {
+    const menu = document.querySelector('.context-menu');
+    if (menu) {
+        menu.remove();
+        mobileState.contextMenuOpen = false;
+        document.removeEventListener('click', handleContextMenuOutsideClick);
+        canvas.removeEventListener('touchstart', handleContextMenuOutsideClick);
+    }
+}
+
+// ============================================================================
+// FULLSCREEN MINIMAP
+// ============================================================================
+
+function openFullscreenMinimap() {
+    if (mobileState.minimapFullscreen) return;
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'minimap-fullscreen';
+    overlay.id = 'minimapFullscreen';
+    
+    overlay.innerHTML = `
+        <div class="minimap-fullscreen-header">
+            <h3>📍 Map Overview</h3>
+            <button class="minimap-fullscreen-close" onclick="closeFullscreenMinimap()">✕</button>
+        </div>
+        <div class="minimap-fullscreen-canvas">
+            <canvas id="fullscreenMinimapCanvas"></canvas>
+            <div class="minimap-viewport-box" id="minimapViewportBox"></div>
+        </div>
+        <div class="minimap-fullscreen-actions">
+            <button class="minimap-action-btn" onclick="jumpToMapCenter()">
+                🎯 Center Map
+            </button>
+            <button class="minimap-action-btn" onclick="jumpToLastEdit()">
+                📍 Last Edit
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    mobileState.minimapFullscreen = true;
+    
+    // Render fullscreen minimap
+    setTimeout(() => {
+        renderFullscreenMinimap();
+        setupFullscreenMinimapInteraction();
+    }, 50);
+}
+
+function closeFullscreenMinimap() {
+    const overlay = document.getElementById('minimapFullscreen');
+    if (overlay) {
+        overlay.classList.add('closing');
+        setTimeout(() => {
+            overlay.remove();
+            mobileState.minimapFullscreen = false;
+        }, 300); // Match animation duration
+    }
+}
+
+function renderFullscreenMinimap() {
+    const canvas = document.getElementById('fullscreenMinimapCanvas');
+    if (!canvas || state.hexMap.hexes.size === 0) return;
+    
+    const container = canvas.parentElement;
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size to container
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+    
+    ctx.fillStyle = '#0a0d11';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    const bounds = getMapBounds();
+    const scaleX = (canvas.width - 40) / (bounds.maxX - bounds.minX || 1);
+    const scaleY = (canvas.height - 40) / (bounds.maxY - bounds.minY || 1);
+    const scale = Math.min(scaleX, scaleY);
+    
+    const offsetX = (canvas.width - (bounds.maxX - bounds.minX) * scale) / 2;
+    const offsetY = (canvas.height - (bounds.maxY - bounds.minY) * scale) / 2;
+    
+    // Draw hexes with better visibility
+    state.hexMap.hexes.forEach(hex => {
+        const x = ((hex.q * state.hexMap.hexSize * 1.5) - bounds.minX) * scale + offsetX;
+        const y = (((hex.r * state.hexMap.hexSize * Math.sqrt(3)) + (hex.q * state.hexMap.hexSize * Math.sqrt(3) / 2)) - bounds.minY) * scale + offsetY;
+        
+        // Draw hex as circle with glow
+        const hexSize = Math.max(4, 8 * scale);
+        
+        // Glow effect
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = TERRAINS[hex.terrain].color;
+        
+        // Main hex
+        ctx.fillStyle = TERRAINS[hex.terrain].color;
+        ctx.beginPath();
+        ctx.arc(x, y, hexSize, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Border for contrast
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    });
+    
+    // Reset shadow for tokens
+    ctx.shadowBlur = 0;
+    
+    // Draw tokens
+    state.hexMap.tokens.forEach(token => {
+        const x = ((token.q * state.hexMap.hexSize * 1.5) - bounds.minX) * scale + offsetX;
+        const y = (((token.r * state.hexMap.hexSize * Math.sqrt(3)) + (token.q * state.hexMap.hexSize * Math.sqrt(3) / 2)) - bounds.minY) * scale + offsetY;
+        
+        ctx.fillStyle = token.color;
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(5, 8 * scale), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+    });
+    
+    // Draw viewport box
+    updateViewportBox(scale, offsetX, offsetY, bounds);
+}
+
+function updateViewportBox(scale, offsetX, offsetY, bounds) {
+    const box = document.getElementById('minimapViewportBox');
+    const canvas = document.getElementById('hexCanvas');
+    if (!box || !canvas) return;
+    
+    // Calculate viewport corners in world space
+    const viewportWidth = canvas.width / state.hexMap.viewport.scale;
+    const viewportHeight = canvas.height / state.hexMap.viewport.scale;
+    
+    const worldCenterX = (canvas.width / 2 - state.hexMap.viewport.offsetX) / state.hexMap.viewport.scale;
+    const worldCenterY = (canvas.height / 2 - state.hexMap.viewport.offsetY) / state.hexMap.viewport.scale;
+    
+    const worldLeft = worldCenterX - viewportWidth / 2;
+    const worldTop = worldCenterY - viewportHeight / 2;
+    
+    // Convert to minimap coordinates
+    const minimapLeft = (worldLeft - bounds.minX) * scale + offsetX;
+    const minimapTop = (worldTop - bounds.minY) * scale + offsetY;
+    const minimapWidth = viewportWidth * scale;
+    const minimapHeight = viewportHeight * scale;
+    
+    box.style.left = minimapLeft + 'px';
+    box.style.top = minimapTop + 'px';
+    box.style.width = minimapWidth + 'px';
+    box.style.height = minimapHeight + 'px';
+}
+
+function setupFullscreenMinimapInteraction() {
+    const canvas = document.getElementById('fullscreenMinimapCanvas');
+    if (!canvas) return;
+    
+    canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        jumpToMinimapPosition(x, y, canvas);
+    });
+}
+
+function jumpToMinimapPosition(x, y, canvas) {
+    const bounds = getMapBounds();
+    const scaleX = (canvas.width - 40) / (bounds.maxX - bounds.minX || 1);
+    const scaleY = (canvas.height - 40) / (bounds.maxY - bounds.minY || 1);
+    const scale = Math.min(scaleX, scaleY);
+    
+    const offsetX = (canvas.width - (bounds.maxX - bounds.minX) * scale) / 2;
+    const offsetY = (canvas.height - (bounds.maxY - bounds.minY) * scale) / 2;
+    
+    // Convert minimap coordinates to world coordinates
+    const worldX = (x - offsetX) / scale + bounds.minX;
+    const worldY = (y - offsetY) / scale + bounds.minY;
+    
+    // Center viewport on this position
+    const hexCanvas = document.getElementById('hexCanvas');
+    state.hexMap.viewport.offsetX = hexCanvas.width / 2 - worldX * state.hexMap.viewport.scale;
+    state.hexMap.viewport.offsetY = hexCanvas.height / 2 - worldY * state.hexMap.viewport.scale;
+    
+    renderHex();
+    renderFullscreenMinimap();
+}
+
+function jumpToMapCenter() {
+    const bounds = getMapBounds();
+    const centerX = (bounds.minX + bounds.maxX) / 2;
+    const centerY = (bounds.minY + bounds.maxY) / 2;
+    
+    const hexCanvas = document.getElementById('hexCanvas');
+    state.hexMap.viewport.offsetX = hexCanvas.width / 2 - centerX * state.hexMap.viewport.scale;
+    state.hexMap.viewport.offsetY = hexCanvas.height / 2 - centerY * state.hexMap.viewport.scale;
+    
+    renderHex();
+    if (mobileState.minimapFullscreen) {
+        renderFullscreenMinimap();
+    }
+}
+
+function jumpToLastEdit() {
+    // Jump to last painted hex
+    if (state.hexMap.lastPaintPos) {
+        const hex = state.hexMap.lastPaintPos;
+        const worldX = hex.q * state.hexMap.hexSize * 1.5;
+        const worldY = (hex.r * state.hexMap.hexSize * Math.sqrt(3)) + (hex.q * state.hexMap.hexSize * Math.sqrt(3) / 2);
+        
+        const hexCanvas = document.getElementById('hexCanvas');
+        state.hexMap.viewport.offsetX = hexCanvas.width / 2 - worldX * state.hexMap.viewport.scale;
+        state.hexMap.viewport.offsetY = hexCanvas.height / 2 - worldY * state.hexMap.viewport.scale;
+        
+        renderHex();
+        if (mobileState.minimapFullscreen) {
+            renderFullscreenMinimap();
+        }
+    }
+}
+
 // Initialize mobile UI on load
 window.addEventListener('load', () => {
     if (detectMobile()) {
@@ -5241,3 +5697,743 @@ window.addEventListener('resize', () => {
         }
     }, 250);
 });
+// ============================================================================
+// MOBILE TOOL SWITCHING
+// ============================================================================
+
+function switchMobileTool(mode) {
+    // Update mode
+    setHexMode(mode);
+    
+    // Update tool cards
+    document.querySelectorAll('.mobile-tool-card').forEach(card => {
+        card.classList.toggle('active', card.dataset.mode === mode);
+    });
+    
+    // Show/hide relevant tool options
+    const brushSize = document.getElementById('mobileBrushSize');
+    const terrainPicker = document.getElementById('mobileTerrainPicker');
+    
+    if (mode === 'paint') {
+        // Show brush size and terrain for paint tool
+        brushSize.style.display = 'block';
+        terrainPicker.style.display = 'block';
+    } else if (mode === 'select') {
+        // Hide everything for select
+        brushSize.style.display = 'none';
+        terrainPicker.style.display = 'none';
+    } else if (mode === 'path') {
+        // Hide for path
+        brushSize.style.display = 'none';
+        terrainPicker.style.display = 'none';
+    } else if (mode === 'token') {
+        // Hide for token
+        brushSize.style.display = 'none';
+        terrainPicker.style.display = 'none';
+    }
+}
+// ============================================================================
+// HEADER MENU FUNCTIONALITY
+// ============================================================================
+
+// Dropdown functionality - combined for all buttons
+const allDropdowns = ['fileBtn', 'exportBtn', 'moreBtn', 'profileBtn'];
+
+allDropdowns.forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    
+    const menuId = btnId.replace('Btn', 'Menu');
+    const menu = document.getElementById(menuId);
+    if (!menu) return;
+    
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Close other dropdowns
+        allDropdowns.forEach(otherId => {
+            if (otherId !== btnId) {
+                const otherMenu = document.getElementById(otherId.replace('Btn', 'Menu'));
+                if (otherMenu) otherMenu.classList.remove('show');
+            }
+        });
+        // Toggle current dropdown
+        menu.classList.toggle('show');
+    });
+});
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', () => {
+    allDropdowns.forEach(btnId => {
+        const menu = document.getElementById(btnId.replace('Btn', 'Menu'));
+        if (menu) menu.classList.remove('show');
+    });
+});
+
+// Manual save button click
+document.getElementById('saveBtn')?.addEventListener('click', () => {
+    if (typeof saveMapToCache === 'function') {
+        // Mark as changed to trigger save
+        hasUnsavedChanges = true;
+        saveMapToCache();
+    }
+});
+
+// Export functions
+function exportAsJSON() {
+    try {
+        const mapData = {
+            hexes: Object.fromEntries(state.hexMap.hexes),
+            tokens: Array.from(state.hexMap.tokens.values()),
+            landmarks: Array.from(state.hexMap.landmarks.values()),
+            paths: state.hexMap.paths,
+            version: '1.0'
+        };
+        
+        const dataStr = JSON.stringify(mapData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'hexworlds-map.json';
+        link.click();
+        URL.revokeObjectURL(url);
+        
+        console.log('Map exported as JSON');
+    } catch (error) {
+        console.error('Error exporting JSON:', error);
+        alert('Error exporting map as JSON');
+    }
+}
+
+function exportAsPNG() {
+    try {
+        const canvas = document.getElementById('hexCanvas');
+        if (!canvas) {
+            alert('Canvas not found');
+            return;
+        }
+        
+        const link = document.createElement('a');
+        link.download = 'hexworlds-map.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        console.log('Map exported as PNG');
+    } catch (error) {
+        console.error('Error exporting PNG:', error);
+        alert('Error exporting map as PNG');
+    }
+}
+
+function exportAsCSV() {
+    try {
+        let csv = 'Q,R,Terrain\n';
+        
+        state.hexMap.hexes.forEach((hex, key) => {
+            csv += `${hex.q},${hex.r},${hex.terrain}\n`;
+        });
+        
+        const dataBlob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'hexworlds-terrain.csv';
+        link.click();
+        URL.revokeObjectURL(url);
+        
+        console.log('Terrain exported as CSV');
+    } catch (error) {
+        console.error('Error exporting CSV:', error);
+        alert('Error exporting terrain as CSV');
+    }
+}
+
+function shareMap() {
+    try {
+        const mapData = {
+            hexes: Object.fromEntries(state.hexMap.hexes),
+            tokens: Array.from(state.hexMap.tokens.values()),
+            landmarks: Array.from(state.hexMap.landmarks.values()),
+            paths: state.hexMap.paths
+        };
+        
+        const dataStr = JSON.stringify(mapData);
+        const encoded = btoa(dataStr);
+        const shareUrl = `${window.location.origin}${window.location.pathname}?map=${encoded}`;
+        
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('Share link copied to clipboard!');
+            }).catch(() => {
+                promptCopyUrl(shareUrl);
+            });
+        } else {
+            promptCopyUrl(shareUrl);
+        }
+    } catch (error) {
+        console.error('Error creating share link:', error);
+        alert('Error creating share link');
+    }
+}
+
+function promptCopyUrl(url) {
+    const input = document.createElement('input');
+    input.value = url;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    document.body.removeChild(input);
+    alert('Share link copied to clipboard!');
+}
+
+// Modal functions
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('show');
+        // Close all dropdowns
+        allDropdowns.forEach(btnId => {
+            const menu = document.getElementById(btnId.replace('Btn', 'Menu'));
+            if (menu) menu.classList.remove('show');
+        });
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+function openSettingsModal() {
+    openModal('settingsModal');
+}
+
+function openThemesModal() {
+    openModal('themesModal');
+    // Update active selections when modal opens
+    updateThemeModalSelections();
+}
+
+function updateThemeModalSelections() {
+    // Get current theme and accent from localStorage
+    const currentTheme = localStorage.getItem('hexworlds-theme') || 'dark';
+    const currentAccent = localStorage.getItem('hexworlds-accent') || 'purple';
+    
+    // Update theme mode cards
+    const themeCards = document.querySelectorAll('#themesModal .setting-group:first-child .theme-card');
+    themeCards.forEach(card => {
+        card.classList.remove('active');
+        const cardTheme = card.id.replace('theme-', '');
+        if (cardTheme === currentTheme) {
+            card.classList.add('active');
+        }
+    });
+    
+    // Update accent color cards
+    const accentCards = document.querySelectorAll('#themesModal .setting-group:last-child .theme-card');
+    accentCards.forEach(card => {
+        card.classList.remove('active');
+        const cardAccent = card.id.replace('accent-', '');
+        if (cardAccent === currentAccent) {
+            card.classList.add('active');
+        }
+    });
+    
+    // Update selected variables
+    selectedThemeMode = currentTheme;
+    selectedAccentColor = currentAccent;
+}
+
+function openShortcutsModal() {
+    openModal('shortcutsModal');
+}
+
+// Close modal when clicking overlay
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            overlay.classList.remove('show');
+        }
+    });
+});
+
+// Settings functions
+function switchSettingsTab(tabName) {
+    console.log('Switching to settings tab:', tabName);
+    // Future: Switch between different settings panels
+}
+
+function toggleSetting(toggle) {
+    toggle.classList.toggle('active');
+    // Future: Save setting to localStorage
+}
+
+function saveSettings() {
+    console.log('Saving settings...');
+    // Future: Persist settings to localStorage
+    closeModal('settingsModal');
+    alert('Settings saved!');
+}
+
+// Theme functions
+let selectedThemeMode = 'dark';
+let selectedAccentColor = 'purple';
+
+function selectTheme(card, theme) {
+    const cards = card.parentElement.querySelectorAll('.theme-card');
+    cards.forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    selectedThemeMode = theme;
+    console.log('Theme selected:', theme);
+}
+
+function selectAccent(card, accent) {
+    const cards = card.parentElement.querySelectorAll('.theme-card');
+    cards.forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    selectedAccentColor = accent;
+    console.log('Accent selected:', accent);
+}
+
+function applyTheme() {
+    // Apply theme mode
+    if (selectedThemeMode === 'light') {
+        document.body.classList.add('theme-light');
+        document.body.classList.remove('theme-dark');
+    } else {
+        document.body.classList.add('theme-dark');
+        document.body.classList.remove('theme-light');
+    }
+    
+    // Apply accent color
+    const accentClasses = ['accent-purple', 'accent-blue', 'accent-green', 'accent-amber', 'accent-red', 'accent-teal'];
+    accentClasses.forEach(cls => document.body.classList.remove(cls));
+    document.body.classList.add(`accent-${selectedAccentColor}`);
+    
+    // Save to localStorage
+    localStorage.setItem('hexworlds-theme', selectedThemeMode);
+    localStorage.setItem('hexworlds-accent', selectedAccentColor);
+    
+    closeModal('themesModal');
+    
+    console.log('Theme applied:', selectedThemeMode, selectedAccentColor);
+}
+
+// Load saved theme on page load
+function loadSavedTheme() {
+    const savedTheme = localStorage.getItem('hexworlds-theme') || 'dark';
+    const savedAccent = localStorage.getItem('hexworlds-accent') || 'purple';
+    
+    selectedThemeMode = savedTheme;
+    selectedAccentColor = savedAccent;
+    
+    // Apply theme
+    if (savedTheme === 'light') {
+        document.body.classList.add('theme-light');
+    } else {
+        document.body.classList.add('theme-dark');
+    }
+    
+    // Apply accent
+    document.body.classList.add(`accent-${savedAccent}`);
+    
+    // Update UI to show active selections
+    setTimeout(() => {
+        const themeCard = document.getElementById(`theme-${savedTheme}`);
+        const accentCard = document.getElementById(`accent-${savedAccent}`);
+        
+        if (themeCard) {
+            document.querySelectorAll('#themesModal .theme-grid')[0]
+                .querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+            themeCard.classList.add('active');
+        }
+        
+        if (accentCard) {
+            document.querySelectorAll('#themesModal .theme-grid')[1]
+                .querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+            accentCard.classList.add('active');
+        }
+    }, 100);
+    
+    console.log('Loaded saved theme:', savedTheme, savedAccent);
+}
+
+// Load theme when page loads
+loadSavedTheme();
+
+
+// ESC key to close modals
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.show').forEach(modal => {
+            modal.classList.remove('show');
+        });
+        // Also close dropdowns
+        allDropdowns.forEach(btnId => {
+            const menu = document.getElementById(btnId.replace('Btn', 'Menu'));
+            if (menu) menu.classList.remove('show');
+        });
+    }
+});
+
+console.log('Header menu functionality initialized');
+
+// ============================================================================
+// FILE MENU FUNCTIONALITY
+// ============================================================================
+
+// New Map
+function newMap() {
+    if (confirm('Create a new map? This will clear your current map. Make sure you\'ve saved!')) {
+        // Clear all hex data
+        state.hexMap.hexes.clear();
+        state.hexMap.tokens.clear();
+        state.hexMap.landmarks.clear();
+        state.hexMap.paths = [];
+        
+        // Reset IDs
+        state.nextTokenId = 1;
+        state.nextLandmarkId = 1;
+        state.nextPathId = 1;
+        
+        // Reset camera
+        state.hexMap.viewport = { offsetX: 0, offsetY: 0, scale: 1 };
+        
+        // Redraw
+        render();
+        
+        // Mark as unsaved and trigger save
+        hasUnsavedChanges = true;
+        saveMapToCache();
+        
+        console.log('New map created');
+    }
+}
+
+// Import Map from File
+function importMapFromFile() {
+    document.getElementById('importFileInput').click();
+}
+
+// Handle File Import
+function handleFileImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    
+    if (file.type === 'application/json' || file.name.endsWith('.json')) {
+        reader.onload = (e) => {
+            try {
+                const mapData = JSON.parse(e.target.result);
+                
+                // Validate the data
+                if (!mapData.hexes && !mapData.tokens && !mapData.landmarks) {
+                    alert('Invalid map file format');
+                    return;
+                }
+                
+                // Import the data
+                if (confirm('Import this map? This will replace your current map. Make sure you\'ve saved!')) {
+                    // Clear existing data
+                    state.hexMap.hexes.clear();
+                    state.hexMap.tokens.clear();
+                    state.hexMap.landmarks.clear();
+                    state.hexMap.paths = [];
+                    
+                    // Import hexes
+                    if (mapData.hexes) {
+                        if (Array.isArray(mapData.hexes)) {
+                            // Array format (from export)
+                            mapData.hexes.forEach(hex => {
+                                const key = `${hex.q},${hex.r}`;
+                                state.hexMap.hexes.set(key, hex);
+                            });
+                        } else {
+                            // Object format (legacy)
+                            Object.entries(mapData.hexes).forEach(([key, hex]) => {
+                                state.hexMap.hexes.set(key, hex);
+                            });
+                        }
+                    }
+                    
+                    // Import tokens
+                    if (mapData.tokens) {
+                        if (Array.isArray(mapData.tokens)) {
+                            mapData.tokens.forEach(token => {
+                                state.hexMap.tokens.set(token.id, token);
+                            });
+                        }
+                    }
+                    
+                    // Import landmarks
+                    if (mapData.landmarks) {
+                        if (Array.isArray(mapData.landmarks)) {
+                            mapData.landmarks.forEach(landmark => {
+                                const key = `${landmark.q},${landmark.r}`;
+                                state.hexMap.landmarks.set(key, landmark);
+                            });
+                        }
+                    }
+                    
+                    // Import paths
+                    if (mapData.paths) {
+                        state.hexMap.paths = mapData.paths;
+                    }
+                    
+                    // Restore viewport if available
+                    if (mapData.viewport) {
+                        state.hexMap.viewport = mapData.viewport;
+                    }
+                    
+                    // Force bounds recalculation
+                    state.hexMap.boundsNeedRecalc = true;
+                    
+                    // Redraw
+                    updateHexCount();
+                    deselectHex();
+                    renderHex();
+                    
+                    // Mark as unsaved and save
+                    hasUnsavedChanges = true;
+                    saveMapToCache();
+                    
+                    console.log('Map imported successfully');
+                    alert('Map imported successfully!');
+                }
+            } catch (error) {
+                console.error('Error importing map:', error);
+                alert('Error importing map file. Please make sure it\'s a valid HexWorlds JSON file.');
+            }
+        };
+        reader.readAsText(file);
+    } else if (file.type.startsWith('image/')) {
+        // Future: Import from image functionality
+        alert('Image import coming soon! For now, please use JSON files.');
+    }
+    
+    // Reset file input
+    event.target.value = '';
+}
+
+// Open Examples Modal
+function openExamplesModal() {
+    openModal('examplesModal');
+}
+
+// Load Example Map
+function loadExampleMap(mapType) {
+    if (!confirm('Load this example map? This will replace your current map. Make sure you\'ve saved!')) {
+        return;
+    }
+    
+    // Clear current map
+    state.hexMap.hexes.clear();
+    state.hexMap.tokens.clear();
+    state.hexMap.landmarks.clear();
+    state.hexMap.paths = [];
+    
+    // Reset IDs
+    state.nextTokenId = 1;
+    state.nextLandmarkId = 1;
+    state.nextPathId = 1;
+    
+    // Generate example based on type
+    switch(mapType) {
+        case 'island':
+            generateIslandMap();
+            break;
+        case 'dungeon':
+            generateDungeonMap();
+            break;
+        case 'village':
+            generateVillageMap();
+            break;
+        case 'wilderness':
+            generateWildernessMap();
+            break;
+    }
+    
+    render();
+    closeModal('examplesModal');
+    
+    // Mark as unsaved and save
+    hasUnsavedChanges = true;
+    saveMapToCache();
+    
+    console.log('Loaded example map:', mapType);
+}
+
+// Generate Island Map
+function generateIslandMap() {
+    const centerQ = 0, centerR = 0;
+    const radius = 8;
+    
+    for (let q = -radius; q <= radius; q++) {
+        for (let r = -radius; r <= radius; r++) {
+            const distance = Math.sqrt(q * q + r * r);
+            
+            if (distance <= radius) {
+                let terrain = 'water';
+                
+                if (distance < 3) {
+                    terrain = 'plains';
+                } else if (distance < 5) {
+                    terrain = Math.random() > 0.5 ? 'forest' : 'plains';
+                } else if (distance < 6) {
+                    terrain = 'sand';
+                } else {
+                    terrain = 'water';
+                }
+                
+                const key = `${q},${r}`;
+                state.hexMap.hexes.set(key, { q, r, terrain });
+            }
+        }
+    }
+    
+    // Add a landmark
+    state.hexMap.landmarks.set('example-palm-tree', {
+        id: 'example-palm-tree',
+        name: 'Palm Tree',
+        icon: '🌴',
+        q: 2,
+        r: -1,
+        type: 'location',
+        showLabel: true,
+        visible: true
+    });
+}
+
+// Generate Dungeon Map
+function generateDungeonMap() {
+    const rooms = [
+        { q: 0, r: 0, size: 3 },
+        { q: 6, r: -3, size: 2 },
+        { q: -5, r: 3, size: 2 },
+        { q: 3, r: 4, size: 2 }
+    ];
+    
+    rooms.forEach(room => {
+        for (let q = room.q - room.size; q <= room.q + room.size; q++) {
+            for (let r = room.r - room.size; r <= room.r + room.size; r++) {
+                if (Math.abs(q - room.q) + Math.abs(r - room.r) <= room.size) {
+                    const key = `${q},${r}`;
+                    state.hexMap.hexes.set(key, { q, r, terrain: 'stone' });
+                }
+            }
+        }
+    });
+    
+    // Add corridors (simplified)
+    const corridors = [
+        { from: [0, 0], to: [6, -3] },
+        { from: [0, 0], to: [-5, 3] },
+        { from: [0, 0], to: [3, 4] }
+    ];
+    
+    corridors.forEach(corridor => {
+        const [q1, r1] = corridor.from;
+        const [q2, r2] = corridor.to;
+        const steps = Math.max(Math.abs(q2 - q1), Math.abs(r2 - r1));
+        
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            const q = Math.round(q1 + (q2 - q1) * t);
+            const r = Math.round(r1 + (r2 - r1) * t);
+            const key = `${q},${r}`;
+            if (!state.hexMap.hexes.has(key)) {
+                state.hexMap.hexes.set(key, { q, r, terrain: 'stone' });
+            }
+        }
+    });
+}
+
+// Generate Village Map
+function generateVillageMap() {
+    const centerQ = 0, centerR = 0;
+    const radius = 7;
+    
+    // Base terrain
+    for (let q = -radius; q <= radius; q++) {
+        for (let r = -radius; r <= radius; r++) {
+            const distance = Math.sqrt(q * q + r * r);
+            
+            if (distance <= radius) {
+                const key = `${q},${r}`;
+                state.hexMap.hexes.set(key, { q, r, terrain: 'plains' });
+            }
+        }
+    }
+    
+    // Add some paths
+    for (let i = -5; i <= 5; i++) {
+        const key1 = `${i},0`;
+        const key2 = `0,${i}`;
+        if (state.hexMap.hexes.has(key1)) {
+            state.hexMap.hexes.set(key1, { q: i, r: 0, terrain: 'sand' });
+        }
+        if (state.hexMap.hexes.has(key2)) {
+            state.hexMap.hexes.set(key2, { q: 0, r: i, terrain: 'sand' });
+        }
+    }
+    
+    // Add landmarks
+    const buildings = [
+        { name: 'Inn', icon: '🏠', q: 3, r: 3 },
+        { name: 'Shop', icon: '🏪', q: -3, r: 3 },
+        { name: 'Church', icon: '⛪', q: 0, r: -4 },
+        { name: 'Well', icon: '🪣', q: 0, r: 0 }
+    ];
+    
+    buildings.forEach((building, i) => {
+        const id = `example-building-${i}`;
+        state.hexMap.landmarks.set(id, {
+            id,
+            ...building,
+            type: 'location',
+            showLabel: true,
+            visible: true
+        });
+    });
+}
+
+// Generate Wilderness Map
+function generateWildernessMap() {
+    const centerQ = 0, centerR = 0;
+    const radius = 8;
+    
+    for (let q = -radius; q <= radius; q++) {
+        for (let r = -radius; r <= radius; r++) {
+            const distance = Math.sqrt(q * q + r * r);
+            
+            if (distance <= radius) {
+                const noise = Math.random();
+                let terrain = 'forest';
+                
+                if (noise < 0.2) {
+                    terrain = 'plains';
+                } else if (noise > 0.8) {
+                    terrain = 'hills';
+                }
+                
+                const key = `${q},${r}`;
+                state.hexMap.hexes.set(key, { q, r, terrain });
+            }
+        }
+    }
+    
+    // Add a path
+    for (let i = -6; i <= 6; i++) {
+        const q = i;
+        const r = Math.floor(i / 2);
+        const key = `${q},${r}`;
+        if (state.hexMap.hexes.has(key)) {
+            state.hexMap.hexes.set(key, { q, r, terrain: 'sand' });
+        }
+    }
+}
+
+console.log('File menu functionality initialized');

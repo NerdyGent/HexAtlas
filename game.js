@@ -4339,8 +4339,24 @@ function importHexMap() {
             const text = await file.text();
             const data = JSON.parse(text);
             
+            // Convert old object format to new array format if needed
+            if (data.hexes && typeof data.hexes === 'object' && !Array.isArray(data.hexes)) {
+                console.log('Converting hexes from object format to array format...');
+                data.hexes = Object.values(data.hexes);
+            }
+            
+            if (data.tokens && typeof data.tokens === 'object' && !Array.isArray(data.tokens)) {
+                console.log('Converting tokens from object format to array format...');
+                data.tokens = Object.values(data.tokens);
+            }
+            
+            if (data.landmarks && typeof data.landmarks === 'object' && !Array.isArray(data.landmarks)) {
+                console.log('Converting landmarks from object format to array format...');
+                data.landmarks = Object.values(data.landmarks);
+            }
+            
             if (!data.hexes || !Array.isArray(data.hexes)) {
-                alert('Invalid world file format');
+                alert('Invalid world file format - missing hexes');
                 return;
             }
             
@@ -6280,19 +6296,45 @@ async function loadExampleMap(mapType) {
         console.log('Data structure check:', {
             hasHexes: !!data.hexes,
             hexesIsArray: Array.isArray(data.hexes),
-            hexCount: data.hexes ? data.hexes.length : 0,
+            hexesIsObject: typeof data.hexes === 'object' && !Array.isArray(data.hexes),
+            hexCount: Array.isArray(data.hexes) ? data.hexes.length : (data.hexes ? Object.keys(data.hexes).length : 0),
             hasTokens: !!data.tokens,
             tokenCount: data.tokens ? data.tokens.length : 0,
             firstFewKeys: Object.keys(data).slice(0, 10)
         });
+        
+        // Convert old object format to new array format if needed
+        if (data.hexes && typeof data.hexes === 'object' && !Array.isArray(data.hexes)) {
+            console.log('Converting hexes from object format to array format...');
+            const hexArray = Object.values(data.hexes);
+            data.hexes = hexArray;
+            console.log('Converted', hexArray.length, 'hexes to array format');
+        }
+        
+        // Convert tokens from object to array if needed
+        if (data.tokens && typeof data.tokens === 'object' && !Array.isArray(data.tokens)) {
+            console.log('Converting tokens from object format to array format...');
+            const tokenArray = Object.values(data.tokens);
+            data.tokens = tokenArray;
+            console.log('Converted', tokenArray.length, 'tokens to array format');
+        }
+        
+        // Convert landmarks from object to array if needed
+        if (data.landmarks && typeof data.landmarks === 'object' && !Array.isArray(data.landmarks)) {
+            console.log('Converting landmarks from object format to array format...');
+            const landmarkArray = Object.values(data.landmarks);
+            data.landmarks = landmarkArray;
+            console.log('Converted', landmarkArray.length, 'landmarks to array format');
+        }
+        
         console.log('First hex sample:', data.hexes ? data.hexes[0] : 'NO HEXES');
         console.log('Tokens in file:', data.tokens ? data.tokens.length : 0);
         console.log('Landmarks in file:', data.landmarks ? data.landmarks.length : 0);
         
-        if (!data.hexes || !Array.isArray(data.hexes)) {
+        if (!data.hexes || !Array.isArray(data.hexes) || data.hexes.length === 0) {
             console.error('VALIDATION FAILED - data.hexes:', data.hexes);
             console.error('Full data keys:', Object.keys(data));
-            throw new Error('Invalid world file format - missing hexes');
+            throw new Error('Invalid world file format - missing hexes array');
         }
         
         // Clear current map - EXACT same as importHexMap

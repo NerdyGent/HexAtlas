@@ -328,27 +328,71 @@ const PATH_STYLES = {
 
 function selectPathType(type) {
     state.hexMap.pathType = type;
+    
+    // Update old-style buttons (by id)
     document.querySelectorAll('[id^="pathType_"]').forEach(btn => {
         btn.classList.toggle('btn-primary', btn.id === `pathType_${type}`);
         btn.classList.toggle('btn-secondary', btn.id !== `pathType_${type}`);
     });
+    
+    // Update new-style buttons (by data-type)
+    document.querySelectorAll('.path-type-btn').forEach(btn => {
+        const btnType = btn.getAttribute('data-type');
+        if (btnType === type) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
     // Update color to match the path type default
     const defaultColor = PATH_STYLES[type].color;
     state.hexMap.pathColor = defaultColor;
     document.getElementById('pathColor').value = defaultColor;
+    
+    // If currently drawing a path, update its type and color in real-time
+    if (state.hexMap.currentPath) {
+        state.hexMap.currentPath.type = type;
+        state.hexMap.currentPath.color = defaultColor;
+        renderHex();
+    }
 }
 
 function selectPathStyle(style) {
     state.hexMap.pathStyle = style;
+    
+    // Update old-style buttons (by id)
     document.querySelectorAll('[id^="pathStyle_"]').forEach(btn => {
         btn.classList.toggle('btn-primary', btn.id === `pathStyle_${style}`);
         btn.classList.toggle('btn-secondary', btn.id !== `pathStyle_${style}`);
     });
+    
+    // Update new-style buttons (by data-style)
+    document.querySelectorAll('.path-style-btn').forEach(btn => {
+        const btnStyle = btn.getAttribute('data-style');
+        if (btnStyle === style) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // If currently drawing a path, update its style in real-time
+    if (state.hexMap.currentPath) {
+        state.hexMap.currentPath.style = style;
+        renderHex();
+    }
 }
 
 function updatePathWidth(value) {
     state.hexMap.pathWidth = parseInt(value);
     document.getElementById('pathWidthValue').textContent = value;
+    
+    // If currently drawing a path, update its width in real-time
+    if (state.hexMap.currentPath) {
+        state.hexMap.currentPath.width = parseInt(value);
+        renderHex();
+    }
 }
 
 function updatePathColor(color) {
@@ -405,6 +449,7 @@ function finishPath() {
     
     state.hexMap.paths.push({ ...state.hexMap.currentPath });
     state.hexMap.currentPath = null;
+    state.hexMap.selectedPath = null; // Auto-deselect so you can start a new path immediately
     updateHexCount();
     renderHex();
     markUnsaved();
@@ -6885,3 +6930,239 @@ function generateWildernessMap() {
 }
 
 console.log('File menu functionality initialized');
+// ========================================
+// TOOLTIP SYSTEM
+// ========================================
+
+const TOOLTIPS = {
+    'paint-mode': {
+        title: 'Paint Mode',
+        icon: '<path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z"/>',
+        content: 'Use Paint Mode to draw terrain on your hex map. Select a terrain type from the palette and click or drag to paint.',
+        tips: [
+            'Click to paint single hexes',
+            'Drag to paint multiple hexes',
+            'Use keys 1-5 to change brush size',
+            'Adjust paint speed for smooth strokes'
+        ]
+    },
+    'token-mode': {
+        title: 'Token Mode',
+        icon: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>',
+        content: 'Place and manage tokens on your map. Tokens represent characters, monsters, or points of interest.',
+        tips: [
+            'Click "New Token" to create a token',
+            'Click a hex to place the token',
+            'Click a token to select it',
+            'Drag tokens to move them around'
+        ]
+    },
+    'landmark-mode': {
+        title: 'Landmark Mode',
+        icon: '<path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>',
+        content: 'Add landmarks like towns, dungeons, and points of interest to your map. Landmarks stay on top of terrain.',
+        tips: [
+            'Click "New Landmark" to create one',
+            'Click a hex to place it',
+            'Shift+Click to select landmarks',
+            'Landmarks show on top of terrain'
+        ]
+    },
+    'path-mode': {
+        title: 'Path Mode',
+        icon: '<path d="M12 2l-5.5 9h11L12 2zm5.5 10h-11l5.5 9 5.5-9z"/>',
+        content: 'Draw paths, roads, rivers, and trails connecting different parts of your map.',
+        tips: [
+            'Choose a path type (Road, River, Trail)',
+            'Click hexes to draw the path',
+            'Double-click to finish the path',
+            'Press ESC to cancel',
+            'Click existing paths to edit or delete'
+        ]
+    },
+    'path-tools': {
+        title: 'Path Tools',
+        icon: '<path d="M12 2l-5.5 9h11L12 2zm5.5 10h-11l5.5 9 5.5-9z"/>',
+        content: 'Customize your paths with different types, styles, widths, and colors.',
+        tips: [
+            'Select Road, River, or Trail type',
+            'Choose Straight or Curved style',
+            'Adjust width for different path sizes',
+            'Change color to match your map theme'
+        ]
+    }
+};
+
+class TooltipManager {
+    constructor() {
+        this.container = document.getElementById('tooltip-container');
+        this.currentTooltip = null;
+        this.seenTooltips = this.loadSeenTooltips();
+        this.initializeTooltips();
+    }
+
+    loadSeenTooltips() {
+        try {
+            const seen = localStorage.getItem('hexworlds_seen_tooltips');
+            return seen ? JSON.parse(seen) : {};
+        } catch (e) {
+            return {};
+        }
+    }
+
+    saveSeenTooltips() {
+        try {
+            localStorage.setItem('hexworlds_seen_tooltips', JSON.stringify(this.seenTooltips));
+        } catch (e) {
+            console.error('Failed to save tooltip state');
+        }
+    }
+
+    initializeTooltips() {
+        // Add event listeners to elements with tooltip IDs
+        document.querySelectorAll('[data-tooltip-id]').forEach(element => {
+            element.addEventListener('click', (e) => {
+                const tooltipId = element.getAttribute('data-tooltip-id');
+                if (!this.seenTooltips[tooltipId]) {
+                    setTimeout(() => {
+                        this.showTooltip(tooltipId, element);
+                    }, 300);
+                }
+            });
+        });
+    }
+
+    showTooltip(id, targetElement) {
+        if (this.seenTooltips[id]) return;
+
+        const tooltipData = TOOLTIPS[id];
+        if (!tooltipData) return;
+
+        // Remove any existing tooltip
+        this.hideTooltip();
+
+        // Create tooltip element
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        tooltip.innerHTML = `
+            <div class="tooltip-header">
+                <div class="tooltip-title">
+                    <svg class="tooltip-icon" viewBox="0 0 24 24" fill="currentColor">
+                        ${tooltipData.icon}
+                    </svg>
+                    ${tooltipData.title}
+                </div>
+                <button class="tooltip-close" onclick="tooltipManager.hideTooltip()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="tooltip-content">
+                <p>${tooltipData.content}</p>
+                ${tooltipData.tips ? `
+                    <ul class="tooltip-list">
+                        ${tooltipData.tips.map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                ` : ''}
+            </div>
+            <div class="tooltip-footer">
+                <div class="tooltip-badge">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    First Time
+                </div>
+                <button class="tooltip-action" onclick="tooltipManager.dismissTooltip('${id}')">
+                    Got it!
+                </button>
+            </div>
+        `;
+
+        this.container.appendChild(tooltip);
+        this.currentTooltip = { id, element: tooltip, targetElement };
+
+        // Position the tooltip
+        this.positionTooltip(tooltip, targetElement);
+
+        // Add highlight to target element
+        targetElement.classList.add('tooltip-highlight');
+    }
+
+    positionTooltip(tooltip, targetElement) {
+        const rect = targetElement.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        
+        // Default position: below the element
+        let top = rect.bottom + 12;
+        let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+
+        // Adjust if tooltip goes off screen
+        if (left < 10) {
+            left = 10;
+        } else if (left + tooltipRect.width > window.innerWidth - 10) {
+            left = window.innerWidth - tooltipRect.width - 10;
+        }
+
+        if (top + tooltipRect.height > window.innerHeight - 10) {
+            // Position above instead
+            top = rect.top - tooltipRect.height - 12;
+        }
+
+        tooltip.style.top = `${top}px`;
+        tooltip.style.left = `${left}px`;
+    }
+
+    dismissTooltip(id) {
+        this.seenTooltips[id] = true;
+        this.saveSeenTooltips();
+        this.hideTooltip();
+    }
+
+    hideTooltip() {
+        if (this.currentTooltip) {
+            this.currentTooltip.element.remove();
+            this.currentTooltip.targetElement.classList.remove('tooltip-highlight');
+            this.currentTooltip = null;
+        }
+    }
+
+    resetAllTooltips() {
+        this.seenTooltips = {};
+        this.saveSeenTooltips();
+        alert('Tutorial tooltips have been reset! They will show again when you use each tool.');
+    }
+}
+
+// Initialize tooltip manager
+let tooltipManager;
+
+// Add reset tooltips function
+function resetTooltips() {
+    if (tooltipManager) {
+        tooltipManager.resetAllTooltips();
+    }
+    closeModal('moreMenu');
+}
+
+// Initialize when DOM is loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        tooltipManager = new TooltipManager();
+    });
+} else {
+    tooltipManager = new TooltipManager();
+}
+
+// ========================================
+// PATH TOOL ENHANCEMENTS
+// ========================================
+
+// Helper functions for path quick actions
+function startNewPath() {
+    if (state.hexMap.mode === 'path' && !state.hexMap.currentPath) {
+        startPath();
+    }
+}
+
+console.log('Enhanced HexWorlds with modern path controls and tooltip system loaded!');

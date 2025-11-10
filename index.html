@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Tooltip Container -->
+    <div id="tooltip-container"></div>
+
     <div class="app">
         <div class="topbar">
             <div class="topbar-left">
@@ -129,6 +132,13 @@
                             Keyboard Shortcuts
                         </div>
                         <div class="dropdown-divider"></div>
+                        <div class="dropdown-item" onclick="resetTooltips()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>
+                            </svg>
+                            Reset Tutorial Tooltips
+                        </div>
+                        <div class="dropdown-divider"></div>
                         <div class="dropdown-item" onclick="window.open('https://docs.hexworlds.app', '_blank')">
                             <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
@@ -201,7 +211,7 @@
                 <div class="tool-section" id="toolsSection">
                     <h3>Tools</h3>
                     <div class="mode-selector">
-                        <button class="mode-btn active" onclick="setHexMode('paint')" data-mode="paint">
+                        <button class="mode-btn active" onclick="setHexMode('paint')" data-mode="paint" data-tooltip-id="paint-mode">
                             <div class="mode-icon">
                                 <svg viewBox="0 0 512 512" fill="currentColor">
                                     <path d="M490.3 40.4C512.2 62.27 512.2 97.73 490.3 119.6L460.3 149.7L362.3 51.72L392.4 21.66C414.3-.2135 449.7-.2135 471.6 21.66L490.3 40.4zM172.4 241.7L339.7 74.34L437.7 172.3L270.3 339.6C264.2 345.8 256.7 350.4 248.4 353.2L159.6 382.8C150.1 385.6 141.5 383.4 135 376.1C128.6 370.5 126.4 361 129.2 352.4L158.8 263.6C161.6 255.3 166.2 247.8 172.4 241.7V241.7zM192 63.1C209.7 63.1 224 78.33 224 95.1C224 113.7 209.7 127.1 192 127.1H96C78.33 127.1 64 142.3 64 159.1V416C64 433.7 78.33 448 96 448H352C369.7 448 384 433.7 384 416V319.1C384 302.3 398.3 287.1 416 287.1C433.7 287.1 448 302.3 448 319.1V416C448 469 405 512 352 512H96C42.98 512 0 469 0 416V159.1C0 106.1 42.98 63.1 96 63.1H192z"/>
@@ -209,7 +219,7 @@
                             </div>
                             Terrain
                         </button>
-                        <button class="mode-btn" onclick="setHexMode('token')" data-mode="token">
+                        <button class="mode-btn" onclick="setHexMode('token')" data-mode="token" data-tooltip-id="token-mode">
                             <div class="mode-icon">
                                 <svg viewBox="0 0 512 512" fill="currentColor">
                                     <path d="M256 0c-70.7 0-128 57.3-128 128 0 70.7 103.8 206.4 119.4 226.4 3.1 4 7.9 6.3 13.1 6.3s10-2.3 13.1-6.3C289.2 334.4 384 198.7 384 128 384 57.3 326.7 0 256 0zm0 192c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"/>
@@ -217,7 +227,7 @@
                             </div>
                             Token
                         </button>
-                        <button class="mode-btn" onclick="setHexMode('path')" data-mode="path">
+                        <button class="mode-btn" onclick="setHexMode('path')" data-mode="path" data-tooltip-id="path-mode">
                             <div class="mode-icon">
                                 <svg viewBox="0 0 512 512" fill="currentColor">
                                     <g><circle cx="80" cy="80" r="32"/><circle cx="432" cy="80" r="32"/><circle cx="432" cy="432" r="32"/><circle cx="80" cy="432" r="32"/><circle cx="256" cy="160" r="24"/><circle cx="352" cy="256" r="24"/><circle cx="256" cy="352" r="24"/><circle cx="160" cy="256" r="24"/></g>
@@ -225,7 +235,7 @@
                             </div>
                             Path
                         </button>
-                        <button class="mode-btn" onclick="setHexMode('landmark')" data-mode="landmark">
+                        <button class="mode-btn" onclick="setHexMode('landmark')" data-mode="landmark" data-tooltip-id="landmark-mode">
                             <div class="mode-icon">
                                 <svg viewBox="0 0 512 512" fill="currentColor">
                                     <path d="M256 32C132.3 32 32 132.3 32 256s100.3 224 224 224 224-100.3 224-224S379.7 32 256 32zm0 400c-97.2 0-176-78.8-176-176S158.8 80 256 80s176 78.8 176 176-78.8 176-176 176zm0-288c-61.9 0-112 50.1-112 112s50.1 112 112 112 112-50.1 112-112-50.1-112-112-112zm0 176c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"/>
@@ -308,73 +318,121 @@
                     </div>
                 </div>
 
-                <!-- Path Creator -->
-                <div class="tool-section" id="pathCreatorSection" style="display: none;">
-                    <h3>Path Type</h3>
-                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
-                        <button class="btn btn-secondary" style="width: 100%; justify-content: center; gap: 8px;" 
-                                onclick="selectPathType('road')" id="pathType_road">
-                            <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 512 512">
-                                <path d="M416 96c0-17.7-14.3-32-32-32s-32 14.3-32 32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16zm-96 48c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32zm-96 64c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32zm-96 64c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32zm288-176c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32z"/>
-                            </svg>
-                            Road
-                        </button>
-                        <button class="btn btn-secondary" style="width: 100%; justify-content: center; gap: 8px;" 
-                                onclick="selectPathType('river')" id="pathType_river">
-                            <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 512 512">
-                                <path d="M96 32c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32zm160 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32zm160 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32zM96 192c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32zm160 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32zm160 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32zM96 352c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32zm160 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32zm160 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32z"/>
-                            </svg>
-                            River
-                        </button>
-                        <button class="btn btn-secondary" style="width: 100%; justify-content: center; gap: 8px;" 
-                                onclick="selectPathType('trail')" id="pathType_trail">
-                            <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 512 512">
-                                <path d="M192 96c0-17.7-14.3-32-32-32h-32c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32h32c17.7 0 32-14.3 32-32V96zm96 64h32c17.7 0 32-14.3 32-32V96c0-17.7-14.3-32-32-32h-32c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32zm-96 64c0-17.7-14.3-32-32-32h-32c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32h32c17.7 0 32-14.3 32-32v-32zm96 64h32c17.7 0 32-14.3 32-32v-32c0-17.7-14.3-32-32-32h-32c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32zm-96 64c0-17.7-14.3-32-32-32h-32c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32h32c17.7 0 32-14.3 32-32v-32z"/>
-                            </svg>
-                            Trail
-                        </button>
-                    </div>
+                <!-- Path Creator - IMPROVED -->
+                <div class="tool-section" id="pathCreatorSection" style="display: none;" data-tooltip-id="path-tools">
+                    <h3>Path Tools</h3>
                     
-                    <h3>Path Style</h3>
-                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
-                        <button class="btn btn-secondary" style="width: 100%; justify-content: center;" 
-                                onclick="selectPathStyle('straight')" id="pathStyle_straight">
-                            ━ Straight
-                        </button>
-                        <button class="btn btn-secondary" style="width: 100%; justify-content: center;" 
-                                onclick="selectPathStyle('curved')" id="pathStyle_curved">
-                            ⌢ Curved
-                        </button>
-                    </div>
-                    
-                    <div class="brush-control">
-                        <label>Path Width</label>
-                        <div class="slider-container">
-                            <input type="range" class="slider" id="pathWidth" 
-                                   min="2" max="12" value="4" 
-                                   oninput="updatePathWidth(this.value)">
-                            <span class="slider-value" id="pathWidthValue">4</span>
+                    <!-- Path Type Selector - Modern Style -->
+                    <div class="path-type-selector">
+                        <label class="section-label">Type</label>
+                        <div class="path-type-grid">
+                            <button class="path-type-btn" data-type="road" onclick="selectPathType('road')" id="pathType_road">
+                                <div class="path-type-icon">
+                                    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="6" y1="26" x2="26" y2="6" stroke-dasharray="3 2"/>
+                                        <line x1="10" y1="26" x2="26" y2="10"/>
+                                    </svg>
+                                </div>
+                                <span class="path-type-label">Road</span>
+                            </button>
+                            <button class="path-type-btn" data-type="river" onclick="selectPathType('river')" id="pathType_river">
+                                <div class="path-type-icon">
+                                    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M6 6 Q 16 16, 26 6" stroke-width="3"/>
+                                        <path d="M6 16 Q 16 26, 26 16" stroke-width="3"/>
+                                    </svg>
+                                </div>
+                                <span class="path-type-label">River</span>
+                            </button>
+                            <button class="path-type-btn" data-type="trail" onclick="selectPathType('trail')" id="pathType_trail">
+                                <div class="path-type-icon">
+                                    <svg viewBox="0 0 32 32" fill="currentColor">
+                                        <circle cx="8" cy="8" r="1.5"/>
+                                        <circle cx="16" cy="12" r="1.5"/>
+                                        <circle cx="12" cy="20" r="1.5"/>
+                                        <circle cx="24" cy="16" r="1.5"/>
+                                    </svg>
+                                </div>
+                                <span class="path-type-label">Trail</span>
+                            </button>
                         </div>
                     </div>
-                    
-                    <div class="brush-control">
-                        <label>Path Color</label>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <input type="color" id="pathColor" value="#8B7355" 
-                                   onchange="updatePathColor(this.value)"
-                                   style="width: 50px; height: 30px; border: 2px solid #3d4758; border-radius: 6px; background: transparent; cursor: pointer;">
-                            <button class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px;" 
-                                    onclick="resetPathColorToDefault()">Reset to Default</button>
+
+                    <div class="divider"></div>
+
+                    <!-- Path Style Selector - Modern Visual Style -->
+                    <div class="path-style-selector">
+                        <label class="section-label">Style</label>
+                        <div class="path-style-grid">
+                            <button class="path-style-btn active" data-style="straight" onclick="selectPathStyle('straight')" id="pathStyle_straight">
+                                <svg class="path-style-preview" viewBox="0 0 60 30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                                    <line x1="5" y1="15" x2="55" y2="15"/>
+                                </svg>
+                                <span>Straight</span>
+                            </button>
+                            <button class="path-style-btn" data-style="curved" onclick="selectPathStyle('curved')" id="pathStyle_curved">
+                                <svg class="path-style-preview" viewBox="0 0 60 30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                                    <path d="M5 15 Q 20 5, 35 15 Q 50 25, 55 15"/>
+                                </svg>
+                                <span>Curved</span>
+                            </button>
                         </div>
                     </div>
-                    
-                    <div style="font-size: 11px; color: #718096; line-height: 1.5; margin-top: 16px;">
-                        <strong>Path Mode:</strong><br>
-                        • Click hexes to draw path<br>
-                        • Paths auto-connect at intersections<br>
-                        • Double-click to finish<br>
-                        • Click existing path to edit/delete<br>
-                        • ESC to cancel current path<br>
+
+                    <div class="divider"></div>
+
+                    <!-- Path Properties - Modern Sliders -->
+                    <div class="path-properties">
+                        <div class="control-row">
+                            <label class="control-label">
+                                <svg class="control-icon" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/>
+                                </svg>
+                                Width
+                            </label>
+                            <div class="control-input-group">
+                                <input type="range" class="slider" id="pathWidth" 
+                                       min="2" max="12" value="4" 
+                                       oninput="updatePathWidth(this.value)">
+                                <span class="slider-value" id="pathWidthValue">4</span>
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label">
+                                <svg class="control-icon" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z"/>
+                                </svg>
+                                Color
+                            </label>
+                            <div class="color-picker-group">
+                                <input type="color" class="color-input" id="pathColor" value="#8B7355" 
+                                       onchange="updatePathColor(this.value)">
+                                <button class="btn-icon-small" onclick="resetPathColorToDefault()" title="Reset to default">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- Tool Help -->
+                    <div class="tool-help">
+                        <div class="tool-help-title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>
+                            </svg>
+                            Quick Tips
+                        </div>
+                        <ul class="tool-help-list">
+                            <li><kbd>Click</kbd> hexes to draw path</li>
+                            <li><kbd>Double-click</kbd> to finish</li>
+                            <li><kbd>Esc</kbd> to cancel</li>
+                            <li><kbd>Click</kbd> path to select/edit</li>
+                        </ul>
                     </div>
                 </div>
             </div>

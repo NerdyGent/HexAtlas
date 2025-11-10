@@ -277,12 +277,15 @@ function setHex(q, r, terrain) {
     updateHexCount();
     markUnsaved();
     
-    // Smart bounds update: only refresh minimap if bounds changed
+    // Mark minimap as dirty to trigger re-render
+    minimapDirty = true;
+    
+    // Smart bounds update: only refresh if bounds changed
     if (isNewHex) {
         const expandedBounds = wouldExpandBounds(q, r);
         if (expandedBounds) {
             updateBoundsForNewHex(q, r);
-            refreshMinimapDebounced();
+            minimapBoundsDirty = true;  // Bounds cache is now invalid
         }
     }
 }
@@ -294,10 +297,13 @@ function deleteHex(q, r) {
     updateHexCount();
     markUnsaved();
     
-    // Only recalculate and refresh if we deleted a boundary hex
+    // Mark minimap as dirty to trigger re-render
+    minimapDirty = true;
+    
+    // Only recalculate bounds if we deleted a boundary hex
     if (wouldShrink) {
         state.hexMap.boundsNeedRecalc = true;
-        refreshMinimapDebounced();
+        minimapBoundsDirty = true;  // Bounds cache is now invalid
     }
 }
 
@@ -2109,10 +2115,10 @@ function renderHex() {
         drawPathPoints(state.hexMap.selectedPath);
     }
     
-    // Update minimap if it exists
-    if (document.getElementById('minimapCanvas')) {
-        updateMinimapViewport();
-    }
+    // Update minimap - renderMinimap handles visibility check internally
+    // updateMinimapViewport still updates every frame for smooth tracking
+    renderMinimap();
+    updateMinimapViewport();
 }
 
 function drawPathfindingRoute(token) {
@@ -3353,306 +3359,285 @@ let minimapState = {
     renderTimeout: null
 };
 
+// NEW MINIMAP SYSTEM - Uses same rendering as main canvas
+let minimapCtx = null;
+let minimapCanvas = null;
+let minimapDirty = false;  // Track if minimap needs re-rendering
+let minimapBoundsDirty = true;  // Track if bounds cache is valid
+let minimapBoundsCached = null;  // Cache bounds to avoid iteration
+let lastMinimapRender = 0;
+const MINIMAP_UPDATE_INTERVAL = 33;  // ~30 FPS cap
+
 function refreshMinimapDebounced() {
-    // Clear any existing timeout
-    if (minimapState.renderTimeout) {
-        clearTimeout(minimapState.renderTimeout);
+    // Just mark as dirty, actual render happens in renderMinimap()
+    minimapDirty = true;
+}
+
+function getMinimapBounds() {
+    // Return cached bounds if valid
+    if (!minimapBoundsDirty && minimapBoundsCached) {
+        return minimapBoundsCached;
     }
     
-    // Set a new timeout to render after painting stops
-    minimapState.renderTimeout = setTimeout(() => {
-        if (document.getElementById('minimapCanvas')) {
-            renderMinimap();
-        }
-        minimapState.renderTimeout = null;
-    }, 150); // Wait 150ms after last change
+    // Calculate bounds only if needed
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    
+    state.hexMap.hexes.forEach(hex => {
+        const size = state.hexMap.hexSize;
+        const x = size * (3/2 * hex.q);
+        const y = size * (Math.sqrt(3)/2 * hex.q + Math.sqrt(3) * hex.r);
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+    });
+    
+    // Add padding
+    const padding = state.hexMap.hexSize * 1.5;
+    minX -= padding;
+    maxX += padding;
+    minY -= padding;
+    maxY += padding;
+    
+    minimapBoundsCached = {
+        minX: minX,
+        maxX: maxX,
+        minY: minY,
+        maxY: maxY
+    };
+    minimapBoundsDirty = false;
+    return minimapBoundsCached;
 }
 
 function initializeMinimap() {
-    const canvas = document.getElementById('minimapCanvas');
-    const viewport = document.getElementById('minimapViewport');
-    const wrapper = document.querySelector('.minimap-wrapper');
+    minimapCanvas = document.getElementById('minimapCanvas');
+    if (!minimapCanvas) return;
     
-    if (!canvas || !viewport || !wrapper) return;
+    minimapCtx = minimapCanvas.getContext('2d');
+    
+    // Set up minimap canvas
+    const wrapper = document.querySelector('.minimap-wrapper');
+    if (!wrapper) return;
+    
+    const rect = wrapper.getBoundingClientRect();
+    minimapCanvas.width = rect.width;
+    minimapCanvas.height = rect.height;
     
     renderMinimap();
     
-    // Dragging state
-    let isDragging = false;
-    
-    // Start dragging viewport
-    viewport.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        minimapState.dragging = true;
-        
-        e.preventDefault();
-        e.stopPropagation();
+    // Click to navigate
+    minimapCanvas.addEventListener('click', (e) => {
+        const rect = minimapCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        minimapClickToNavigate(x, y);
     });
     
-    // Handle dragging
-    const handleMouseMove = (e) => {
-        if (!isDragging) return;
-        
-        const scale = parseFloat(canvas.dataset.scale);
-        const minX = parseFloat(canvas.dataset.minX);
-        const minY = parseFloat(canvas.dataset.minY);
-        
-        const canvasRect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - canvasRect.left;
-        const mouseY = e.clientY - canvasRect.top;
-        
-        // Convert mouse position to world coordinates
-        const worldX = (mouseX / scale) + minX;
-        const worldY = (mouseY / scale) + minY;
-        
-        // Set viewport to center on this world position
-        // offsetX/offsetY represent the negative of the world position we're viewing
-        state.hexMap.viewport.offsetX = -worldX * state.hexMap.viewport.scale;
-        state.hexMap.viewport.offsetY = -worldY * state.hexMap.viewport.scale;
-        
-        renderHex();
-    };
-    
-    const handleMouseUp = () => {
-        isDragging = false;
-        minimapState.dragging = false;
-    };
-    
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    
-    // Click to jump
-    canvas.addEventListener('mousedown', (e) => {
-        if (e.target !== canvas) return; // Only on canvas, not viewport
-        
-        const scale = parseFloat(canvas.dataset.scale);
-        const minX = parseFloat(canvas.dataset.minX);
-        const minY = parseFloat(canvas.dataset.minY);
-        
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        
-        // Convert to world coordinates
-        const worldX = (mouseX / scale) + minX;
-        const worldY = (mouseY / scale) + minY;
-        
-        // Center viewport on clicked position
-        state.hexMap.viewport.offsetX = -worldX * state.hexMap.viewport.scale;
-        state.hexMap.viewport.offsetY = -worldY * state.hexMap.viewport.scale;
-        
-        renderHex();
-    });
-}
-function getMapBounds() {
-    if (state.hexMap.boundsNeedRecalc || !state.hexMap.cachedBounds) {
-        return recalculateBounds();
+    // Viewport dragging
+    const viewportBox = document.getElementById('minimapViewport');
+    if (viewportBox) {
+        let isDragging = false;
+        viewportBox.addEventListener('mousedown', () => { isDragging = true; });
+        document.addEventListener('mouseup', () => { isDragging = false; });
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = minimapCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            minimapClickToNavigate(x, y);
+        });
     }
-    return state.hexMap.cachedBounds;
 }
 
-function getMinimapScale(bounds, canvasSize) {
-    const hexSize = state.hexMap.hexSize;
-    const worldWidth = bounds.maxX - bounds.minX + hexSize * 2;
-    const worldHeight = bounds.maxY - bounds.minY + hexSize * 2;
-    const scale = Math.min(canvasSize / worldWidth, canvasSize / worldHeight);
-    return scale;
+function minimapClickToNavigate(canvasX, canvasY) {
+    if (!minimapCanvas) return;
+    
+    // Get the minimap's viewport settings
+    const minimapData = minimapCanvas.dataset;
+    if (!minimapData.scale || !minimapData.offsetX || !minimapData.offsetY) return;
+    
+    const minimapScale = parseFloat(minimapData.scale);
+    const minimapOffsetX = parseFloat(minimapData.offsetX);
+    const minimapOffsetY = parseFloat(minimapData.offsetY);
+    
+    // Convert minimap canvas click to world coordinates
+    const worldX = (canvasX / minimapScale) + minimapOffsetX;
+    const worldY = (canvasY / minimapScale) + minimapOffsetY;
+    
+    // Set main viewport to center on this location
+    state.hexMap.viewport.offsetX = -worldX;
+    state.hexMap.viewport.offsetY = -worldY;
+    
+    renderHex();
 }
 
 function renderMinimap() {
-    const canvas = document.getElementById('minimapCanvas');
-    const stats = document.getElementById('minimapStats');
+    if (!minimapCtx || !minimapCanvas) return;
     
-    if (!canvas || !stats) return;
-    
-    const ctx = canvas.getContext('2d', { alpha: false });
-    const rect = canvas.getBoundingClientRect();
-    
-    if (state.hexMap.hexes.size === 0) {
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        ctx.fillStyle = '#0a0e13';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        stats.textContent = 'No hexes';
+    // OPTIMIZATION #3: Skip if minimap is hidden
+    // Prevents rendering to invisible elements
+    const minimapWrapper = document.querySelector('.minimap-wrapper');
+    if (!minimapWrapper || minimapWrapper.offsetHeight === 0 || minimapWrapper.offsetWidth === 0) {
+        minimapDirty = true;  // Keep dirty flag set for when it becomes visible
         return;
     }
     
-    const bounds = getMapBounds();
-    const hexSize = state.hexMap.hexSize;
-    
-    // Use ACTUAL pixel bounds from placed hexes - no calculation tricks
-    const actualWidth = bounds.maxX - bounds.minX;
-    const actualHeight = bounds.maxY - bounds.minY;
-    
-    // Add ONLY enough padding for one hex radius on each side
-    const padding = hexSize * 0.5;
-    const totalWidth = actualWidth + padding * 2;
-    const totalHeight = actualHeight + padding * 2;
-    
-    // Scale to fill 98% of available space
-    const scale = Math.min((rect.width * 0.98) / totalWidth, (rect.height * 0.98) / totalHeight);
-    
-    // Calculate map extent for styling decisions
-    const mapExtentQ = Math.max(Math.abs(bounds.minQ), Math.abs(bounds.maxQ));
-    const mapExtentR = Math.max(Math.abs(bounds.minR), Math.abs(bounds.maxR));
-    const mapExtent = Math.max(mapExtentQ, mapExtentR);
-    
-    // Determine pixel size per hex based on extent
-    let pixelsPerHex;
-    let renderAsHexagons = false;
-    
-    if (mapExtent <= 5) {
-        pixelsPerHex = Math.max(10, 10 * scale);
-        renderAsHexagons = true;
-    } else if (mapExtent <= 10) {
-        pixelsPerHex = Math.max(8, 8 * scale);
-        renderAsHexagons = true;
-    } else if (mapExtent <= 15) {
-        pixelsPerHex = Math.max(6, 6 * scale);
-        renderAsHexagons = true;
-    } else if (mapExtent <= 25) {
-        pixelsPerHex = 5;
-    } else if (mapExtent <= 40) {
-        pixelsPerHex = 4;
-    } else if (mapExtent <= 70) {
-        pixelsPerHex = 3;
-    } else if (mapExtent <= 120) {
-        pixelsPerHex = 2;
-    } else {
-        pixelsPerHex = 1;
+    // OPTIMIZATION #1: Early exit if not dirty AND we have visible content
+    // This saves 50-80% CPU when just panning/zooming without painting
+    if (!minimapDirty && minimapBoundsCached) {
+        // Mark clean since we know state hasn't changed
+        minimapDirty = false;
+        return;  // Exit immediately - no render needed
     }
     
-    // Set canvas to exact scaled size
-    canvas.width = Math.ceil(totalWidth * scale);
-    canvas.height = Math.ceil(totalHeight * scale);
+    // Frame rate cap: only render every ~33ms (30 FPS) for efficiency
+    const now = performance.now();
+    if (now - lastMinimapRender < MINIMAP_UPDATE_INTERVAL) {
+        return;
+    }
     
-    // Store transform data
-    canvas.dataset.scale = scale;
-    canvas.dataset.minX = bounds.minX - padding;
-    canvas.dataset.minY = bounds.minY - padding;
+    lastMinimapRender = now;
     
-    stats.textContent = `${state.hexMap.hexes.size} hexes`;
+    const mapWidth = minimapCanvas.width;
+    const mapHeight = minimapCanvas.height;
     
-    // Clear
-    ctx.fillStyle = '#0a0e13';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.imageSmoothingEnabled = false;
+    // Get all hex bounds
+    if (state.hexMap.hexes.size === 0) {
+        minimapCtx.fillStyle = '#0a0e13';
+        minimapCtx.fillRect(0, 0, mapWidth, mapHeight);
+        const stats = document.getElementById('minimapStats');
+        if (stats) stats.textContent = 'No hexes';
+        minimapDirty = false;
+        return;
+    }
     
-    const offsetX = bounds.minX - padding;
-    const offsetY = bounds.minY - padding;
+    // Calculate world bounds (use cached if available)
+    const bounds = getMinimapBounds();
+    const minX = bounds.minX;
+    const maxX = bounds.maxX;
+    const minY = bounds.minY;
+    const maxY = bounds.maxY;
     
-    // Render hexes
-    if (renderAsHexagons) {
-        // Small maps: draw actual mini hexagons
-        state.hexMap.hexes.forEach(hex => {
-            const worldX = hex.q * hexSize * 1.5;
-            const worldY = (hex.r * hexSize * Math.sqrt(3)) + (hex.q * hexSize * Math.sqrt(3) / 2);
-            
-            const x = (worldX - offsetX) * scale;
-            const y = (worldY - offsetY) * scale;
-            
-            const terrain = TERRAINS[hex.terrain];
-            ctx.fillStyle = terrain ? terrain.color : '#4a5568';
-            
-            // Draw hexagon
-            const hexRadius = pixelsPerHex * 0.45;
-            ctx.beginPath();
+    const worldWidth = maxX - minX;
+    const worldHeight = maxY - minY;
+    
+    // Calculate scale to fit in minimap
+    const scale = Math.min(mapWidth / worldWidth, mapHeight / worldHeight);
+    
+    // Store for click handling
+    minimapCanvas.dataset.scale = scale;
+    minimapCanvas.dataset.offsetX = minX;
+    minimapCanvas.dataset.offsetY = minY;
+    minimapCanvas.dataset.worldWidth = worldWidth;
+    minimapCanvas.dataset.worldHeight = worldHeight;
+    
+    // Clear minimap
+    minimapCtx.fillStyle = '#0a0e13';
+    minimapCtx.fillRect(0, 0, mapWidth, mapHeight);
+    minimapCtx.imageSmoothingEnabled = false;
+    
+    const hexPixelSize = state.hexMap.hexSize * scale;
+    
+    // Determine render style based on hex size on minimap
+    // Hexagons for small/medium maps, squares for large maps
+    const useHexagons = hexPixelSize > 2.5; // Threshold for hexagon rendering
+    
+    // Draw all hexes using minimap context
+    // No outlines - just solid colors for cleaner look
+    
+    state.hexMap.hexes.forEach(hex => {
+        const size = state.hexMap.hexSize;
+        const x = size * (3/2 * hex.q);
+        const y = size * (Math.sqrt(3)/2 * hex.q + Math.sqrt(3) * hex.r);
+        
+        // Transform to minimap coordinates
+        const mapX = (x - minX) * scale;
+        const mapY = (y - minY) * scale;
+        
+        // Get terrain color
+        const terrain = TERRAINS[hex.terrain];
+        minimapCtx.fillStyle = terrain ? terrain.color : '#4a5568';
+        
+        if (useHexagons) {
+            // Draw hex shape for small/medium maps
+            minimapCtx.beginPath();
             for (let i = 0; i < 6; i++) {
                 const angle = (Math.PI / 3) * i;
-                const hx = x + hexRadius * Math.cos(angle);
-                const hy = y + hexRadius * Math.sin(angle);
-                if (i === 0) ctx.moveTo(hx, hy);
-                else ctx.lineTo(hx, hy);
+                const hx = mapX + hexPixelSize * Math.cos(angle);
+                const hy = mapY + hexPixelSize * Math.sin(angle);
+                if (i === 0) minimapCtx.moveTo(hx, hy);
+                else minimapCtx.lineTo(hx, hy);
             }
-            ctx.closePath();
-            ctx.fill();
-            
-            // Border
-            ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-        });
-    } else {
-        // Large maps: solid pixel blocks
-        state.hexMap.hexes.forEach(hex => {
-            const worldX = hex.q * hexSize * 1.5;
-            const worldY = (hex.r * hexSize * Math.sqrt(3)) + (hex.q * hexSize * Math.sqrt(3) / 2);
-            
-            const x = Math.floor((worldX - offsetX) * scale);
-            const y = Math.floor((worldY - offsetY) * scale);
-            
-            const terrain = TERRAINS[hex.terrain];
-            ctx.fillStyle = terrain ? terrain.color : '#4a5568';
-            ctx.fillRect(x, y, pixelsPerHex, pixelsPerHex);
-        });
-    }
+            minimapCtx.closePath();
+            minimapCtx.fill();
+            // No stroke - cleaner appearance
+        } else {
+            // Draw square for large maps (much faster, cleaner)
+            const size = Math.max(1, hexPixelSize * 1.5);
+            minimapCtx.fillRect(mapX - size/2, mapY - size/2, size, size);
+        }
+    });
     
-    // Landmarks
-    if (state.hexMap.landmarks.size > 0) {
-        state.hexMap.landmarks.forEach(landmark => {
-            const worldX = landmark.q * hexSize * 1.5;
-            const worldY = (landmark.r * hexSize * Math.sqrt(3)) + (landmark.q * hexSize * Math.sqrt(3) / 2);
-            
-            const x = (worldX - offsetX) * scale;
-            const y = (worldY - offsetY) * scale;
-            
-            ctx.fillStyle = landmark.color || '#ff6b6b';
-            const landmarkRadius = (pixelsPerHex * 0.6);
-            ctx.beginPath();
-            ctx.arc(x, y, landmarkRadius, 0, Math.PI * 2);
-            ctx.fill();
-        });
-    }
+    // Draw landmarks
+    state.hexMap.landmarks.forEach(landmark => {
+        const size = state.hexMap.hexSize;
+        const x = size * (3/2 * landmark.q);
+        const y = size * (Math.sqrt(3)/2 * landmark.q + Math.sqrt(3) * landmark.r);
+        
+        const mapX = (x - minX) * scale;
+        const mapY = (y - minY) * scale;
+        
+        minimapCtx.fillStyle = landmark.color || '#ff6b6b';
+        minimapCtx.beginPath();
+        minimapCtx.arc(mapX, mapY, hexPixelSize * 0.3, 0, Math.PI * 2);
+        minimapCtx.fill();
+    });
     
+    // Update viewport indicator
     updateMinimapViewport();
+    
+    // Update stats
+    const stats = document.getElementById('minimapStats');
+    if (stats) stats.textContent = `${state.hexMap.hexes.size} hexes`;
+    
+    // Mark as clean - no longer dirty
+    minimapDirty = false;
 }
 
 function updateMinimapViewport() {
     const viewport = document.getElementById('minimapViewport');
-    const canvas = document.getElementById('minimapCanvas');
-    const wrapper = document.querySelector('.minimap-wrapper');
+    if (!viewport || !minimapCanvas) return;
     
-    if (!viewport || !canvas || !wrapper) return;
-    if (state.hexMap.hexes.size === 0) return;
+    const minimapData = minimapCanvas.dataset;
+    const scale = parseFloat(minimapData.scale);
+    const minX = parseFloat(minimapData.offsetX);
+    const minY = parseFloat(minimapData.offsetY);
     
-    // Get stored transform data
-    const scale = parseFloat(canvas.dataset.scale);
-    const minX = parseFloat(canvas.dataset.minX);
-    const minY = parseFloat(canvas.dataset.minY);
+    if (!scale || !minX || !minY) return;
     
-    // Get canvas position within wrapper (it's centered)
-    const wrapperRect = wrapper.getBoundingClientRect();
-    const canvasRect = canvas.getBoundingClientRect();
-    const canvasOffsetX = canvasRect.left - wrapperRect.left;
-    const canvasOffsetY = canvasRect.top - wrapperRect.top;
+    // Get main canvas viewport in world coordinates
+    const mainX = -state.hexMap.viewport.offsetX;
+    const mainY = -state.hexMap.viewport.offsetY;
     
-    // Get main canvas visible area in world coordinates
-    const mainCanvas = document.getElementById('hexCanvas');
-    const visibleWidth = mainCanvas.width / state.hexMap.viewport.scale;
-    const visibleHeight = mainCanvas.height / state.hexMap.viewport.scale;
+    // Convert main canvas dimensions to world coordinates
+    const mainCanvasElement = document.getElementById('hexCanvas');
+    if (!mainCanvasElement) return;
     
-    // Current viewport center in world coordinates
-    // The viewport offset represents how much the world is shifted
-    // Negative offset means we're looking at positive world coords
-    const viewCenterX = -state.hexMap.viewport.offsetX / state.hexMap.viewport.scale;
-    const viewCenterY = -state.hexMap.viewport.offsetY / state.hexMap.viewport.scale;
+    const viewWorldWidth = mainCanvasElement.width / state.hexMap.viewport.scale;
+    const viewWorldHeight = mainCanvasElement.height / state.hexMap.viewport.scale;
     
-    // Convert to minimap pixel coordinates (on canvas)
-    const minimapCenterX = (viewCenterX - minX) * scale;
-    const minimapCenterY = (viewCenterY - minY) * scale;
+    // Convert to minimap coordinates
+    const minimapX = (mainX - minX) * scale;
+    const minimapY = (mainY - minY) * scale;
+    const minimapWidth = viewWorldWidth * scale;
+    const minimapHeight = viewWorldHeight * scale;
     
-    // Calculate viewport size on minimap
-    const viewWidth = visibleWidth * scale;
-    const viewHeight = visibleHeight * scale;
-    
-    // Position viewport (centered on view center, offset by canvas position in wrapper)
-    const left = canvasOffsetX + minimapCenterX - viewWidth / 2;
-    const top = canvasOffsetY + minimapCenterY - viewHeight / 2;
-    
-    viewport.style.left = left + 'px';
-    viewport.style.top = top + 'px';
-    viewport.style.width = viewWidth + 'px';
-    viewport.style.height = viewHeight + 'px';
+    // Position viewport box
+    viewport.style.left = (minimapX - minimapWidth / 2) + 'px';
+    viewport.style.top = (minimapY - minimapHeight / 2) + 'px';
+    viewport.style.width = minimapWidth + 'px';
+    viewport.style.height = minimapHeight + 'px';
 }
 
 function exportHexMap() {

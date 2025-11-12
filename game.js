@@ -51,6 +51,118 @@ const TERRAINS = {
     }
 };
 
+// Landmark icon presets
+const LANDMARK_ICONS = {
+    castle: {
+        name: '🏰 Castle',
+        icon: '🏰',
+        color: '#8B7355',
+        emoji: true
+    },
+    tower: {
+        name: '🗼 Tower',
+        icon: '🗼',
+        color: '#696969',
+        emoji: true
+    },
+    village: {
+        name: '🏘️ Village',
+        icon: '🏘️',
+        color: '#D2691E',
+        emoji: true
+    },
+    city: {
+        name: '🏙️ City',
+        icon: '🏙️',
+        color: '#4682B4',
+        emoji: true
+    },
+    dungeon: {
+        name: '⚔️ Dungeon',
+        icon: '⚔️',
+        color: '#2F4F4F',
+        emoji: true
+    },
+    ruins: {
+        name: '🏛️ Ruins',
+        icon: '🏛️',
+        color: '#A9A9A9',
+        emoji: true
+    },
+    cave: {
+        name: '🕳️ Cave',
+        icon: '🕳️',
+        color: '#3E2723',
+        emoji: true
+    },
+    temple: {
+        name: '⛩️ Temple',
+        icon: '⛩️',
+        color: '#DC143C',
+        emoji: true
+    },
+    mountain_peak: {
+        name: '⛰️ Mountain',
+        icon: '⛰️',
+        color: '#8B7355',
+        emoji: true
+    },
+    forest_grove: {
+        name: '🌲 Grove',
+        icon: '🌲',
+        color: '#228B22',
+        emoji: true
+    },
+    volcano: {
+        name: '🌋 Volcano',
+        icon: '🌋',
+        color: '#FF4500',
+        emoji: true
+    },
+    camp: {
+        name: '⛺ Camp',
+        icon: '⛺',
+        color: '#8B4513',
+        emoji: true
+    },
+    port: {
+        name: '⚓ Port',
+        icon: '⚓',
+        color: '#4682B4',
+        emoji: true
+    },
+    bridge: {
+        name: '🌉 Bridge',
+        icon: '🌉',
+        color: '#696969',
+        emoji: true
+    },
+    mine: {
+        name: '⛏️ Mine',
+        icon: '⛏️',
+        color: '#8B7355',
+        emoji: true
+    },
+    farm: {
+        name: '🚜 Farm',
+        icon: '🚜',
+        color: '#90EE90',
+        emoji: true
+    },
+    monument: {
+        name: '🗿 Monument',
+        icon: '🗿',
+        color: '#A9A9A9',
+        emoji: true
+    },
+    shrine: {
+        name: '⛩️ Shrine',
+        icon: '⛩️',
+        color: '#FFD700',
+        emoji: true
+    }
+};
+
 const state = {
     hexMap: {
         viewMode: 'builder', // 'builder' or 'explorer'
@@ -1718,17 +1830,34 @@ function showLandmarkDetails(landmark) {
             <div class="form-group">
                 <label class="form-label">Style</label>
                 <select class="form-select" onchange="updateLandmarkField('${landmark.id}', 'style', this.value); renderHex();">
+                    <option value="badge" ${landmark.style === 'badge' ? 'selected' : ''}>Badge (Recommended)</option>
+                    <option value="icon" ${landmark.style === 'icon' ? 'selected' : ''}>Icon (Large)</option>
                     <option value="circle" ${landmark.style === 'circle' ? 'selected' : ''}>Circle</option>
-                    <option value="icon" ${landmark.style === 'icon' ? 'selected' : ''}>Icon</option>
-                    <option value="badge" ${landmark.style === 'badge' ? 'selected' : ''}>Badge</option>
                 </select>
             </div>
-            ${landmark.style === 'icon' ? `
             <div class="form-group">
-                <label class="form-label">Icon URL</label>
-                <input type="text" class="form-input" value="${landmark.icon || ''}" onchange="updateLandmarkField('${landmark.id}', 'icon', this.value); renderHex();">
+                <label class="form-label">Icon / Emoji</label>
+                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 8px;">
+                    ${Object.entries(LANDMARK_ICONS).slice(0, 18).map(([key, preset]) => `
+                        <button 
+                            class="btn" 
+                            style="padding: 8px; font-size: 20px; ${landmark.icon === preset.icon ? 'border: 2px solid #667eea;' : ''}"
+                            onclick="updateLandmarkField('${landmark.id}', 'icon', '${preset.icon}'); updateLandmarkField('${landmark.id}', 'color', '${preset.color}'); renderHex(); showLandmarkDetails(getLandmarkById('${landmark.id}'));"
+                            title="${preset.name}"
+                        >
+                            ${preset.icon}
+                        </button>
+                    `).join('')}
+                </div>
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    value="${landmark.icon || ''}" 
+                    placeholder="Or enter custom emoji/icon"
+                    onchange="updateLandmarkField('${landmark.id}', 'icon', this.value); renderHex();"
+                    style="font-size: 16px;"
+                >
             </div>
-            ` : ''}
             <div class="form-group">
                 <label class="form-label">Color</label>
                 <input type="color" class="form-input" value="${landmark.color}" style="height: 50px; cursor: pointer;" onchange="updateLandmarkField('${landmark.id}', 'color', this.value); renderHex();">
@@ -2260,6 +2389,11 @@ function renderHex() {
         }
     }
     
+    // Draw landmarks AFTER hexes but BEFORE paths (they're part of the terrain)
+    state.hexMap.landmarks.forEach(landmark => {
+        if (landmark.visible) drawLandmark(landmark);
+    });
+    
     // Draw completed paths
     state.hexMap.paths.forEach(path => drawPath(path));
     
@@ -2283,16 +2417,8 @@ function renderHex() {
         drawPathHighlight(state.hexMap.selectedPath);
     }
     
-    // Draw landmarks
-    console.log('Rendering landmarks, count:', state.hexMap.landmarks.size);
-    state.hexMap.landmarks.forEach(landmark => {
-        if (landmark.visible) drawLandmark(landmark);
-    });
-    
-    // Draw tokens
-    console.log('Rendering tokens, count:', state.hexMap.tokens.size);
+    // Draw tokens LAST (they're always on top)
     state.hexMap.tokens.forEach((token, key) => {
-        console.log('Token:', key, token.id, 'visible:', token.visible, 'pos:', token.q, token.r);
         if (token.visible) drawToken(token);
     });
     
@@ -2535,16 +2661,169 @@ function drawToken(token) {
 function drawLandmark(landmark) {
     const { x, y } = hexToPixel(landmark.q, landmark.r);
     const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
-    const landmarkSize = size * 0.75 * landmark.size;
+    const zoom = state.hexMap.viewport.scale;
     
-    // Safety check: don't render if too small
-    if (landmarkSize <= 0 || size <= 0) return;
+    // Calculate if we should show different detail levels based on zoom
+    const showFull = zoom >= 0.8;  // Show full landmarks when zoomed in
+    const showBadge = zoom >= 0.3; // Show badge icons when medium zoom
+    const showDot = zoom < 0.3;    // Just a colored dot when far out
     
-    const radius = Math.max(1, landmarkSize / 2); // Ensure minimum radius of 1
+    // Safety check
+    if (size <= 0) return;
     
     ctx.save();
     
-    if (landmark.style === 'circle') {
+    // BADGE MODE (small corner icon) - recommended default for map POIs
+    if (landmark.style === 'badge' || (!showFull && showBadge)) {
+        const badgeSize = showFull ? size * 0.45 * landmark.size : size * 0.35;
+        const badgeRadius = Math.max(2, badgeSize / 2);
+        
+        // Position in top-right corner of hex
+        const offsetX = size * 0.35;
+        const offsetY = -size * 0.35;
+        const badgeX = x + offsetX;
+        const badgeY = y + offsetY;
+        
+        // Background circle with glow
+        if (showFull) {
+            ctx.globalAlpha = 0.4;
+            ctx.fillStyle = landmark.color;
+            ctx.beginPath();
+            ctx.arc(badgeX, badgeY, badgeRadius + 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Main badge circle
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = landmark.color;
+        ctx.beginPath();
+        ctx.arc(badgeX, badgeY, badgeRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Border
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = Math.max(1, showFull ? 2 : 1.5);
+        ctx.stroke();
+        
+        // Icon/emoji in badge (only if large enough)
+        if (badgeSize > 8 && landmark.icon) {
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = `${Math.max(10, badgeSize * 0.7)}px Arial`;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = 2;
+            ctx.fillText(landmark.icon, badgeX, badgeY);
+            ctx.shadowBlur = 0;
+        }
+        
+        // Label below hex (only when zoomed in)
+        if (showFull && landmark.showLabel && landmark.name) {
+            const fontSize = Math.max(10, size * 0.25);
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            
+            // Background for label
+            const labelY = y + size * 0.6;
+            const metrics = ctx.measureText(landmark.name);
+            const padding = 4;
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(
+                x - metrics.width / 2 - padding,
+                labelY - padding,
+                metrics.width + padding * 2,
+                fontSize + padding * 2
+            );
+            
+            // Label text
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(landmark.name, x, labelY);
+        }
+    }
+    // CENTER ICON MODE (large centered icon)
+    else if (landmark.style === 'icon' && showFull) {
+        const iconSize = size * 0.8 * landmark.size;
+        const radius = Math.max(3, iconSize / 2);
+        
+        // Glow effect
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius + 8);
+        gradient.addColorStop(0, landmark.color);
+        gradient.addColorStop(0.7, landmark.color);
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gradient;
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.arc(x, y, radius + 8, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Background circle
+        ctx.globalAlpha = 0.95;
+        ctx.fillStyle = landmark.color;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Border
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = darkenColor(landmark.color, 30);
+        ctx.lineWidth = Math.max(1, 3);
+        ctx.stroke();
+        
+        // Icon/emoji
+        if (landmark.icon && iconSize > 15) {
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = `${iconSize * 0.6}px Arial`;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 3;
+            ctx.fillText(landmark.icon, x, y);
+            ctx.shadowBlur = 0;
+        }
+        
+        // Label
+        if (landmark.showLabel && landmark.name) {
+            const fontSize = Math.max(11, size * 0.28);
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            
+            let labelY = y;
+            if (landmark.labelPosition === 'above' || landmark.labelPosition === 'top') {
+                labelY = y - radius - fontSize / 2 - 4;
+                ctx.textBaseline = 'bottom';
+            } else if (landmark.labelPosition === 'below' || landmark.labelPosition === 'bottom') {
+                labelY = y + radius + fontSize / 2 + 4;
+                ctx.textBaseline = 'top';
+            } else {
+                ctx.textBaseline = 'middle';
+            }
+            
+            // Text background
+            const metrics = ctx.measureText(landmark.name);
+            const padding = 3;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(
+                x - metrics.width / 2 - padding,
+                labelY - (ctx.textBaseline === 'middle' ? fontSize / 2 : 0) - padding,
+                metrics.width + padding * 2,
+                fontSize + padding * 2
+            );
+            
+            // Text
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            ctx.shadowBlur = 4;
+            ctx.fillText(landmark.name, x, labelY);
+            ctx.shadowBlur = 0;
+        }
+    }
+    // CIRCLE MODE (classic circle POI)
+    else if (landmark.style === 'circle' && showFull) {
+        const landmarkSize = size * 0.75 * landmark.size;
+        const radius = Math.max(2, landmarkSize / 2);
+        
         // Outer glow
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius + 8);
         gradient.addColorStop(0, landmark.color);
@@ -2579,7 +2858,7 @@ function drawLandmark(landmark) {
         ctx.lineWidth = Math.max(1, 3);
         ctx.stroke();
         
-        // Inner highlight (only if large enough)
+        // Inner highlight
         if (radius > 5) {
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
             ctx.lineWidth = 2;
@@ -2588,82 +2867,58 @@ function drawLandmark(landmark) {
             ctx.stroke();
         }
         
-    } else if (landmark.style === 'icon' && landmark.icon) {
-        // Icon style - draw placeholder for now
-        ctx.fillStyle = landmark.color;
-        ctx.globalAlpha = 0.9;
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = Math.max(1, 2);
-        ctx.stroke();
-        
-        // Icon placeholder (only if large enough)
-        if (landmarkSize > 10) {
-            ctx.fillStyle = '#000000';
-            ctx.font = `bold ${landmarkSize * 0.5}px Arial`;
+        // Label
+        if (landmark.showLabel && landmark.name && landmarkSize > 10) {
+            const fontSize = Math.max(11, size * 0.28);
+            ctx.font = `bold ${fontSize}px Arial`;
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('ðŸ›ï¸', x, y);
+            
+            let labelY = y;
+            if (landmark.labelPosition === 'above' || landmark.labelPosition === 'top') {
+                labelY = y - radius - fontSize / 2 - 4;
+                ctx.textBaseline = 'bottom';
+            } else if (landmark.labelPosition === 'below' || landmark.labelPosition === 'bottom') {
+                labelY = y + radius + fontSize / 2 + 4;
+                ctx.textBaseline = 'top';
+            } else {
+                labelY = y;
+                ctx.textBaseline = 'middle';
+            }
+            
+            // Text with background
+            const metrics = ctx.measureText(landmark.name);
+            const padding = 3;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(
+                x - metrics.width / 2 - padding,
+                labelY - (ctx.textBaseline === 'middle' ? fontSize / 2 : 0) - padding,
+                metrics.width + padding * 2,
+                fontSize + padding * 2
+            );
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            ctx.shadowBlur = 4;
+            ctx.fillText(landmark.name, x, labelY);
+            ctx.shadowBlur = 0;
         }
-    } else if (landmark.style === 'badge') {
-        // Badge style - small corner indicator
-        const badgeSize = size * 0.4 * landmark.size;
-        const badgeRadius = Math.max(1, badgeSize / 2);
-        const offsetX = size * 0.3;
-        const offsetY = -size * 0.3;
-        
-        // Glow
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = landmark.color;
-        ctx.beginPath();
-        ctx.arc(x + offsetX, y + offsetY, badgeRadius + 4, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Main badge
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = landmark.color;
-        ctx.beginPath();
-        ctx.arc(x + offsetX, y + offsetY, badgeRadius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = Math.max(1, 2);
-        ctx.stroke();
     }
-    
-    // Draw label if enabled (only if landmark is large enough)
-    if (landmark.showLabel && landmark.name && landmarkSize > 10) {
-        const fontSize = Math.max(11, size * 0.28);
-        ctx.font = `bold ${fontSize}px Arial`;
-        ctx.textAlign = 'center';
-        
-        let labelY = y;
-        if (landmark.labelPosition === 'above') {
-            labelY = y - radius - fontSize / 2 - 4;
-            ctx.textBaseline = 'bottom';
-        } else if (landmark.labelPosition === 'below') {
-            labelY = y + radius + fontSize / 2 + 4;
-            ctx.textBaseline = 'top';
-        } else { // inside
-            labelY = y;
-            ctx.textBaseline = 'middle';
-        }
-        
-        // Text outline (thicker for better visibility)
-        ctx.globalAlpha = 1;
+    // DOT MODE (when zoomed far out)
+    else if (showDot) {
+        const dotRadius = Math.max(2, size * 0.15);
+        ctx.fillStyle = landmark.color;
+        ctx.beginPath();
+        ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
         ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 4;
-        ctx.strokeText(landmark.name, x, labelY);
-        
-        // Text fill
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(landmark.name, x, labelY);
+        ctx.lineWidth = 1;
+        ctx.stroke();
     }
     
     ctx.restore();
 }
+
+
 
 // Helper functions for color manipulation
 function lightenColor(color, percent) {
@@ -2819,8 +3074,8 @@ function updateUI() {
     
     const instructions = {
         paint: 'Click to paint · Shift+Click to select hex · Drag for continuous painting · Right-click drag to pan',
-        token: state.hexMap.pendingToken ? 'Click a hex to place token · ESC to cancel' : 'Click to place token · Shift+Click token to select · Drag token to move',
-        landmark: state.hexMap.pendingLandmark ? 'Click a hex to place landmark · ESC to cancel' : 'Click to create landmark · Shift+Click landmark to select',
+        token: 'Click hex to instantly place token · Shift+Click to select · Drag to move',
+        landmark: 'Click hex to instantly place landmark · Shift+Click to select',
         path: state.hexMap.pathEditMode ? 'Drag points to move · Click + to insert · Click × to delete · Right-click to pan' : 
               state.hexMap.currentPath ? 'Click to add waypoints · Double-click to finish · ESC to cancel' : 
               'Click to draw new path · Shift+Click path to select/edit'
@@ -3003,37 +3258,66 @@ function handlePointerDown(x, y, button, isTouch, shiftKey = false, detail = 1) 
                 state.hexMap.draggingToken = clickedToken;
                 animateTokenScale(clickedToken.id, 1.3, 150);
                 canvas.style.cursor = 'grabbing';
-            } else if (state.hexMap.pendingToken) {
-                const newToken = createToken(hex.q, hex.r, state.hexMap.pendingToken);
-                state.hexMap.pendingToken = null;
+            } else if (!shiftKey) {
+                // Direct placement with default values
+                const defaultToken = {
+                    name: 'New Token',
+                    type: 'player',
+                    label: 'T',
+                    color: '#FF6B6B',
+                    size: 1.0,
+                    attributes: {},
+                    notes: ''
+                };
+                const newToken = createToken(hex.q, hex.r, defaultToken);
                 newToken.scale = 0;
                 animateTokenScale(newToken.id, 1, 300);
+                
+                // Auto-select and show details for editing
+                state.hexMap.selectedToken = newToken;
+                state.hexMap.selectedHex = null;
+                state.hexMap.selectedLandmark = null;
+                showTokenDetails(newToken);
+                
                 renderHex();
                 updateUI();
-            } else if (!shiftKey) {
-                showTokenCreator();
             }
             return;
         }
         
         // Landmark mode
         if (state.hexMap.mode === 'landmark') {
-            if (state.hexMap.pendingLandmark) {
-                const newLandmark = createLandmark(hex.q, hex.r, state.hexMap.pendingLandmark);
-                state.hexMap.pendingLandmark = null;
+            const clickedLandmark = findLandmarkAtPixel(canvasX, canvasY);
+            if (clickedLandmark && !shiftKey) {
+                // Select existing landmark
+                state.hexMap.selectedLandmark = clickedLandmark;
+                state.hexMap.selectedHex = null;
+                state.hexMap.selectedToken = null;
+                showLandmarkDetails(clickedLandmark);
+                renderHex();
+            } else if (!shiftKey) {
+                // Direct placement with default values
+                const defaultLandmark = {
+                    name: 'New Landmark',
+                    style: 'badge',  // Badge is better default for map POIs
+                    icon: '🏰',       // Default castle icon
+                    color: '#FFD700',
+                    size: 1.0,       // Smaller default size for badges
+                    showLabel: true,
+                    labelPosition: 'bottom',
+                    attributes: {},
+                    notes: ''
+                };
+                const newLandmark = createLandmark(hex.q, hex.r, defaultLandmark);
+                
+                // Auto-select and show details for editing
+                state.hexMap.selectedLandmark = newLandmark;
+                state.hexMap.selectedHex = null;
+                state.hexMap.selectedToken = null;
+                showLandmarkDetails(newLandmark);
+                
                 renderHex();
                 updateUI();
-            } else if (!shiftKey) {
-                const clickedLandmark = findLandmarkAtPixel(canvasX, canvasY);
-                if (clickedLandmark) {
-                    state.hexMap.selectedLandmark = clickedLandmark;
-                    state.hexMap.selectedHex = null;
-                    state.hexMap.selectedToken = null;
-                    showLandmarkDetails(clickedLandmark);
-                    renderHex();
-                } else {
-                    showLandmarkCreator();
-                }
             }
             return;
         }
@@ -3440,9 +3724,6 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         if (state.hexMap.currentPath) {
             cancelPath();
-            updateUI();
-        } else if (state.hexMap.pendingToken) {
-            state.hexMap.pendingToken = null;
             updateUI();
         } else if (state.hexMap.selectedPath) {
             deselectPath();

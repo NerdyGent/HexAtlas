@@ -51,117 +51,132 @@ const TERRAINS = {
     }
 };
 
-// Landmark icon presets
+// Landmark icon presets using game-icons.net
 const LANDMARK_ICONS = {
     castle: {
-        name: '🏰 Castle',
-        icon: '🏰',
-        color: '#8B7355',
-        emoji: true
+        name: 'Castle',
+        icon: 'https://api.iconify.design/game-icons/castle.svg?color=%23000000',
+        color: '#8B7355'
     },
     tower: {
-        name: '🗼 Tower',
-        icon: '🗼',
-        color: '#696969',
-        emoji: true
+        name: 'Tower',
+        icon: 'https://api.iconify.design/game-icons/white-tower.svg?color=%23000000',
+        color: '#696969'
     },
     village: {
-        name: '🏘️ Village',
-        icon: '🏘️',
-        color: '#D2691E',
-        emoji: true
+        name: 'Village',
+        icon: 'https://api.iconify.design/game-icons/village.svg?color=%23000000',
+        color: '#D2691E'
     },
     city: {
-        name: '🏙️ City',
-        icon: '🏙️',
-        color: '#4682B4',
-        emoji: true
+        name: 'City',
+        icon: 'https://api.iconify.design/game-icons/capitol.svg?color=%23000000',
+        color: '#4682B4'
     },
     dungeon: {
-        name: '⚔️ Dungeon',
-        icon: '⚔️',
-        color: '#2F4F4F',
-        emoji: true
+        name: 'Dungeon',
+        icon: 'https://api.iconify.design/game-icons/dungeon-gate.svg?color=%23000000',
+        color: '#2F4F4F'
     },
     ruins: {
-        name: '🏛️ Ruins',
-        icon: '🏛️',
-        color: '#A9A9A9',
-        emoji: true
+        name: 'Ruins',
+        icon: 'https://api.iconify.design/game-icons/tower-fall.svg?color=%23000000',
+        color: '#A9A9A9'
     },
     cave: {
-        name: '🕳️ Cave',
-        icon: '🕳️',
-        color: '#3E2723',
-        emoji: true
+        name: 'Cave',
+        icon: 'https://api.iconify.design/game-icons/cave-entrance.svg?color=%23000000',
+        color: '#3E2723'
     },
     temple: {
-        name: '⛩️ Temple',
-        icon: '⛩️',
-        color: '#DC143C',
-        emoji: true
+        name: 'Temple',
+        icon: 'https://api.iconify.design/game-icons/greek-temple.svg?color=%23000000',
+        color: '#DC143C'
     },
-    mountain_peak: {
-        name: '⛰️ Mountain',
-        icon: '⛰️',
-        color: '#8B7355',
-        emoji: true
+    mountain: {
+        name: 'Mountain Peak',
+        icon: 'https://api.iconify.design/game-icons/mountain-cave.svg?color=%23000000',
+        color: '#8B7355'
     },
-    forest_grove: {
-        name: '🌲 Grove',
-        icon: '🌲',
-        color: '#228B22',
-        emoji: true
+    forest: {
+        name: 'Forest Grove',
+        icon: 'https://api.iconify.design/game-icons/oak.svg?color=%23000000',
+        color: '#228B22'
     },
     volcano: {
-        name: '🌋 Volcano',
-        icon: '🌋',
-        color: '#FF4500',
-        emoji: true
+        name: 'Volcano',
+        icon: 'https://api.iconify.design/game-icons/volcano.svg?color=%23000000',
+        color: '#FF4500'
     },
     camp: {
-        name: '⛺ Camp',
-        icon: '⛺',
-        color: '#8B4513',
-        emoji: true
+        name: 'Camp',
+        icon: 'https://api.iconify.design/game-icons/camping-tent.svg?color=%23000000',
+        color: '#8B4513'
     },
     port: {
-        name: '⚓ Port',
-        icon: '⚓',
-        color: '#4682B4',
-        emoji: true
+        name: 'Port',
+        icon: 'https://api.iconify.design/game-icons/anchor.svg?color=%23000000',
+        color: '#4682B4'
     },
     bridge: {
-        name: '🌉 Bridge',
-        icon: '🌉',
-        color: '#696969',
-        emoji: true
+        name: 'Bridge',
+        icon: 'https://api.iconify.design/game-icons/bridge.svg?color=%23000000',
+        color: '#696969'
     },
     mine: {
-        name: '⛏️ Mine',
-        icon: '⛏️',
-        color: '#8B7355',
-        emoji: true
+        name: 'Mine',
+        icon: 'https://api.iconify.design/game-icons/mining.svg?color=%23000000',
+        color: '#8B7355'
     },
     farm: {
-        name: '🚜 Farm',
-        icon: '🚜',
-        color: '#90EE90',
-        emoji: true
+        name: 'Farm',
+        icon: 'https://api.iconify.design/game-icons/wheat.svg?color=%23000000',
+        color: '#90EE90'
     },
     monument: {
-        name: '🗿 Monument',
-        icon: '🗿',
-        color: '#A9A9A9',
-        emoji: true
+        name: 'Monument',
+        icon: 'https://api.iconify.design/game-icons/stone-tower.svg?color=%23000000',
+        color: '#A9A9A9'
     },
     shrine: {
-        name: '⛩️ Shrine',
-        icon: '⛩️',
-        color: '#FFD700',
-        emoji: true
+        name: 'Shrine',
+        icon: 'https://api.iconify.design/game-icons/pagoda.svg?color=%23000000',
+        color: '#FFD700'
+    },
+    fortress: {
+        name: 'Fortress',
+        icon: 'https://api.iconify.design/game-icons/stone-wall.svg?color=%23000000',
+        color: '#4B4B4B'
+    },
+    lighthouse: {
+        name: 'Lighthouse',
+        icon: 'https://api.iconify.design/game-icons/lighthouse.svg?color=%23000000',
+        color: '#4682B4'
+    },
+    windmill: {
+        name: 'Windmill',
+        icon: 'https://api.iconify.design/game-icons/windmill.svg?color=%23000000',
+        color: '#D2691E'
+    },
+    graveyard: {
+        name: 'Graveyard',
+        icon: 'https://api.iconify.design/game-icons/tombstone.svg?color=%23000000',
+        color: '#4B4B4B'
+    },
+    watchtower: {
+        name: 'Watchtower',
+        icon: 'https://api.iconify.design/game-icons/watchtower.svg?color=%23000000',
+        color: '#696969'
+    },
+    tavern: {
+        name: 'Tavern',
+        icon: 'https://api.iconify.design/game-icons/beer-stein.svg?color=%23000000',
+        color: '#D2691E'
     }
 };
+
+// Cache for landmark icons
+const landmarkIconCache = new Map();
 
 const state = {
     hexMap: {
@@ -182,6 +197,7 @@ const state = {
         selectedToken: null,
         selectedLandmark: null, // NEW
         draggingToken: null,
+        draggingLandmark: null, // NEW - for dragging landmarks
         pendingToken: null,
         pendingLandmark: null, // NEW
         currentPath: null,
@@ -1830,33 +1846,62 @@ function showLandmarkDetails(landmark) {
             <div class="form-group">
                 <label class="form-label">Style</label>
                 <select class="form-select" onchange="updateLandmarkField('${landmark.id}', 'style', this.value); renderHex();">
-                    <option value="badge" ${landmark.style === 'badge' ? 'selected' : ''}>Badge (Recommended)</option>
-                    <option value="icon" ${landmark.style === 'icon' ? 'selected' : ''}>Icon (Large)</option>
+                    <option value="icon" ${landmark.style === 'icon' ? 'selected' : ''}>Icon (Replaces Hex Icon)</option>
+                    <option value="badge" ${landmark.style === 'badge' ? 'selected' : ''}>Badge (Corner Marker)</option>
                     <option value="circle" ${landmark.style === 'circle' ? 'selected' : ''}>Circle</option>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Icon / Emoji</label>
-                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 8px;">
-                    ${Object.entries(LANDMARK_ICONS).slice(0, 18).map(([key, preset]) => `
+                <label class="form-label">Icon Preset</label>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; max-height: 400px; overflow-y: auto; padding: 4px; background: var(--bg-secondary); border-radius: 8px;">
+                    ${Object.entries(LANDMARK_ICONS).map(([key, preset]) => {
+                        const isSelected = landmark.icon === preset.icon;
+                        return `
                         <button 
                             class="btn" 
-                            style="padding: 8px; font-size: 20px; ${landmark.icon === preset.icon ? 'border: 2px solid #667eea;' : ''}"
-                            onclick="updateLandmarkField('${landmark.id}', 'icon', '${preset.icon}'); updateLandmarkField('${landmark.id}', 'color', '${preset.color}'); renderHex(); showLandmarkDetails(getLandmarkById('${landmark.id}'));"
+                            style="
+                                padding: 10px 6px; 
+                                display: flex; 
+                                flex-direction: column; 
+                                align-items: center; 
+                                gap: 6px;
+                                background: ${isSelected ? 'var(--accent-alpha-20)' : 'var(--bg-tertiary)'};
+                                border: 2px solid ${isSelected ? 'var(--accent-primary)' : 'var(--border-primary)'};
+                                border-radius: 6px;
+                                cursor: pointer;
+                                transition: all 0.2s;
+                                ${isSelected ? 'box-shadow: 0 0 0 3px var(--accent-alpha-15);' : ''}
+                            "
+                            onmouseover="this.style.background = '${isSelected ? 'var(--accent-alpha-25)' : 'var(--bg-hover)'}'; this.style.borderColor = 'var(--accent-primary)'; this.style.transform = 'translateY(-2px)';"
+                            onmouseout="this.style.background = '${isSelected ? 'var(--accent-alpha-20)' : 'var(--bg-tertiary)'}'; this.style.borderColor = '${isSelected ? 'var(--accent-primary)' : 'var(--border-primary)'}'; this.style.transform = 'translateY(0)';"
+                            onclick="updateLandmarkIcon('${landmark.id}', '${preset.icon}', '${preset.color}'); renderHex();"
                             title="${preset.name}"
                         >
-                            ${preset.icon}
+                            <img 
+                                src="${preset.icon}" 
+                                style="
+                                    width: 32px; 
+                                    height: 32px; 
+                                    ${isSelected ? 'filter: drop-shadow(0 2px 4px var(--accent-primary));' : ''}
+                                " 
+                                alt="${preset.name}"
+                            />
+                            <span style="font-size: 10px; text-align: center; color: var(--text-secondary); line-height: 1.2;">${preset.name}</span>
                         </button>
-                    `).join('')}
+                    `;
+                    }).join('')}
                 </div>
                 <input 
                     type="text" 
                     class="form-input" 
                     value="${landmark.icon || ''}" 
-                    placeholder="Or enter custom emoji/icon"
-                    onchange="updateLandmarkField('${landmark.id}', 'icon', this.value); renderHex();"
-                    style="font-size: 16px;"
+                    placeholder="Or enter custom game-icons.net URL"
+                    onchange="updateLandmarkIconUrl('${landmark.id}', this.value); renderHex();"
+                    style="font-size: 11px; font-family: monospace;"
                 >
+                <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 6px;">
+                    Browse icons at <a href="https://game-icons.net" target="_blank" style="color: var(--accent-primary); text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">game-icons.net</a>
+                </div>
             </div>
             <div class="form-group">
                 <label class="form-label">Color</label>
@@ -1905,6 +1950,31 @@ function updateLandmarkField(landmarkId, field, value) {
     const landmark = getLandmarkById(landmarkId);
     if (landmark) {
         landmark[field] = value;
+        markUnsaved();
+    }
+}
+
+function updateLandmarkIcon(landmarkId, iconUrl, color) {
+    const landmark = getLandmarkById(landmarkId);
+    if (landmark) {
+        landmark.icon = iconUrl;
+        landmark.color = color;
+        loadLandmarkIcon(iconUrl).then(() => {
+            renderHex();
+        });
+        markUnsaved();
+        // Refresh the details panel to show updated selection
+        showLandmarkDetails(landmark);
+    }
+}
+
+function updateLandmarkIconUrl(landmarkId, iconUrl) {
+    const landmark = getLandmarkById(landmarkId);
+    if (landmark) {
+        landmark.icon = iconUrl;
+        loadLandmarkIcon(iconUrl).then(() => {
+            renderHex();
+        });
         markUnsaved();
     }
 }
@@ -2354,9 +2424,26 @@ async function loadHexIcon(terrain) {
     });
 }
 
+async function loadLandmarkIcon(iconUrl) {
+    if (landmarkIconCache.has(iconUrl)) {
+        return landmarkIconCache.get(iconUrl);
+    }
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            landmarkIconCache.set(iconUrl, img);
+            resolve(img);
+        };
+        img.onerror = () => resolve(null);
+        img.src = iconUrl;
+    });
+}
+
 async function preloadHexIcons() {
-    const promises = Object.keys(TERRAINS).map(terrain => loadHexIcon(terrain));
-    await Promise.all(promises);
+    const terrainPromises = Object.keys(TERRAINS).map(terrain => loadHexIcon(terrain));
+    const landmarkPromises = Object.values(LANDMARK_ICONS).map(preset => loadLandmarkIcon(preset.icon));
+    await Promise.all([...terrainPromises, ...landmarkPromises]);
     renderHex();
 }
 
@@ -2570,10 +2657,27 @@ function drawHexTile(hex) {
     ctx.lineWidth = 2;
     ctx.stroke();
     
-    const icon = hexIconCache.get(hex.terrain);
-    if (icon && size > 15) {
-        const iconSize = size * 0.8;
-        ctx.drawImage(icon, x - iconSize/2, y - iconSize/2, iconSize, iconSize);
+    // Check if there's a landmark on this hex in 'icon' mode
+    const landmark = getLandmark(hex.q, hex.r);
+    
+    // Only replace hex icon if landmark is in 'icon' mode
+    if (landmark && landmark.style === 'icon' && landmark.icon && size > 8) {
+        // Draw landmark icon instead of terrain icon
+        const icon = landmarkIconCache.get(landmark.icon);
+        if (icon) {
+            const iconSize = size * 0.8 * (landmark.size || 1.0);
+            ctx.save();
+            ctx.globalAlpha = 1.0;
+            ctx.drawImage(icon, x - iconSize/2, y - iconSize/2, iconSize, iconSize);
+            ctx.restore();
+        }
+    } else {
+        // Draw normal terrain icon
+        const icon = hexIconCache.get(hex.terrain);
+        if (icon && size > 15) {
+            const iconSize = size * 0.8;
+            ctx.drawImage(icon, x - iconSize/2, y - iconSize/2, iconSize, iconSize);
+        }
     }
     
     if (hex.dungeon) {
@@ -2663,20 +2767,15 @@ function drawLandmark(landmark) {
     const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
     const zoom = state.hexMap.viewport.scale;
     
-    // Calculate if we should show different detail levels based on zoom
-    const showFull = zoom >= 0.8;  // Show full landmarks when zoomed in
-    const showBadge = zoom >= 0.3; // Show badge icons when medium zoom
-    const showDot = zoom < 0.3;    // Just a colored dot when far out
-    
     // Safety check
     if (size <= 0) return;
     
     ctx.save();
     
-    // BADGE MODE (small corner icon) - recommended default for map POIs
-    if (landmark.style === 'badge' || (!showFull && showBadge)) {
-        const badgeSize = showFull ? size * 0.45 * landmark.size : size * 0.35;
-        const badgeRadius = Math.max(2, badgeSize / 2);
+    // BADGE MODE - small corner indicator with icon
+    if (landmark.style === 'badge') {
+        const badgeSize = size * 0.45 * landmark.size;
+        const badgeRadius = Math.max(3, badgeSize / 2);
         
         // Position in top-right corner of hex
         const offsetX = size * 0.35;
@@ -2685,13 +2784,11 @@ function drawLandmark(landmark) {
         const badgeY = y + offsetY;
         
         // Background circle with glow
-        if (showFull) {
-            ctx.globalAlpha = 0.4;
-            ctx.fillStyle = landmark.color;
-            ctx.beginPath();
-            ctx.arc(badgeX, badgeY, badgeRadius + 3, 0, Math.PI * 2);
-            ctx.fill();
-        }
+        ctx.globalAlpha = 0.4;
+        ctx.fillStyle = landmark.color;
+        ctx.beginPath();
+        ctx.arc(badgeX, badgeY, badgeRadius + 3, 0, Math.PI * 2);
+        ctx.fill();
         
         // Main badge circle
         ctx.globalAlpha = 1;
@@ -2702,127 +2799,49 @@ function drawLandmark(landmark) {
         
         // Border
         ctx.strokeStyle = '#000000';
-        ctx.lineWidth = Math.max(1, showFull ? 2 : 1.5);
+        ctx.lineWidth = Math.max(1, 2);
         ctx.stroke();
         
-        // Icon/emoji in badge (only if large enough)
-        if (badgeSize > 8 && landmark.icon) {
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.font = `${Math.max(10, badgeSize * 0.7)}px Arial`;
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-            ctx.shadowBlur = 2;
-            ctx.fillText(landmark.icon, badgeX, badgeY);
-            ctx.shadowBlur = 0;
+        // Icon in badge
+        if (badgeSize > 12 && landmark.icon) {
+            const icon = landmarkIconCache.get(landmark.icon);
+            if (icon) {
+                const iconSize = badgeSize * 0.7;
+                ctx.globalAlpha = 1.0;
+                ctx.drawImage(icon, badgeX - iconSize/2, badgeY - iconSize/2, iconSize, iconSize);
+            }
         }
         
         // Label below hex (only when zoomed in)
-        if (showFull && landmark.showLabel && landmark.name) {
+        if (zoom >= 0.5 && landmark.showLabel && landmark.name) {
             const fontSize = Math.max(10, size * 0.25);
             ctx.font = `bold ${fontSize}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
-            
-            // Background for label
             const labelY = y + size * 0.6;
-            const metrics = ctx.measureText(landmark.name);
-            const padding = 4;
             
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(
-                x - metrics.width / 2 - padding,
-                labelY - padding,
-                metrics.width + padding * 2,
-                fontSize + padding * 2
-            );
+            ctx.globalAlpha = 1;
+            // Black stroke for contrast
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = Math.max(3, fontSize * 0.25);
+            ctx.strokeText(landmark.name, x, labelY);
             
-            // Label text
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(landmark.name, x, labelY);
-        }
-    }
-    // CENTER ICON MODE (large centered icon)
-    else if (landmark.style === 'icon' && showFull) {
-        const iconSize = size * 0.8 * landmark.size;
-        const radius = Math.max(3, iconSize / 2);
-        
-        // Glow effect
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius + 8);
-        gradient.addColorStop(0, landmark.color);
-        gradient.addColorStop(0.7, landmark.color);
-        gradient.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = gradient;
-        ctx.globalAlpha = 0.3;
-        ctx.beginPath();
-        ctx.arc(x, y, radius + 8, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Background circle
-        ctx.globalAlpha = 0.95;
-        ctx.fillStyle = landmark.color;
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Border
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = darkenColor(landmark.color, 30);
-        ctx.lineWidth = Math.max(1, 3);
-        ctx.stroke();
-        
-        // Icon/emoji
-        if (landmark.icon && iconSize > 15) {
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.font = `${iconSize * 0.6}px Arial`;
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-            ctx.shadowBlur = 3;
-            ctx.fillText(landmark.icon, x, y);
-            ctx.shadowBlur = 0;
-        }
-        
-        // Label
-        if (landmark.showLabel && landmark.name) {
-            const fontSize = Math.max(11, size * 0.28);
-            ctx.font = `bold ${fontSize}px Arial`;
-            ctx.textAlign = 'center';
-            
-            let labelY = y;
-            if (landmark.labelPosition === 'above' || landmark.labelPosition === 'top') {
-                labelY = y - radius - fontSize / 2 - 4;
-                ctx.textBaseline = 'bottom';
-            } else if (landmark.labelPosition === 'below' || landmark.labelPosition === 'bottom') {
-                labelY = y + radius + fontSize / 2 + 4;
-                ctx.textBaseline = 'top';
-            } else {
-                ctx.textBaseline = 'middle';
-            }
-            
-            // Text background
-            const metrics = ctx.measureText(landmark.name);
-            const padding = 3;
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(
-                x - metrics.width / 2 - padding,
-                labelY - (ctx.textBaseline === 'middle' ? fontSize / 2 : 0) - padding,
-                metrics.width + padding * 2,
-                fontSize + padding * 2
-            );
-            
-            // Text
+            // White text
             ctx.fillStyle = '#ffffff';
             ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
             ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
             ctx.fillText(landmark.name, x, labelY);
             ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
         }
     }
-    // CIRCLE MODE (classic circle POI)
-    else if (landmark.style === 'circle' && showFull) {
+    // CIRCLE MODE - large colored circle
+    else if (landmark.style === 'circle') {
         const landmarkSize = size * 0.75 * landmark.size;
-        const radius = Math.max(2, landmarkSize / 2);
+        const radius = Math.max(3, landmarkSize / 2);
         
         // Outer glow
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius + 8);
@@ -2874,10 +2893,11 @@ function drawLandmark(landmark) {
             ctx.textAlign = 'center';
             
             let labelY = y;
-            if (landmark.labelPosition === 'above' || landmark.labelPosition === 'top') {
+            const labelPos = landmark.labelPosition || 'bottom';
+            if (labelPos === 'above' || labelPos === 'top') {
                 labelY = y - radius - fontSize / 2 - 4;
                 ctx.textBaseline = 'bottom';
-            } else if (landmark.labelPosition === 'below' || landmark.labelPosition === 'bottom') {
+            } else if (labelPos === 'below' || labelPos === 'bottom') {
                 labelY = y + radius + fontSize / 2 + 4;
                 ctx.textBaseline = 'top';
             } else {
@@ -2885,34 +2905,49 @@ function drawLandmark(landmark) {
                 ctx.textBaseline = 'middle';
             }
             
-            // Text with background
-            const metrics = ctx.measureText(landmark.name);
-            const padding = 3;
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(
-                x - metrics.width / 2 - padding,
-                labelY - (ctx.textBaseline === 'middle' ? fontSize / 2 : 0) - padding,
-                metrics.width + padding * 2,
-                fontSize + padding * 2
-            );
+            // Black stroke for contrast
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = Math.max(3, fontSize * 0.25);
+            ctx.strokeText(landmark.name, x, labelY);
             
+            // White text with shadow
             ctx.fillStyle = '#ffffff';
             ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
             ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
             ctx.fillText(landmark.name, x, labelY);
             ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
         }
     }
-    // DOT MODE (when zoomed far out)
-    else if (showDot) {
-        const dotRadius = Math.max(2, size * 0.15);
-        ctx.fillStyle = landmark.color;
-        ctx.beginPath();
-        ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+    // ICON MODE - icon replaces hex icon (handled in drawHexTile)
+    // Only draw label if enabled
+    else if (landmark.style === 'icon') {
+        if (zoom >= 0.5 && landmark.showLabel && landmark.name) {
+            const fontSize = Math.max(10, size * 0.25);
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            const labelY = y + size * 0.65;
+            
+            // Black stroke for contrast
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = Math.max(3, fontSize * 0.25);
+            ctx.strokeText(landmark.name, x, labelY);
+            
+            // White text with shadow
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
+            ctx.fillText(landmark.name, x, labelY);
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+        }
     }
     
     ctx.restore();
@@ -3299,16 +3334,19 @@ function handlePointerDown(x, y, button, isTouch, shiftKey = false, detail = 1) 
                 // Direct placement with default values
                 const defaultLandmark = {
                     name: 'New Landmark',
-                    style: 'badge',  // Badge is better default for map POIs
-                    icon: '🏰',       // Default castle icon
-                    color: '#FFD700',
-                    size: 1.0,       // Smaller default size for badges
-                    showLabel: true,
+                    style: 'icon',  // Icon mode to replace hex icon
+                    icon: 'https://api.iconify.design/game-icons/castle.svg?color=%23000000',
+                    color: '#8B7355',
+                    size: 1.0,
+                    showLabel: false,  // No label by default
                     labelPosition: 'bottom',
                     attributes: {},
                     notes: ''
                 };
                 const newLandmark = createLandmark(hex.q, hex.r, defaultLandmark);
+                
+                // Load the icon immediately
+                loadLandmarkIcon(defaultLandmark.icon);
                 
                 // Auto-select and show details for editing
                 state.hexMap.selectedLandmark = newLandmark;

@@ -313,7 +313,8 @@
       "r": -2,
       "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,-1": {
       "q": -1,
@@ -376,7 +377,8 @@
       "r": -3,
       "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-2": {
       "q": 0,
@@ -388,9 +390,10 @@
     "0,-1": {
       "q": 0,
       "r": -1,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,0": {
       "q": 0,
@@ -472,16 +475,18 @@
     "1,0": {
       "q": 1,
       "r": 0,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,1": {
       "q": 1,
       "r": 1,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "2,-8": {
       "q": 2,
@@ -2502,9 +2507,10 @@
     "-18,11": {
       "q": -18,
       "r": 11,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,12": {
       "q": -7,
@@ -2649,9 +2655,10 @@
     "-18,12": {
       "q": -18,
       "r": 12,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,5": {
       "q": 1,
@@ -2887,9 +2894,10 @@
     "-19,12": {
       "q": -19,
       "r": 12,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,13": {
       "q": -7,
@@ -2985,23 +2993,26 @@
     "-6,-11": {
       "q": -6,
       "r": -11,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-5,-11": {
       "q": -5,
       "r": -11,
-      "terrain": "plains",
+      "terrain": "hills",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-4,-11": {
       "q": -4,
       "r": -11,
-      "terrain": "plains",
+      "terrain": "hills",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-3,-11": {
       "q": -3,
@@ -3013,16 +3024,18 @@
     "-2,-11": {
       "q": -2,
       "r": -11,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,-11": {
       "q": -1,
       "r": -11,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-8": {
       "q": 0,
@@ -3048,9 +3061,10 @@
     "0,-11": {
       "q": 0,
       "r": -11,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-19,13": {
       "q": -19,
@@ -3300,9 +3314,10 @@
     "-20,12": {
       "q": -20,
       "r": 12,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-8,-11": {
       "q": -8,
@@ -3314,9 +3329,10 @@
     "-20,13": {
       "q": -20,
       "r": 13,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,14": {
       "q": -7,
@@ -3412,37 +3428,42 @@
     "-7,-12": {
       "q": -7,
       "r": -12,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-6,-12": {
       "q": -6,
       "r": -12,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-5,-12": {
       "q": -5,
       "r": -12,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-4,-12": {
       "q": -4,
       "r": -12,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-3,-12": {
       "q": -3,
       "r": -12,
-      "terrain": "plains",
+      "terrain": "hills",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-2,-12": {
       "q": -2,
@@ -3454,9 +3475,10 @@
     "-1,-12": {
       "q": -1,
       "r": -12,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-12": {
       "q": 0,
@@ -3496,9 +3518,10 @@
     "-20,14": {
       "q": -20,
       "r": 14,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,5": {
       "q": 3,
@@ -3769,9 +3792,10 @@
     "-21,13": {
       "q": -21,
       "r": 13,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-8,-12": {
       "q": -8,
@@ -3783,9 +3807,10 @@
     "-21,14": {
       "q": -21,
       "r": 14,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,15": {
       "q": -7,
@@ -3881,9 +3906,10 @@
     "-20,15": {
       "q": -20,
       "r": 15,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,-13": {
       "q": -7,
@@ -3909,16 +3935,18 @@
     "-4,-13": {
       "q": -4,
       "r": -13,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-3,-13": {
       "q": -3,
       "r": -13,
-      "terrain": "plains",
+      "terrain": "hills",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-2,-13": {
       "q": -2,
@@ -3930,16 +3958,18 @@
     "-1,-13": {
       "q": -1,
       "r": -13,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-13": {
       "q": 0,
       "r": -13,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,-13": {
       "q": 1,
@@ -3986,9 +4016,10 @@
     "-21,15": {
       "q": -21,
       "r": 15,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,5": {
       "q": 4,
@@ -4252,9 +4283,10 @@
     "-22,12": {
       "q": -22,
       "r": 12,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-10,-11": {
       "q": -10,
@@ -4266,9 +4298,10 @@
     "-22,13": {
       "q": -22,
       "r": 13,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-9,-12": {
       "q": -9,
@@ -4280,9 +4313,10 @@
     "-22,14": {
       "q": -22,
       "r": 14,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-8,-13": {
       "q": -8,
@@ -4294,9 +4328,10 @@
     "-22,15": {
       "q": -22,
       "r": 15,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,16": {
       "q": -7,
@@ -4399,9 +4434,10 @@
     "-21,16": {
       "q": -21,
       "r": 16,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,-14": {
       "q": -7,
@@ -4434,30 +4470,34 @@
     "-3,-14": {
       "q": -3,
       "r": -14,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-2,-14": {
       "q": -2,
       "r": -14,
-      "terrain": "plains",
+      "terrain": "hills",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,-14": {
       "q": -1,
       "r": -14,
       "terrain": "hills",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-14": {
       "q": 0,
       "r": -14,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,-14": {
       "q": 1,
@@ -4805,9 +4845,10 @@
     "-23,13": {
       "q": -23,
       "r": 13,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-10,-12": {
       "q": -10,
@@ -5001,30 +5042,34 @@
     "-2,-15": {
       "q": -2,
       "r": -15,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,-15": {
       "q": -1,
       "r": -15,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-15": {
       "q": 0,
       "r": -15,
-      "terrain": "plains",
+      "terrain": "hills",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,-15": {
       "q": 1,
       "r": -15,
       "terrain": "plains",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "2,-15": {
       "q": 2,
@@ -5071,9 +5116,10 @@
     "4,-14": {
       "q": 4,
       "r": -14,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,-15": {
       "q": 4,
@@ -5400,9 +5446,10 @@
     "-24,13": {
       "q": -24,
       "r": 13,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-11,-12": {
       "q": -11,
@@ -5631,9 +5678,10 @@
     "0,-16": {
       "q": 0,
       "r": -16,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,-16": {
       "q": 1,
@@ -5647,7 +5695,8 @@
       "r": -16,
       "terrain": "plains",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,-16": {
       "q": 3,
@@ -5701,9 +5750,10 @@
     "5,-15": {
       "q": 5,
       "r": -15,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,-16": {
       "q": 5,
@@ -6121,9 +6171,10 @@
     "-25,18": {
       "q": -25,
       "r": 18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,19": {
       "q": -7,
@@ -6317,9 +6368,10 @@
     "2,-17": {
       "q": 2,
       "r": -17,
-      "terrain": "plains",
+      "terrain": "hills",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,-17": {
       "q": 3,
@@ -6366,30 +6418,34 @@
     "6,-12": {
       "q": 6,
       "r": -12,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,-13": {
       "q": 6,
       "r": -13,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,-14": {
       "q": 6,
       "r": -14,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,-15": {
       "q": 6,
       "r": -15,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,-16": {
       "q": 6,
@@ -6408,9 +6464,10 @@
     "-25,19": {
       "q": -25,
       "r": 19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,5": {
       "q": 8,
@@ -6849,9 +6906,10 @@
     "-26,19": {
       "q": -26,
       "r": 19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,20": {
       "q": -7,
@@ -7052,16 +7110,18 @@
     "2,-18": {
       "q": 2,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "hills",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,-18": {
       "q": 3,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "hills",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,-18": {
       "q": 4,
@@ -7101,9 +7161,10 @@
     "7,-11": {
       "q": 7,
       "r": -11,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,-8": {
       "q": 5,
@@ -7115,37 +7176,42 @@
     "7,-12": {
       "q": 7,
       "r": -12,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-13": {
       "q": 7,
       "r": -13,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-14": {
       "q": 7,
       "r": -14,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-15": {
       "q": 7,
       "r": -15,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-16": {
       "q": 7,
       "r": -16,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-17": {
       "q": 7,
@@ -7640,9 +7706,10 @@
     "-27,20": {
       "q": -27,
       "r": 20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,21": {
       "q": -7,
@@ -7920,9 +7987,10 @@
     "8,-12": {
       "q": 8,
       "r": -12,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,-7": {
       "q": 5,
@@ -7955,23 +8023,26 @@
     "8,-16": {
       "q": 8,
       "r": -16,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,-17": {
       "q": 8,
       "r": -17,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,-18": {
       "q": 8,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,-19": {
       "q": 8,
@@ -7983,9 +8054,10 @@
     "-27,21": {
       "q": -27,
       "r": 21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "10,5": {
       "q": 10,
@@ -8480,9 +8552,10 @@
     "-28,20": {
       "q": -28,
       "r": 20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-8,-19": {
       "q": -8,
@@ -8494,9 +8567,10 @@
     "-28,21": {
       "q": -28,
       "r": 21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,22": {
       "q": -7,
@@ -8634,9 +8708,10 @@
     "-26,22": {
       "q": -26,
       "r": 22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-27,22": {
       "q": -27,
@@ -8725,16 +8800,18 @@
     "4,-20": {
       "q": 4,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,-20": {
       "q": 5,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,-20": {
       "q": 6,
@@ -8837,37 +8914,42 @@
     "9,-17": {
       "q": 9,
       "r": -17,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "9,-18": {
       "q": 9,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "9,-19": {
       "q": 9,
       "r": -19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "9,-20": {
       "q": 9,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-28,22": {
       "q": -28,
       "r": 22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "11,5": {
       "q": 11,
@@ -9404,9 +9486,10 @@
     "-29,22": {
       "q": -29,
       "r": 22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,23": {
       "q": -7,
@@ -9544,23 +9627,26 @@
     "-26,23": {
       "q": -26,
       "r": 23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-27,23": {
       "q": -27,
       "r": 23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-28,23": {
       "q": -28,
       "r": 23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,-21": {
       "q": -7,
@@ -9600,9 +9686,10 @@
     "-2,-21": {
       "q": -2,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,-21": {
       "q": -1,
@@ -9642,23 +9729,26 @@
     "4,-21": {
       "q": 4,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,-21": {
       "q": 5,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "hills",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,-21": {
       "q": 6,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-21": {
       "q": 7,
@@ -9670,16 +9760,18 @@
     "8,-21": {
       "q": 8,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "9,-21": {
       "q": 9,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "10,-10": {
       "q": 10,
@@ -9761,37 +9853,42 @@
     "10,-18": {
       "q": 10,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "10,-19": {
       "q": 10,
       "r": -19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "10,-20": {
       "q": 10,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "10,-21": {
       "q": 10,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-29,23": {
       "q": -29,
       "r": 23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "12,5": {
       "q": 12,
@@ -10321,9 +10418,10 @@
     "-30,21": {
       "q": -30,
       "r": 21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-9,-20": {
       "q": -9,
@@ -10335,9 +10433,10 @@
     "-30,22": {
       "q": -30,
       "r": 22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-8,-21": {
       "q": -8,
@@ -10349,9 +10448,10 @@
     "-30,23": {
       "q": -30,
       "r": 23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,24": {
       "q": -7,
@@ -10491,14 +10591,16 @@
       "r": 24,
       "terrain": "plains",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-27,24": {
       "q": -27,
       "r": 24,
       "terrain": "plains",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-28,24": {
       "q": -28,
@@ -10510,9 +10612,10 @@
     "-29,24": {
       "q": -29,
       "r": 24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,-22": {
       "q": -7,
@@ -10552,16 +10655,18 @@
     "-2,-22": {
       "q": -2,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,-22": {
       "q": -1,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-22": {
       "q": 0,
@@ -10601,44 +10706,50 @@
     "5,-22": {
       "q": 5,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,-22": {
       "q": 6,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "hills",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-22": {
       "q": 7,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,-22": {
       "q": 8,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "9,-22": {
       "q": 9,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "10,-22": {
       "q": 10,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "11,-10": {
       "q": 11,
@@ -10748,9 +10859,10 @@
     "-30,24": {
       "q": -30,
       "r": 24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "13,5": {
       "q": 13,
@@ -11315,9 +11427,10 @@
     "-31,23": {
       "q": -31,
       "r": 23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-8,-22": {
       "q": -8,
@@ -11329,9 +11442,10 @@
     "-31,24": {
       "q": -31,
       "r": 24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,25": {
       "q": -7,
@@ -11483,23 +11597,26 @@
     "-28,25": {
       "q": -28,
       "r": 25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-29,25": {
       "q": -29,
       "r": 25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-30,25": {
       "q": -30,
       "r": 25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,-23": {
       "q": -7,
@@ -11511,9 +11628,10 @@
     "-6,-23": {
       "q": -6,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-5,-23": {
       "q": -5,
@@ -11546,23 +11664,26 @@
     "-1,-23": {
       "q": -1,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-23": {
       "q": 0,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,-23": {
       "q": 1,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "2,-23": {
       "q": 2,
@@ -11595,30 +11716,34 @@
     "6,-23": {
       "q": 6,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-23": {
       "q": 7,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,-23": {
       "q": 8,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "9,-23": {
       "q": 9,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "10,-23": {
       "q": 10,
@@ -11742,9 +11867,10 @@
     "-31,25": {
       "q": -31,
       "r": 25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "14,5": {
       "q": 14,
@@ -12316,9 +12442,10 @@
     "-32,23": {
       "q": -32,
       "r": 23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-9,-22": {
       "q": -9,
@@ -12330,23 +12457,26 @@
     "-32,24": {
       "q": -32,
       "r": 24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-8,-23": {
       "q": -8,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-32,25": {
       "q": -32,
       "r": 25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,26": {
       "q": -7,
@@ -12500,49 +12630,56 @@
       "r": 26,
       "terrain": "plains",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-29,26": {
       "q": -29,
       "r": 26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-30,26": {
       "q": -30,
       "r": 26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-31,26": {
       "q": -31,
       "r": 26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-7,-24": {
       "q": -7,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-6,-24": {
       "q": -6,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-5,-24": {
       "q": -5,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-4,-24": {
       "q": -4,
@@ -12568,30 +12705,34 @@
     "-1,-24": {
       "q": -1,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-24": {
       "q": 0,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,-24": {
       "q": 1,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "2,-24": {
       "q": 2,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,-24": {
       "q": 3,
@@ -12624,9 +12765,10 @@
     "7,-24": {
       "q": 7,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,-24": {
       "q": 8,
@@ -13352,9 +13494,10 @@
     "-33,23": {
       "q": -33,
       "r": 23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-10,-22": {
       "q": -10,
@@ -13366,30 +13509,34 @@
     "-33,24": {
       "q": -33,
       "r": 24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-9,-23": {
       "q": -9,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-33,25": {
       "q": -33,
       "r": 25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-8,-24": {
       "q": -8,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-33,26": {
       "q": -33,
@@ -13557,14 +13704,16 @@
       "r": 27,
       "terrain": "plains",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-30,27": {
       "q": -30,
       "r": 27,
       "terrain": "plains",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-31,27": {
       "q": -31,
@@ -13583,37 +13732,42 @@
     "-7,-25": {
       "q": -7,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-6,-25": {
       "q": -6,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-5,-25": {
       "q": -5,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-4,-25": {
       "q": -4,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-3,-25": {
       "q": -3,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-2,-25": {
       "q": -2,
@@ -13625,30 +13779,34 @@
     "-1,-25": {
       "q": -1,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-25": {
       "q": 0,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,-25": {
       "q": 1,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "2,-25": {
       "q": 2,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,-25": {
       "q": 3,
@@ -13681,9 +13839,10 @@
     "7,-25": {
       "q": 7,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,-25": {
       "q": 8,
@@ -14430,9 +14589,10 @@
     "-34,23": {
       "q": -34,
       "r": 23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-11,-22": {
       "q": -11,
@@ -14444,9 +14604,10 @@
     "-34,24": {
       "q": -34,
       "r": 24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-10,-23": {
       "q": -10,
@@ -14458,9 +14619,10 @@
     "-34,25": {
       "q": -34,
       "r": 25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-9,-24": {
       "q": -9,
@@ -14479,9 +14641,10 @@
     "-8,-25": {
       "q": -8,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-34,27": {
       "q": -34,
@@ -14682,79 +14845,90 @@
     "-7,-26": {
       "q": -7,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-6,-26": {
       "q": -6,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-5,-26": {
       "q": -5,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-4,-26": {
       "q": -4,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-3,-26": {
       "q": -3,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-2,-26": {
       "q": -2,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,-26": {
       "q": -1,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-26": {
       "q": 0,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,-26": {
       "q": 1,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "2,-26": {
       "q": 2,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,-26": {
       "q": 3,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,-26": {
       "q": 4,
@@ -15557,16 +15731,18 @@
     "-12,-22": {
       "q": -12,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-35,24": {
       "q": -35,
       "r": 24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-11,-23": {
       "q": -11,
@@ -15578,9 +15754,10 @@
     "-35,25": {
       "q": -35,
       "r": 25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-10,-24": {
       "q": -10,
@@ -15599,9 +15776,10 @@
     "-9,-25": {
       "q": -9,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-35,27": {
       "q": -35,
@@ -15613,9 +15791,10 @@
     "-8,-26": {
       "q": -8,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-35,28": {
       "q": -35,
@@ -15837,65 +16016,74 @@
     "-5,-27": {
       "q": -5,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-4,-27": {
       "q": -4,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-3,-27": {
       "q": -3,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-2,-27": {
       "q": -2,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,-27": {
       "q": -1,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-27": {
       "q": 0,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,-27": {
       "q": 1,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "2,-27": {
       "q": 2,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,-27": {
       "q": 3,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,-27": {
       "q": 4,
@@ -16726,9 +16914,10 @@
     "-36,24": {
       "q": -36,
       "r": 24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-12,-23": {
       "q": -12,
@@ -16740,9 +16929,10 @@
     "-36,25": {
       "q": -36,
       "r": 25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-11,-24": {
       "q": -11,
@@ -16775,9 +16965,10 @@
     "-9,-26": {
       "q": -9,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-36,28": {
       "q": -36,
@@ -17027,58 +17218,66 @@
     "-4,-28": {
       "q": -4,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-3,-28": {
       "q": -3,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-2,-28": {
       "q": -2,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,-28": {
       "q": -1,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,-28": {
       "q": 0,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,-28": {
       "q": 1,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "2,-28": {
       "q": 2,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,-28": {
       "q": 3,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,-28": {
       "q": 4,
@@ -17944,16 +18143,18 @@
     "-37,25": {
       "q": -37,
       "r": 25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-12,-24": {
       "q": -12,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-37,26": {
       "q": -37,
@@ -18252,9 +18453,10 @@
     "-4,-29": {
       "q": -4,
       "r": -29,
-      "terrain": "mountain",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-3,-29": {
       "q": -3,
@@ -18294,23 +18496,26 @@
     "2,-29": {
       "q": 2,
       "r": -29,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,-29": {
       "q": 3,
       "r": -29,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,-29": {
       "q": 4,
       "r": -29,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,-29": {
       "q": 5,
@@ -18462,9 +18667,10 @@
     "18,-23": {
       "q": 18,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "18,-24": {
       "q": 18,
@@ -18798,9 +19004,10 @@
     "19,-15": {
       "q": 19,
       "r": -15,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "20,-15": {
       "q": 20,
@@ -19568,16 +19775,18 @@
     "3,-30": {
       "q": 3,
       "r": -30,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,-30": {
       "q": 4,
       "r": -30,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,-30": {
       "q": 5,
@@ -19680,16 +19889,18 @@
     "19,-16": {
       "q": 19,
       "r": -16,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "19,-17": {
       "q": 19,
       "r": -17,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "19,-18": {
       "q": 19,
@@ -19729,16 +19940,18 @@
     "19,-23": {
       "q": 19,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "19,-24": {
       "q": 19,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "19,-25": {
       "q": 19,
@@ -19750,9 +19963,10 @@
     "19,-26": {
       "q": 19,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "19,-27": {
       "q": 19,
@@ -19988,9 +20202,10 @@
     "21,-9": {
       "q": 21,
       "r": -9,
-      "terrain": "water",
+      "terrain": "plains",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,20": {
       "q": 6,
@@ -20004,7 +20219,8 @@
       "r": -10,
       "terrain": "plains",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,21": {
       "q": 5,
@@ -20884,16 +21100,18 @@
     "4,-31": {
       "q": 4,
       "r": -31,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,-31": {
       "q": 5,
       "r": -31,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,-31": {
       "q": 6,
@@ -20996,16 +21214,18 @@
     "20,-17": {
       "q": 20,
       "r": -17,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "20,-18": {
       "q": 20,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "20,-19": {
       "q": 20,
@@ -21045,9 +21265,10 @@
     "20,-24": {
       "q": 20,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "20,-25": {
       "q": 20,
@@ -21059,23 +21280,26 @@
     "20,-26": {
       "q": 20,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "20,-27": {
       "q": 20,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "20,-28": {
       "q": 20,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "20,-29": {
       "q": 20,
@@ -21332,9 +21556,10 @@
     "22,-11": {
       "q": 22,
       "r": -11,
-      "terrain": "water",
+      "terrain": "plains",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,22": {
       "q": 5,
@@ -21388,9 +21613,10 @@
     "22,-15": {
       "q": 22,
       "r": -15,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,26": {
       "q": 1,
@@ -21402,9 +21628,10 @@
     "22,-16": {
       "q": 22,
       "r": -16,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,27": {
       "q": 0,
@@ -21416,16 +21643,18 @@
     "21,-17": {
       "q": 21,
       "r": -17,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-17": {
       "q": 22,
       "r": -17,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,28": {
       "q": -1,
@@ -22235,16 +22464,18 @@
     "4,-32": {
       "q": 4,
       "r": -32,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,-32": {
       "q": 5,
       "r": -32,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,-32": {
       "q": 6,
@@ -22354,30 +22585,34 @@
     "21,-18": {
       "q": 21,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "21,-19": {
       "q": 21,
       "r": -19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "21,-20": {
       "q": 21,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "21,-21": {
       "q": 21,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "21,-22": {
       "q": 21,
@@ -22396,37 +22631,42 @@
     "21,-24": {
       "q": 21,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "21,-25": {
       "q": 21,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "21,-26": {
       "q": 21,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "21,-27": {
       "q": 21,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "21,-28": {
       "q": 21,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "21,-29": {
       "q": 21,
@@ -22704,9 +22944,10 @@
     "23,-12": {
       "q": 23,
       "r": -12,
-      "terrain": "water",
+      "terrain": "plains",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,23": {
       "q": 5,
@@ -22718,9 +22959,10 @@
     "23,-13": {
       "q": 23,
       "r": -13,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,24": {
       "q": 4,
@@ -22732,9 +22974,10 @@
     "23,-14": {
       "q": 23,
       "r": -14,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,25": {
       "q": 3,
@@ -22746,9 +22989,10 @@
     "23,-15": {
       "q": 23,
       "r": -15,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "2,26": {
       "q": 2,
@@ -22760,9 +23004,10 @@
     "23,-16": {
       "q": 23,
       "r": -16,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,27": {
       "q": 1,
@@ -22774,9 +23019,10 @@
     "23,-17": {
       "q": 23,
       "r": -17,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,28": {
       "q": 0,
@@ -22788,16 +23034,18 @@
     "22,-18": {
       "q": 22,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-18": {
       "q": 23,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,29": {
       "q": -1,
@@ -23635,16 +23883,18 @@
     "5,-33": {
       "q": 5,
       "r": -33,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,-33": {
       "q": 6,
       "r": -33,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-33": {
       "q": 7,
@@ -23754,23 +24004,26 @@
     "22,-19": {
       "q": 22,
       "r": -19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-20": {
       "q": 22,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-21": {
       "q": 22,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-22": {
       "q": 22,
@@ -23789,58 +24042,66 @@
     "22,-24": {
       "q": 22,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-25": {
       "q": 22,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-26": {
       "q": 22,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-27": {
       "q": 22,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-28": {
       "q": 22,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-29": {
       "q": 22,
       "r": -29,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-30": {
       "q": 22,
       "r": -30,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-31": {
       "q": 22,
       "r": -31,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-32": {
       "q": 22,
@@ -24132,9 +24393,10 @@
     "24,-14": {
       "q": 24,
       "r": -14,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,25": {
       "q": 4,
@@ -24146,9 +24408,10 @@
     "24,-15": {
       "q": 24,
       "r": -15,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,26": {
       "q": 3,
@@ -24160,9 +24423,10 @@
     "24,-16": {
       "q": 24,
       "r": -16,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "2,27": {
       "q": 2,
@@ -24174,9 +24438,10 @@
     "24,-17": {
       "q": 24,
       "r": -17,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,28": {
       "q": 1,
@@ -24188,9 +24453,10 @@
     "24,-18": {
       "q": 24,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,29": {
       "q": 0,
@@ -24202,16 +24468,18 @@
     "23,-19": {
       "q": 23,
       "r": -19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-19": {
       "q": 24,
       "r": -19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,30": {
       "q": -1,
@@ -25070,23 +25338,26 @@
     "5,-34": {
       "q": 5,
       "r": -34,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,-34": {
       "q": 6,
       "r": -34,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-34": {
       "q": 7,
       "r": -34,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,-34": {
       "q": 8,
@@ -25196,23 +25467,26 @@
     "23,-20": {
       "q": 23,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-21": {
       "q": 23,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-22": {
       "q": 23,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-23": {
       "q": 23,
@@ -25224,72 +25498,82 @@
     "23,-24": {
       "q": 23,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-25": {
       "q": 23,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-26": {
       "q": 23,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-27": {
       "q": 23,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-28": {
       "q": 23,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-29": {
       "q": 23,
       "r": -29,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-30": {
       "q": 23,
       "r": -30,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-31": {
       "q": 23,
       "r": -31,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-32": {
       "q": 23,
       "r": -32,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-33": {
       "q": 23,
       "r": -33,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-34": {
       "q": 23,
@@ -25630,9 +25914,10 @@
     "25,-18": {
       "q": 25,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,29": {
       "q": 1,
@@ -25644,9 +25929,10 @@
     "25,-19": {
       "q": 25,
       "r": -19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,30": {
       "q": 0,
@@ -25658,16 +25944,18 @@
     "24,-20": {
       "q": 24,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "25,-20": {
       "q": 25,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,31": {
       "q": -1,
@@ -26547,23 +26835,26 @@
     "5,-35": {
       "q": 5,
       "r": -35,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,-35": {
       "q": 6,
       "r": -35,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-35": {
       "q": 7,
       "r": -35,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,-35": {
       "q": 8,
@@ -26680,9 +26971,10 @@
     "24,-21": {
       "q": 24,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-22": {
       "q": 24,
@@ -26701,9 +26993,10 @@
     "24,-24": {
       "q": 24,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-25": {
       "q": 24,
@@ -26722,51 +27015,58 @@
     "24,-27": {
       "q": 24,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-28": {
       "q": 24,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-29": {
       "q": 24,
       "r": -29,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-30": {
       "q": 24,
       "r": -30,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-31": {
       "q": 24,
       "r": -31,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-32": {
       "q": 24,
       "r": -32,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-33": {
       "q": 24,
       "r": -33,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-34": {
       "q": 24,
@@ -27128,9 +27428,10 @@
     "26,-19": {
       "q": 26,
       "r": -19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,30": {
       "q": 1,
@@ -27156,9 +27457,10 @@
     "25,-21": {
       "q": 25,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "26,-21": {
       "q": 26,
@@ -28073,16 +28375,18 @@
     "6,-36": {
       "q": 6,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-36": {
       "q": 7,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,-36": {
       "q": 8,
@@ -28185,23 +28489,26 @@
     "22,-36": {
       "q": 22,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-36": {
       "q": 23,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-36": {
       "q": 24,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "25,-22": {
       "q": 25,
@@ -28255,23 +28562,26 @@
     "25,-29": {
       "q": 25,
       "r": -29,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "25,-30": {
       "q": 25,
       "r": -30,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "25,-31": {
       "q": 25,
       "r": -31,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "25,-32": {
       "q": 25,
@@ -28297,16 +28607,18 @@
     "25,-35": {
       "q": 25,
       "r": -35,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "25,-36": {
       "q": 25,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-44,38": {
       "q": -44,
@@ -29634,16 +29946,18 @@
     "6,-37": {
       "q": 6,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,-37": {
       "q": 7,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,-37": {
       "q": 8,
@@ -29711,9 +30025,10 @@
     "17,-37": {
       "q": 17,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "18,-37": {
       "q": 18,
@@ -29753,23 +30068,26 @@
     "23,-37": {
       "q": 23,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-37": {
       "q": 24,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "25,-37": {
       "q": 25,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "26,-23": {
       "q": 26,
@@ -29816,37 +30134,42 @@
     "26,-29": {
       "q": 26,
       "r": -29,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "26,-30": {
       "q": 26,
       "r": -30,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "26,-31": {
       "q": 26,
       "r": -31,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "26,-32": {
       "q": 26,
       "r": -32,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "26,-33": {
       "q": 26,
       "r": -33,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "26,-34": {
       "q": 26,
@@ -29858,23 +30181,26 @@
     "26,-35": {
       "q": 26,
       "r": -35,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "26,-36": {
       "q": 26,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "26,-37": {
       "q": 26,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-45,39": {
       "q": -45,
@@ -30194,9 +30520,10 @@
     "28,-17": {
       "q": 28,
       "r": -17,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,28": {
       "q": 5,
@@ -31244,16 +31571,18 @@
     "7,-38": {
       "q": 7,
       "r": -38,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "8,-38": {
       "q": 8,
       "r": -38,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "9,-38": {
       "q": 9,
@@ -31314,16 +31643,18 @@
     "17,-38": {
       "q": 17,
       "r": -38,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "18,-38": {
       "q": 18,
       "r": -38,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "19,-38": {
       "q": 19,
@@ -31419,9 +31750,10 @@
     "27,-29": {
       "q": 27,
       "r": -29,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "27,-30": {
       "q": 27,
@@ -31433,58 +31765,66 @@
     "27,-31": {
       "q": 27,
       "r": -31,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "27,-32": {
       "q": 27,
       "r": -32,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "27,-33": {
       "q": 27,
       "r": -33,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "27,-34": {
       "q": 27,
       "r": -34,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "27,-35": {
       "q": 27,
       "r": -35,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "27,-36": {
       "q": 27,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "27,-37": {
       "q": 27,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "27,-38": {
       "q": 27,
       "r": -38,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-46,40": {
       "q": -46,
@@ -31804,9 +32144,10 @@
     "29,-17": {
       "q": 29,
       "r": -17,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,28": {
       "q": 6,
@@ -31818,9 +32159,10 @@
     "29,-18": {
       "q": 29,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,29": {
       "q": 5,
@@ -31832,9 +32174,10 @@
     "29,-19": {
       "q": 29,
       "r": -19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,30": {
       "q": 4,
@@ -31874,9 +32217,10 @@
     "29,-22": {
       "q": 29,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,33": {
       "q": 1,
@@ -32959,23 +33303,26 @@
     "17,-39": {
       "q": 17,
       "r": -39,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "18,-39": {
       "q": 18,
       "r": -39,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "19,-39": {
       "q": 19,
       "r": -39,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "20,-39": {
       "q": 20,
@@ -33092,51 +33439,58 @@
     "28,-33": {
       "q": 28,
       "r": -33,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "28,-34": {
       "q": 28,
       "r": -34,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "28,-35": {
       "q": 28,
       "r": -35,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "28,-36": {
       "q": 28,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "28,-37": {
       "q": 28,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "28,-38": {
       "q": 28,
       "r": -38,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "28,-39": {
       "q": 28,
       "r": -39,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-47,41": {
       "q": -47,
@@ -33470,9 +33824,10 @@
     "30,-18": {
       "q": 30,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,29": {
       "q": 6,
@@ -33484,9 +33839,10 @@
     "30,-19": {
       "q": 30,
       "r": -19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,30": {
       "q": 5,
@@ -33498,9 +33854,10 @@
     "30,-20": {
       "q": 30,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,31": {
       "q": 4,
@@ -33512,9 +33869,10 @@
     "30,-21": {
       "q": 30,
       "r": -21,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "3,32": {
       "q": 3,
@@ -33526,9 +33884,10 @@
     "30,-22": {
       "q": 30,
       "r": -22,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "2,33": {
       "q": 2,
@@ -33540,9 +33899,10 @@
     "30,-23": {
       "q": 30,
       "r": -23,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,34": {
       "q": 1,
@@ -33554,9 +33914,10 @@
     "30,-24": {
       "q": 30,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,35": {
       "q": 0,
@@ -34667,16 +35028,18 @@
     "20,-40": {
       "q": 20,
       "r": -40,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "21,-40": {
       "q": 21,
       "r": -40,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "22,-40": {
       "q": 22,
@@ -34723,9 +35086,10 @@
     "28,-40": {
       "q": 28,
       "r": -40,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "29,-26": {
       "q": 29,
@@ -34772,51 +35136,58 @@
     "29,-32": {
       "q": 29,
       "r": -32,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "29,-33": {
       "q": 29,
       "r": -33,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "29,-34": {
       "q": 29,
       "r": -34,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "29,-35": {
       "q": 29,
       "r": -35,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "29,-36": {
       "q": 29,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "29,-37": {
       "q": 29,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "29,-38": {
       "q": 29,
       "r": -38,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "29,-39": {
       "q": 29,
@@ -35164,9 +35535,10 @@
     "31,-18": {
       "q": 31,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "7,29": {
       "q": 7,
@@ -35178,9 +35550,10 @@
     "31,-19": {
       "q": 31,
       "r": -19,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "6,30": {
       "q": 6,
@@ -35192,9 +35565,10 @@
     "31,-20": {
       "q": 31,
       "r": -20,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "5,31": {
       "q": 5,
@@ -35206,9 +35580,10 @@
     "31,-21": {
       "q": 31,
       "r": -21,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "4,32": {
       "q": 4,
@@ -35234,9 +35609,10 @@
     "31,-23": {
       "q": 31,
       "r": -23,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "2,34": {
       "q": 2,
@@ -35248,9 +35624,10 @@
     "31,-24": {
       "q": 31,
       "r": -24,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "1,35": {
       "q": 1,
@@ -35262,9 +35639,10 @@
     "31,-25": {
       "q": 31,
       "r": -25,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "0,36": {
       "q": 0,
@@ -35283,9 +35661,10 @@
     "31,-26": {
       "q": 31,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "-1,37": {
       "q": -1,
@@ -44152,16 +44531,18 @@
     "30,-45": {
       "q": 30,
       "r": -45,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "29,-45": {
       "q": 29,
       "r": -45,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "29,-44": {
       "q": 29,
@@ -44264,37 +44645,42 @@
     "30,-38": {
       "q": 30,
       "r": -38,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "30,-37": {
       "q": 30,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "30,-36": {
       "q": 30,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "30,-35": {
       "q": 30,
       "r": -35,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "30,-34": {
       "q": 30,
       "r": -34,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "31,-35": {
       "q": 31,
@@ -44376,9 +44762,10 @@
     "31,-27": {
       "q": 31,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "31,-30": {
       "q": 31,
@@ -44495,16 +44882,18 @@
     "31,-37": {
       "q": 31,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "31,-36": {
       "q": 31,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "31,-32": {
       "q": 31,
@@ -44516,9 +44905,10 @@
     "31,-38": {
       "q": 31,
       "r": -38,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "31,-39": {
       "q": 31,
@@ -44551,9 +44941,10 @@
     "31,-46": {
       "q": 31,
       "r": -46,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "31,-47": {
       "q": 31,
@@ -44586,9 +44977,10 @@
     "32,-37": {
       "q": 32,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "32,-36": {
       "q": 32,
@@ -44621,9 +45013,10 @@
     "32,-33": {
       "q": 32,
       "r": -33,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "32,-32": {
       "q": 32,
@@ -44831,9 +45224,10 @@
     "23,-43": {
       "q": 23,
       "r": -43,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-46": {
       "q": 24,
@@ -44929,16 +45323,18 @@
     "21,-41": {
       "q": 21,
       "r": -41,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-44": {
       "q": 24,
       "r": -44,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "25,-45": {
       "q": 25,
@@ -44950,16 +45346,18 @@
     "25,-44": {
       "q": 25,
       "r": -44,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-43": {
       "q": 24,
       "r": -43,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "25,-43": {
       "q": 25,
@@ -44978,9 +45376,10 @@
     "26,-44": {
       "q": 26,
       "r": -44,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-42": {
       "q": 24,
@@ -44999,9 +45398,10 @@
     "26,-43": {
       "q": 26,
       "r": -43,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "24,-41": {
       "q": 24,
@@ -45020,9 +45420,10 @@
     "26,-42": {
       "q": 26,
       "r": -42,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "26,-41": {
       "q": 26,
@@ -45034,9 +45435,10 @@
     "22,-41": {
       "q": 22,
       "r": -41,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "23,-41": {
       "q": 23,
@@ -45048,9 +45450,10 @@
     "23,-42": {
       "q": 23,
       "r": -42,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "27,-43": {
       "q": 27,
@@ -45097,30 +45500,34 @@
     "28,-45": {
       "q": 28,
       "r": -45,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "27,-45": {
       "q": 27,
       "r": -45,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "27,-44": {
       "q": 27,
       "r": -44,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "28,-46": {
       "q": 28,
       "r": -46,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "28,-44": {
       "q": 28,
@@ -99389,9 +99796,10 @@
     "45,-24": {
       "q": 45,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "46,49": {
       "q": 46,
@@ -99403,9 +99811,10 @@
     "46,-25": {
       "q": 46,
       "r": -25,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "47,-25": {
       "q": 47,
@@ -100278,37 +100687,42 @@
     "44,-24": {
       "q": 44,
       "r": -24,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "45,-25": {
       "q": 45,
       "r": -25,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "46,-26": {
       "q": 46,
       "r": -26,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "47,-26": {
       "q": 47,
       "r": -26,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "48,-26": {
       "q": 48,
       "r": -26,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "49,-26": {
       "q": 49,
@@ -101167,9 +101581,10 @@
     "41,-22": {
       "q": 41,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "42,-23": {
       "q": 42,
@@ -101181,23 +101596,26 @@
     "43,-24": {
       "q": 43,
       "r": -24,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "44,-25": {
       "q": 44,
       "r": -25,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "45,-26": {
       "q": 45,
       "r": -26,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "46,-27": {
       "q": 46,
@@ -101209,16 +101627,18 @@
     "47,-27": {
       "q": 47,
       "r": -27,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "48,-27": {
       "q": 48,
       "r": -27,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "49,-27": {
       "q": 49,
@@ -102098,9 +102518,10 @@
     "41,-23": {
       "q": 41,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "42,-24": {
       "q": 42,
@@ -102140,23 +102561,26 @@
     "47,-28": {
       "q": 47,
       "r": -28,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "48,-28": {
       "q": 48,
       "r": -28,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "49,-28": {
       "q": 49,
       "r": -28,
       "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "50,-28": {
       "q": 50,
@@ -103022,23 +103446,26 @@
     "37,-20": {
       "q": 37,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "38,-21": {
       "q": 38,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "39,-22": {
       "q": 39,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "40,-23": {
       "q": 40,
@@ -103050,16 +103477,18 @@
     "41,-24": {
       "q": 41,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "42,-25": {
       "q": 42,
       "r": -25,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "43,-26": {
       "q": 43,
@@ -103099,16 +103528,18 @@
     "48,-29": {
       "q": 48,
       "r": -29,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "49,-29": {
       "q": 49,
       "r": -29,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "50,-29": {
       "q": 50,
@@ -104002,37 +104433,42 @@
     "37,-21": {
       "q": 37,
       "r": -21,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "38,-22": {
       "q": 38,
       "r": -22,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "39,-23": {
       "q": 39,
       "r": -23,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "40,-24": {
       "q": 40,
       "r": -24,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "41,-25": {
       "q": 41,
       "r": -25,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "42,-26": {
       "q": 42,
@@ -104086,9 +104522,10 @@
     "49,-30": {
       "q": 49,
       "r": -30,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "50,-30": {
       "q": 50,
@@ -104989,37 +105426,42 @@
     "34,-19": {
       "q": 34,
       "r": -19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-20": {
       "q": 35,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-21": {
       "q": 36,
       "r": -21,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "37,-22": {
       "q": 37,
       "r": -22,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "38,-23": {
       "q": 38,
       "r": -23,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "39,-24": {
       "q": 39,
@@ -105031,9 +105473,10 @@
     "40,-25": {
       "q": 40,
       "r": -25,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "41,-26": {
       "q": 41,
@@ -105094,16 +105537,18 @@
     "49,-31": {
       "q": 49,
       "r": -31,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "50,-31": {
       "q": 50,
       "r": -31,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "51,-31": {
       "q": 51,
@@ -106011,30 +106456,34 @@
     "32,-18": {
       "q": 32,
       "r": -18,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-19": {
       "q": 33,
       "r": -19,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "34,-20": {
       "q": 34,
       "r": -20,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-21": {
       "q": 35,
       "r": -21,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-22": {
       "q": 36,
@@ -106123,16 +106572,18 @@
     "48,-32": {
       "q": 48,
       "r": -32,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "49,-32": {
       "q": 49,
       "r": -32,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "50,-32": {
       "q": 50,
@@ -106144,9 +106595,10 @@
     "51,-32": {
       "q": 51,
       "r": -32,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "52,-32": {
       "q": 52,
@@ -107082,9 +107534,10 @@
     "32,-19": {
       "q": 32,
       "r": -19,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-20": {
       "q": 33,
@@ -107096,16 +107549,18 @@
     "34,-21": {
       "q": 34,
       "r": -21,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-22": {
       "q": 35,
       "r": -22,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-23": {
       "q": 36,
@@ -107201,9 +107656,10 @@
     "49,-33": {
       "q": 49,
       "r": -33,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "50,-33": {
       "q": 50,
@@ -107215,9 +107671,10 @@
     "51,-33": {
       "q": 51,
       "r": -33,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "52,-33": {
       "q": 52,
@@ -108181,9 +108638,10 @@
     "32,-20": {
       "q": 32,
       "r": -20,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-21": {
       "q": 33,
@@ -108321,16 +108779,18 @@
     "52,-34": {
       "q": 52,
       "r": -34,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "53,-34": {
       "q": 53,
       "r": -34,
       "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "54,-34": {
       "q": 54,
@@ -109464,14 +109924,16 @@
       "r": -35,
       "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "55,-35": {
       "q": 55,
       "r": -35,
       "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "56,-35": {
       "q": 56,
@@ -110619,7 +111081,8 @@
       "r": -36,
       "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "55,-36": {
       "q": 55,
@@ -114096,9 +114559,10 @@
     "32,-25": {
       "q": 32,
       "r": -25,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-26": {
       "q": 33,
@@ -115244,9 +115708,10 @@
     "44,-48": {
       "q": 44,
       "r": -48,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "42,-48": {
       "q": 42,
@@ -115258,9 +115723,10 @@
     "43,-47": {
       "q": 43,
       "r": -47,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "43,-49": {
       "q": 43,
@@ -115279,23 +115745,26 @@
     "42,-47": {
       "q": 42,
       "r": -47,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "45,-48": {
       "q": 45,
       "r": -48,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "44,-47": {
       "q": 44,
       "r": -47,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "45,-49": {
       "q": 45,
@@ -115328,16 +115797,18 @@
     "43,-46": {
       "q": 43,
       "r": -46,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "42,-46": {
       "q": 42,
       "r": -46,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "43,-50": {
       "q": 43,
@@ -115370,30 +115841,34 @@
     "46,-48": {
       "q": 46,
       "r": -48,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "45,-47": {
       "q": 45,
       "r": -47,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "46,-49": {
       "q": 46,
       "r": -49,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "44,-46": {
       "q": 44,
       "r": -46,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "46,-50": {
       "q": 46,
@@ -115440,16 +115915,18 @@
     "43,-45": {
       "q": 43,
       "r": -45,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "42,-45": {
       "q": 42,
       "r": -45,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "41,-45": {
       "q": 41,
@@ -115503,16 +115980,18 @@
     "46,-47": {
       "q": 46,
       "r": -47,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "47,-49": {
       "q": 47,
       "r": -49,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "45,-46": {
       "q": 45,
@@ -115524,9 +116003,10 @@
     "47,-50": {
       "q": 47,
       "r": -50,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "44,-45": {
       "q": 44,
@@ -115594,23 +116074,26 @@
     "43,-44": {
       "q": 43,
       "r": -44,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "42,-44": {
       "q": 42,
       "r": -44,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "41,-44": {
       "q": 41,
       "r": -44,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "40,-44": {
       "q": 40,
@@ -115671,16 +116154,18 @@
     "47,-47": {
       "q": 47,
       "r": -47,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "48,-49": {
       "q": 48,
       "r": -49,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "46,-46": {
       "q": 46,
@@ -115692,9 +116177,10 @@
     "48,-50": {
       "q": 48,
       "r": -50,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "45,-45": {
       "q": 45,
@@ -115706,9 +116192,10 @@
     "48,-51": {
       "q": 48,
       "r": -51,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "44,-44": {
       "q": 44,
@@ -115776,9 +116263,10 @@
     "42,-52": {
       "q": 42,
       "r": -52,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "38,-44": {
       "q": 38,
@@ -115811,23 +116299,26 @@
     "40,-43": {
       "q": 40,
       "r": -43,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "39,-43": {
       "q": 39,
       "r": -43,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "43,-53": {
       "q": 43,
       "r": -53,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "44,-53": {
       "q": 44,
@@ -115951,16 +116442,18 @@
     "37,-48": {
       "q": 37,
       "r": -48,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "38,-49": {
       "q": 38,
       "r": -49,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "37,-47": {
       "q": 37,
@@ -115972,9 +116465,10 @@
     "39,-50": {
       "q": 39,
       "r": -50,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "37,-46": {
       "q": 37,
@@ -115986,9 +116480,10 @@
     "40,-51": {
       "q": 40,
       "r": -51,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "37,-45": {
       "q": 37,
@@ -116000,9 +116495,10 @@
     "41,-52": {
       "q": 41,
       "r": -52,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "37,-44": {
       "q": 37,
@@ -116014,9 +116510,10 @@
     "42,-53": {
       "q": 42,
       "r": -53,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "37,-43": {
       "q": 37,
@@ -116056,44 +116553,50 @@
     "39,-42": {
       "q": 39,
       "r": -42,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "38,-42": {
       "q": 38,
       "r": -42,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "43,-54": {
       "q": 43,
       "r": -54,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "44,-54": {
       "q": 44,
       "r": -54,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "45,-54": {
       "q": 45,
       "r": -54,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "46,-54": {
       "q": 46,
       "r": -54,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "47,-54": {
       "q": 47,
@@ -116224,9 +116727,10 @@
     "37,-49": {
       "q": 37,
       "r": -49,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-47": {
       "q": 36,
@@ -116238,9 +116742,10 @@
     "38,-50": {
       "q": 38,
       "r": -50,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-46": {
       "q": 36,
@@ -116252,9 +116757,10 @@
     "39,-51": {
       "q": 39,
       "r": -51,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-45": {
       "q": 36,
@@ -116266,9 +116772,10 @@
     "40,-52": {
       "q": 40,
       "r": -52,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-44": {
       "q": 36,
@@ -116280,9 +116787,10 @@
     "41,-53": {
       "q": 41,
       "r": -53,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-43": {
       "q": 36,
@@ -116294,9 +116802,10 @@
     "42,-54": {
       "q": 42,
       "r": -54,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-42": {
       "q": 36,
@@ -116343,9 +116852,10 @@
     "38,-41": {
       "q": 38,
       "r": -41,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "37,-41": {
       "q": 37,
@@ -116357,30 +116867,34 @@
     "43,-55": {
       "q": 43,
       "r": -55,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "44,-55": {
       "q": 44,
       "r": -55,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "45,-55": {
       "q": 45,
       "r": -55,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "46,-55": {
       "q": 46,
       "r": -55,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "47,-55": {
       "q": 47,
@@ -116546,9 +117060,10 @@
     "37,-50": {
       "q": 37,
       "r": -50,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-46": {
       "q": 35,
@@ -116560,9 +117075,10 @@
     "38,-51": {
       "q": 38,
       "r": -51,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-45": {
       "q": 35,
@@ -116574,9 +117090,10 @@
     "39,-52": {
       "q": 39,
       "r": -52,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-44": {
       "q": 35,
@@ -116588,9 +117105,10 @@
     "40,-53": {
       "q": 40,
       "r": -53,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-43": {
       "q": 35,
@@ -116602,9 +117120,10 @@
     "41,-54": {
       "q": 41,
       "r": -54,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-42": {
       "q": 35,
@@ -116616,9 +117135,10 @@
     "42,-55": {
       "q": 42,
       "r": -55,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-41": {
       "q": 35,
@@ -116665,16 +117185,18 @@
     "38,-40": {
       "q": 38,
       "r": -40,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "37,-40": {
       "q": 37,
       "r": -40,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-40": {
       "q": 36,
@@ -116686,30 +117208,34 @@
     "43,-56": {
       "q": 43,
       "r": -56,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "44,-56": {
       "q": 44,
       "r": -56,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "45,-56": {
       "q": 45,
       "r": -56,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "46,-56": {
       "q": 46,
       "r": -56,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "47,-56": {
       "q": 47,
@@ -116875,30 +117401,34 @@
     "34,-48": {
       "q": 34,
       "r": -48,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-49": {
       "q": 35,
       "r": -49,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "34,-47": {
       "q": 34,
       "r": -47,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-50": {
       "q": 36,
       "r": -50,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "34,-46": {
       "q": 34,
@@ -116910,9 +117440,10 @@
     "37,-51": {
       "q": 37,
       "r": -51,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "34,-45": {
       "q": 34,
@@ -116952,9 +117483,10 @@
     "40,-54": {
       "q": 40,
       "r": -54,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "34,-42": {
       "q": 34,
@@ -116966,9 +117498,10 @@
     "41,-55": {
       "q": 41,
       "r": -55,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "34,-41": {
       "q": 34,
@@ -116980,9 +117513,10 @@
     "42,-56": {
       "q": 42,
       "r": -56,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "34,-40": {
       "q": 34,
@@ -117022,23 +117556,26 @@
     "39,-39": {
       "q": 39,
       "r": -39,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "38,-39": {
       "q": 38,
       "r": -39,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "37,-39": {
       "q": 37,
       "r": -39,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-39": {
       "q": 36,
@@ -117064,9 +117601,10 @@
     "44,-57": {
       "q": 44,
       "r": -57,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "45,-57": {
       "q": 45,
@@ -117085,9 +117623,10 @@
     "47,-57": {
       "q": 47,
       "r": -57,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "48,-57": {
       "q": 48,
@@ -117267,9 +117806,10 @@
     "33,-48": {
       "q": 33,
       "r": -48,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "34,-49": {
       "q": 34,
@@ -117281,44 +117821,50 @@
     "33,-47": {
       "q": 33,
       "r": -47,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-50": {
       "q": 35,
       "r": -50,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-46": {
       "q": 33,
       "r": -46,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-51": {
       "q": 36,
       "r": -51,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-45": {
       "q": 33,
       "r": -45,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "37,-52": {
       "q": 37,
       "r": -52,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-44": {
       "q": 33,
@@ -117330,9 +117876,10 @@
     "38,-53": {
       "q": 38,
       "r": -53,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-43": {
       "q": 33,
@@ -117428,30 +117975,34 @@
     "39,-38": {
       "q": 39,
       "r": -38,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "38,-38": {
       "q": 38,
       "r": -38,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "37,-38": {
       "q": 37,
       "r": -38,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-38": {
       "q": 36,
       "r": -38,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-38": {
       "q": 35,
@@ -117484,9 +118035,10 @@
     "45,-58": {
       "q": 45,
       "r": -58,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "46,-58": {
       "q": 46,
@@ -117701,9 +118253,10 @@
     "32,-48": {
       "q": 32,
       "r": -48,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-49": {
       "q": 33,
@@ -117715,16 +118268,18 @@
     "32,-47": {
       "q": 32,
       "r": -47,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "34,-50": {
       "q": 34,
       "r": -50,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "32,-46": {
       "q": 32,
@@ -117736,16 +118291,18 @@
     "35,-51": {
       "q": 35,
       "r": -51,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "32,-45": {
       "q": 32,
       "r": -45,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-52": {
       "q": 36,
@@ -117757,9 +118314,10 @@
     "32,-44": {
       "q": 32,
       "r": -44,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "37,-53": {
       "q": 37,
@@ -117827,9 +118385,10 @@
     "32,-39": {
       "q": 32,
       "r": -39,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "42,-58": {
       "q": 42,
@@ -117890,9 +118449,10 @@
     "37,-37": {
       "q": 37,
       "r": -37,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-37": {
       "q": 36,
@@ -118261,16 +118821,18 @@
     "37,-36": {
       "q": 37,
       "r": -36,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-36": {
       "q": 36,
       "r": -36,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-36": {
       "q": 35,
@@ -118632,30 +119194,34 @@
     "37,-35": {
       "q": 37,
       "r": -35,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "36,-35": {
       "q": 36,
       "r": -35,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-35": {
       "q": 35,
       "r": -35,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "34,-35": {
       "q": 34,
       "r": -35,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-35": {
       "q": 33,
@@ -119017,23 +119583,26 @@
     "36,-34": {
       "q": 36,
       "r": -34,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "35,-34": {
       "q": 35,
       "r": -34,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "34,-34": {
       "q": 34,
       "r": -34,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-34": {
       "q": 33,
@@ -119423,9 +119992,10 @@
     "33,-33": {
       "q": 33,
       "r": -33,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "43,-63": {
       "q": 43,
@@ -119801,23 +120371,26 @@
     "35,-32": {
       "q": 35,
       "r": -32,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "34,-32": {
       "q": 34,
       "r": -32,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-32": {
       "q": 33,
       "r": -32,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "43,-64": {
       "q": 43,
@@ -120207,16 +120780,18 @@
     "34,-31": {
       "q": 34,
       "r": -31,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "33,-31": {
       "q": 33,
       "r": -31,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "32,-31": {
       "q": 32,
@@ -120627,9 +121202,10 @@
     "32,-30": {
       "q": 32,
       "r": -30,
-      "terrain": "plains",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "43,-66": {
       "q": 43,
@@ -121040,9 +121616,10 @@
     "32,-29": {
       "q": 32,
       "r": -29,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "43,-67": {
       "q": 43,
@@ -121467,9 +122044,10 @@
     "32,-28": {
       "q": 32,
       "r": -28,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "43,-68": {
       "q": 43,
@@ -121908,9 +122486,10 @@
     "32,-27": {
       "q": 32,
       "r": -27,
-      "terrain": "hills",
+      "terrain": "forest",
       "name": "",
-      "description": ""
+      "description": "",
+      "dungeon": null
     },
     "43,-69": {
       "q": 43,
@@ -150786,7 +151365,7 @@
       "name": "The spire",
       "type": "custom",
       "style": "circle",
-      "icon": "",
+      "icon": "📍",
       "color": "#141439",
       "showLabel": true,
       "labelPosition": "above",
@@ -150803,6 +151382,7 @@
       "type": "road",
       "style": "curved",
       "width": 4,
+      "color": "#8B7355",
       "points": [
         {
           "q": -5,
@@ -150844,6 +151424,7 @@
       "type": "road",
       "style": "curved",
       "width": 4,
+      "color": "#8B7355",
       "points": [
         {
           "q": 5,

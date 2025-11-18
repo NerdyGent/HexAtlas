@@ -5261,10 +5261,15 @@ function importHexMap() {
             const text = await file.text();
             const data = JSON.parse(text);
             
+            console.log('Import starting...');
+            console.log('Data keys:', Object.keys(data));
+            console.log('Hexes type:', typeof data.hexes, 'Is array:', Array.isArray(data.hexes));
+            
             // Convert old object format to new array format if needed
             if (data.hexes && typeof data.hexes === 'object' && !Array.isArray(data.hexes)) {
                 console.log('Converting hexes from object format to array format...');
                 data.hexes = Object.values(data.hexes);
+                console.log('Converted to array with', data.hexes.length, 'hexes');
             }
             
             if (data.tokens && typeof data.tokens === 'object' && !Array.isArray(data.tokens)) {
@@ -5278,9 +5283,12 @@ function importHexMap() {
             }
             
             if (!data.hexes || !Array.isArray(data.hexes)) {
+                console.error('VALIDATION FAILED - hexes:', data.hexes);
                 alert('Invalid world file format - missing hexes');
                 return;
             }
+            
+            console.log('Clearing current map...');
             
             state.hexMap.hexes.clear();
             state.hexMap.landmarks.clear();
@@ -5302,6 +5310,8 @@ function importHexMap() {
                 });
             });
             
+            console.log('Imported', state.hexMap.hexes.size, 'hexes');
+            
             if (data.landmarks && Array.isArray(data.landmarks)) {
                 data.landmarks.forEach(landmarkData => {
                     const key = `${landmarkData.q},${landmarkData.r}`;
@@ -5322,9 +5332,11 @@ function importHexMap() {
                         visible: landmarkData.visible !== false,
                         created: landmarkData.created
                     });
-                    const idNum = parseInt(landmarkData.id.split('_')[1]);
-                    if (idNum >= state.nextLandmarkId) {
-                        state.nextLandmarkId = idNum + 1;
+                    if (landmarkData.id) {
+                        const idNum = parseInt(landmarkData.id.split('_')[1] || '0');
+                        if (!isNaN(idNum) && idNum >= state.nextLandmarkId) {
+                            state.nextLandmarkId = idNum + 1;
+                        }
                     }
                 });
             }
@@ -5346,9 +5358,11 @@ function importHexMap() {
                         scale: tokenData.scale || 1,
                         created: tokenData.created
                     });
-                    const idNum = parseInt(tokenData.id.split('_')[1]);
-                    if (idNum >= state.nextTokenId) {
-                        state.nextTokenId = idNum + 1;
+                    if (tokenData.id) {
+                        const idNum = parseInt(tokenData.id.split('_')[1] || '0');
+                        if (!isNaN(idNum) && idNum >= state.nextTokenId) {
+                            state.nextTokenId = idNum + 1;
+                        }
                     }
                 });
             }
@@ -5364,22 +5378,72 @@ function importHexMap() {
                         points: pathData.points,
                         created: pathData.created
                     });
-                    const idNum = parseInt(pathData.id.split('_')[1]);
-                    if (idNum >= state.nextPathId) {
-                        state.nextPathId = idNum + 1;
+                    if (pathData.id) {
+                        const idNum = parseInt(pathData.id.split('_')[1] || '0');
+                        if (!isNaN(idNum) && idNum >= state.nextPathId) {
+                            state.nextPathId = idNum + 1;
+                        }
                     }
                 });
             }
             
             if (data.viewport) {
                 state.hexMap.viewport = data.viewport;
+            } else {
+                // No viewport data - auto-center on the imported map
+                // Calculate the center of all hexes
+                let sumX = 0, sumY = 0, count = 0;
+                data.hexes.forEach(hex => {
+                    const size = state.hexMap.hexSize;
+                    const x = size * (3/2 * hex.q);
+                    const y = size * (Math.sqrt(3)/2 * hex.q + Math.sqrt(3) * hex.r);
+                    sumX += x;
+                    sumY += y;
+                    count++;
+                });
+                
+                if (count > 0) {
+                    const centerX = sumX / count;
+                    const centerY = sumY / count;
+                    
+                    // Calculate appropriate zoom level based on map size
+                    let minX = Infinity, maxX = -Infinity;
+                    let minY = Infinity, maxY = -Infinity;
+                    data.hexes.forEach(hex => {
+                        const size = state.hexMap.hexSize;
+                        const x = size * (3/2 * hex.q);
+                        const y = size * (Math.sqrt(3)/2 * hex.q + Math.sqrt(3) * hex.r);
+                        minX = Math.min(minX, x);
+                        maxX = Math.max(maxX, x);
+                        minY = Math.min(minY, y);
+                        maxY = Math.max(maxY, y);
+                    });
+                    
+                    const mapWidth = maxX - minX;
+                    const mapHeight = maxY - minY;
+                    const canvasWidth = canvas.width;
+                    const canvasHeight = canvas.height;
+                    
+                    // Calculate zoom to fit map with some padding
+                    const scaleX = (canvasWidth * 0.8) / mapWidth;
+                    const scaleY = (canvasHeight * 0.8) / mapHeight;
+                    const fitScale = Math.min(scaleX, scaleY, 2); // Cap at 2x zoom
+                    
+                    // Set viewport to center on map
+                    state.hexMap.viewport.offsetX = -centerX * fitScale + canvasWidth / 2;
+                    state.hexMap.viewport.offsetY = -centerY * fitScale + canvasHeight / 2;
+                    state.hexMap.viewport.scale = fitScale;
+                    
+                    console.log(`Auto-centered viewport on imported map (${count} hexes)`);
+                }
             }
             
             // Force bounds recalculation after import
             state.hexMap.boundsNeedRecalc = true;
+            minimapBoundsDirty = true;  // Invalidate minimap bounds cache
+            minimapDirty = true;  // Force minimap to render
             updateHexCount();
             deselectHex();
-            minimapDirty = true;  // Force minimap to render
             
             // Multiple render passes to ensure everything draws
             renderHex();
@@ -5387,16 +5451,21 @@ function importHexMap() {
             // Force another render after a brief delay (fixes race condition)
             setTimeout(() => {
                 renderHex();
+                renderMinimap();  // Force minimap to render
             }, 10);
             
             // And another on next animation frame
             requestAnimationFrame(() => {
                 renderHex();
+                renderMinimap();  // Force minimap to render
             });
             
             const landmarkCount = data.landmarks ? data.landmarks.length : 0;
             const tokenCount = data.tokens ? data.tokens.length : 0;
             const pathCount = data.paths ? data.paths.length : 0;
+            
+            console.log('Import complete! Hexes:', data.hexes.length, 'Landmarks:', landmarkCount, 'Tokens:', tokenCount, 'Paths:', pathCount);
+            console.log('State now has', state.hexMap.hexes.size, 'hexes');
             
             // Alert after render completes
             setTimeout(() => {
@@ -7416,13 +7485,58 @@ async function loadExampleMap(mapType) {
         // Set viewport if available
         if (data.viewport) {
             state.hexMap.viewport = data.viewport;
+        } else {
+            // No viewport data - auto-center on the loaded map
+            let sumX = 0, sumY = 0, count = 0;
+            data.hexes.forEach(hex => {
+                const size = state.hexMap.hexSize;
+                const x = size * (3/2 * hex.q);
+                const y = size * (Math.sqrt(3)/2 * hex.q + Math.sqrt(3) * hex.r);
+                sumX += x;
+                sumY += y;
+                count++;
+            });
+            
+            if (count > 0) {
+                const centerX = sumX / count;
+                const centerY = sumY / count;
+                
+                // Calculate appropriate zoom level
+                let minX = Infinity, maxX = -Infinity;
+                let minY = Infinity, maxY = -Infinity;
+                data.hexes.forEach(hex => {
+                    const size = state.hexMap.hexSize;
+                    const x = size * (3/2 * hex.q);
+                    const y = size * (Math.sqrt(3)/2 * hex.q + Math.sqrt(3) * hex.r);
+                    minX = Math.min(minX, x);
+                    maxX = Math.max(maxX, x);
+                    minY = Math.min(minY, y);
+                    maxY = Math.max(maxY, y);
+                });
+                
+                const mapWidth = maxX - minX;
+                const mapHeight = maxY - minY;
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
+                
+                const scaleX = (canvasWidth * 0.8) / mapWidth;
+                const scaleY = (canvasHeight * 0.8) / mapHeight;
+                const fitScale = Math.min(scaleX, scaleY, 2);
+                
+                state.hexMap.viewport.offsetX = -centerX * fitScale + canvasWidth / 2;
+                state.hexMap.viewport.offsetY = -centerY * fitScale + canvasHeight / 2;
+                state.hexMap.viewport.scale = fitScale;
+                
+                console.log(`Auto-centered viewport on example map (${count} hexes)`);
+            }
         }
         
         // Force bounds recalculation
         state.hexMap.boundsNeedRecalc = true;
+        minimapBoundsDirty = true;  // Invalidate minimap bounds cache
+        minimapDirty = true;  // Force minimap to render
         updateHexCount();
         deselectHex();
-        minimapDirty = true;  // Force minimap to render
         
         // Close modal first to avoid interference
         closeModal('examplesModal');
@@ -7432,10 +7546,12 @@ async function loadExampleMap(mapType) {
         
         setTimeout(() => {
             renderHex();
+            renderMinimap();  // Force minimap to render
         }, 10);
         
         requestAnimationFrame(() => {
             renderHex();
+            renderMinimap();  // Force minimap to render
         });
         
         hasUnsavedChanges = true;
@@ -8095,9 +8211,19 @@ function resetTooltips() {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         tooltipManager = new TooltipManager();
+        // Attach file import handler
+        const fileInput = document.getElementById('importFileInput');
+        if (fileInput) {
+            fileInput.addEventListener('change', handleFileImport);
+        }
     });
 } else {
     tooltipManager = new TooltipManager();
+    // Attach file import handler
+    const fileInput = document.getElementById('importFileInput');
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileImport);
+    }
 }
 
 // ========================================

@@ -1632,6 +1632,10 @@ function createLandmark(q, r, data = {}) {
     state.hexMap.landmarks.set(key, landmark);
     updateHexCount();
     markUnsaved();
+    
+    // Mark minimap as dirty to trigger re-render
+    minimapDirty = true;
+    
     return landmark;
 }
 
@@ -1651,6 +1655,7 @@ function deleteLandmark(q, r) {
     updateHexCount();
     renderHex();
     markUnsaved();
+    minimapDirty = true;
     undoRedoSystem.captureState();
 }
 
@@ -1661,6 +1666,7 @@ function deleteLandmarkById(landmarkId) {
             updateHexCount();
             renderHex();
             markUnsaved();
+            minimapDirty = true;
             undoRedoSystem.captureState();
             return;
         }
@@ -3397,22 +3403,7 @@ function selectTerrain(terrain) {
 
 function updateBrushSize(value) {
     state.hexMap.brushSize = parseInt(value);
-    
-    // Update visual brush size buttons
-    document.querySelectorAll('.brush-size-option').forEach(btn => {
-        const btnSize = btn.getAttribute('data-size');
-        if (btnSize === value.toString()) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-    
-    // Legacy support for slider if it exists
-    const sliderValue = document.getElementById('brushSizeValue');
-    if (sliderValue) {
-        sliderValue.textContent = value;
-    }
+    document.getElementById('brushSizeValue').textContent = value;
 }
 
 function updatePaintSpeed(value) {
@@ -4090,15 +4081,16 @@ canvas.addEventListener('wheel', (e) => {
     const newScale = Math.max(0.1, Math.min(3, oldScale * zoomFactor));
     
     // Calculate mouse position in world coordinates (before zoom)
-    const worldX = (mouseX - state.hexMap.viewport.offsetX) / oldScale;
-    const worldY = (mouseY - state.hexMap.viewport.offsetY) / oldScale;
+    // Must account for canvas center offset like the rest of the coordinate system
+    const worldX = (mouseX - canvas.width / 2 - state.hexMap.viewport.offsetX) / oldScale;
+    const worldY = (mouseY - canvas.height / 2 - state.hexMap.viewport.offsetY) / oldScale;
     
     // Update scale
     state.hexMap.viewport.scale = newScale;
     
     // Adjust offset so the same world point stays under the mouse
-    state.hexMap.viewport.offsetX = mouseX - worldX * newScale;
-    state.hexMap.viewport.offsetY = mouseY - worldY * newScale;
+    state.hexMap.viewport.offsetX = mouseX - canvas.width / 2 - worldX * newScale;
+    state.hexMap.viewport.offsetY = mouseY - canvas.height / 2 - worldY * newScale;
     
     renderHex();
     document.getElementById('zoomLevel').textContent = Math.round(state.hexMap.viewport.scale * 100) + '%';
@@ -4111,14 +4103,6 @@ document.addEventListener('keydown', (e) => {
                    document.activeElement.isContentEditable;
     
     if (isTyping) return;
-    
-    // Brush size shortcuts (1-5 keys) - only in paint/erase mode
-    if (state.hexMap.mode === 'paint' || state.hexMap.mode === 'erase') {
-        if (e.key >= '1' && e.key <= '5') {
-            e.preventDefault();
-            updateBrushSize(parseInt(e.key));
-        }
-    }
     
     if (e.key === 'Escape') {
         if (state.hexMap.currentPath) {
@@ -8239,8 +8223,6 @@ if (document.readyState === 'loading') {
         if (fileInput) {
             fileInput.addEventListener('change', handleFileImport);
         }
-        // Initialize brush size button state
-        updateBrushSize(state.hexMap.brushSize || 1);
     });
 } else {
     tooltipManager = new TooltipManager();
@@ -8249,10 +8231,6 @@ if (document.readyState === 'loading') {
     if (fileInput) {
         fileInput.addEventListener('change', handleFileImport);
     }
-    // Initialize brush size button state
-    setTimeout(() => {
-        updateBrushSize(state.hexMap.brushSize || 1);
-    }, 100);
 }
 
 // ========================================

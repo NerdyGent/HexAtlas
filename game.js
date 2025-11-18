@@ -569,6 +569,34 @@ function getHex(q, r) {
     return state.hexMap.hexes.get(`${q},${r}`);
 }
 
+function getMapBounds() {
+    if (state.hexMap.cachedBounds) {
+        return state.hexMap.cachedBounds;
+    }
+    
+    // Calculate bounds if not cached
+    let minQ = Infinity, maxQ = -Infinity;
+    let minR = Infinity, maxR = -Infinity;
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    
+    state.hexMap.hexes.forEach(hex => {
+        const x = hex.q * state.hexMap.hexSize * 1.5;
+        const y = (hex.r * state.hexMap.hexSize * Math.sqrt(3)) + (hex.q * state.hexMap.hexSize * Math.sqrt(3) / 2);
+        
+        minQ = Math.min(minQ, hex.q);
+        maxQ = Math.max(maxQ, hex.q);
+        minR = Math.min(minR, hex.r);
+        maxR = Math.max(maxR, hex.r);
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+    });
+    
+    return { minQ, maxQ, minR, maxR, minX, maxX, minY, maxY };
+}
+
 function setHex(q, r, terrain) {
     const key = `${q},${r}`;
     const existing = state.hexMap.hexes.get(key);
@@ -4034,26 +4062,28 @@ canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
 canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
-    console.log('Wheel event:', e.deltaY, 'Current scale:', state.hexMap.viewport.scale);
     
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
     
-    // Calculate world position before zoom
-    const worldX = (mouseX - canvas.width / 2 - state.hexMap.viewport.offsetX) / state.hexMap.viewport.scale;
-    const worldY = (mouseY - canvas.height / 2 - state.hexMap.viewport.offsetY) / state.hexMap.viewport.scale;
+    // Get the old scale
+    const oldScale = state.hexMap.viewport.scale;
     
-    // Apply zoom
+    // Calculate new scale
     const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
-    const newScale = Math.max(0.1, Math.min(3, state.hexMap.viewport.scale * zoomFactor));
+    const newScale = Math.max(0.1, Math.min(3, oldScale * zoomFactor));
     
-    console.log('New scale:', newScale);
+    // Calculate mouse position in world coordinates (before zoom)
+    const worldX = (mouseX - state.hexMap.viewport.offsetX) / oldScale;
+    const worldY = (mouseY - state.hexMap.viewport.offsetY) / oldScale;
     
-    // Calculate new offset to keep world position under mouse
-    state.hexMap.viewport.offsetX = mouseX - canvas.width / 2 - worldX * newScale;
-    state.hexMap.viewport.offsetY = mouseY - canvas.height / 2 - worldY * newScale;
+    // Update scale
     state.hexMap.viewport.scale = newScale;
+    
+    // Adjust offset so the same world point stays under the mouse
+    state.hexMap.viewport.offsetX = mouseX - worldX * newScale;
+    state.hexMap.viewport.offsetY = mouseY - worldY * newScale;
     
     renderHex();
     document.getElementById('zoomLevel').textContent = Math.round(state.hexMap.viewport.scale * 100) + '%';
@@ -4350,14 +4380,17 @@ function minimapClickToNavigate(canvasX, canvasY) {
     const minimapScale = parseFloat(minimapData.scale);
     const minimapOffsetX = parseFloat(minimapData.offsetX);
     const minimapOffsetY = parseFloat(minimapData.offsetY);
+    const centerOffsetX = parseFloat(minimapData.centerOffsetX) || 0;
+    const centerOffsetY = parseFloat(minimapData.centerOffsetY) || 0;
     
-    // Convert minimap canvas click to world coordinates
-    const worldX = (canvasX / minimapScale) + minimapOffsetX;
-    const worldY = (canvasY / minimapScale) + minimapOffsetY;
+    // Convert minimap canvas click to world coordinates, accounting for centering
+    const worldX = ((canvasX - centerOffsetX) / minimapScale) + minimapOffsetX;
+    const worldY = ((canvasY - centerOffsetY) / minimapScale) + minimapOffsetY;
     
-    // Set main viewport to center on this location
-    state.hexMap.viewport.offsetX = -worldX;
-    state.hexMap.viewport.offsetY = -worldY;
+    // viewport.offsetX/Y are in screen space (scaled), so multiply world coords by viewport scale
+    const viewportScale = state.hexMap.viewport.scale;
+    state.hexMap.viewport.offsetX = -worldX * viewportScale;
+    state.hexMap.viewport.offsetY = -worldY * viewportScale;
     
     renderHex();
 }
@@ -4415,10 +4448,18 @@ function renderMinimap() {
     // Calculate scale to fit in minimap
     const scale = Math.min(mapWidth / worldWidth, mapHeight / worldHeight);
     
+    // Calculate centering offsets for the minimap canvas
+    const scaledWidth = worldWidth * scale;
+    const scaledHeight = worldHeight * scale;
+    const centerOffsetX = (mapWidth - scaledWidth) / 2;
+    const centerOffsetY = (mapHeight - scaledHeight) / 2;
+    
     // Store for click handling
     minimapCanvas.dataset.scale = scale;
     minimapCanvas.dataset.offsetX = minX;
     minimapCanvas.dataset.offsetY = minY;
+    minimapCanvas.dataset.centerOffsetX = centerOffsetX;
+    minimapCanvas.dataset.centerOffsetY = centerOffsetY;
     minimapCanvas.dataset.worldWidth = worldWidth;
     minimapCanvas.dataset.worldHeight = worldHeight;
     
@@ -4441,9 +4482,9 @@ function renderMinimap() {
         const x = size * (3/2 * hex.q);
         const y = size * (Math.sqrt(3)/2 * hex.q + Math.sqrt(3) * hex.r);
         
-        // Transform to minimap coordinates
-        const mapX = (x - minX) * scale;
-        const mapY = (y - minY) * scale;
+        // Transform to minimap coordinates with centering
+        const mapX = (x - minX) * scale + centerOffsetX;
+        const mapY = (y - minY) * scale + centerOffsetY;
         
         // Get terrain color
         const terrain = TERRAINS[hex.terrain];
@@ -4475,8 +4516,8 @@ function renderMinimap() {
         const x = size * (3/2 * landmark.q);
         const y = size * (Math.sqrt(3)/2 * landmark.q + Math.sqrt(3) * landmark.r);
         
-        const mapX = (x - minX) * scale;
-        const mapY = (y - minY) * scale;
+        const mapX = (x - minX) * scale + centerOffsetX;
+        const mapY = (y - minY) * scale + centerOffsetY;
         
         minimapCtx.fillStyle = landmark.color || '#ff6b6b';
         minimapCtx.beginPath();
@@ -4503,24 +4544,29 @@ function updateMinimapViewport() {
     const scale = parseFloat(minimapData.scale);
     const minX = parseFloat(minimapData.offsetX);
     const minY = parseFloat(minimapData.offsetY);
+    const centerOffsetX = parseFloat(minimapData.centerOffsetX) || 0;
+    const centerOffsetY = parseFloat(minimapData.centerOffsetY) || 0;
     
-    // FIXED: Use isNaN to properly handle 0 coordinates
     if (!scale || isNaN(minX) || isNaN(minY)) return;
-    
-    // Get main canvas viewport in world coordinates
-    const mainX = -state.hexMap.viewport.offsetX;
-    const mainY = -state.hexMap.viewport.offsetY;
     
     // Convert main canvas dimensions to world coordinates
     const mainCanvasElement = document.getElementById('hexCanvas');
     if (!mainCanvasElement) return;
     
-    const viewWorldWidth = mainCanvasElement.width / state.hexMap.viewport.scale;
-    const viewWorldHeight = mainCanvasElement.height / state.hexMap.viewport.scale;
+    const viewportScale = state.hexMap.viewport.scale;
     
-    // Convert to minimap coordinates (NO centering offsets)
-    const minimapX = (mainX - minX) * scale;
-    const minimapY = (mainY - minY) * scale;
+    // Get main canvas viewport center in world coordinates
+    // viewport.offsetX/Y are in scaled/screen space, so divide by viewport scale
+    const mainX = (-state.hexMap.viewport.offsetX) / viewportScale;
+    const mainY = (-state.hexMap.viewport.offsetY) / viewportScale;
+    
+    // Calculate visible world dimensions
+    const viewWorldWidth = mainCanvasElement.width / viewportScale;
+    const viewWorldHeight = mainCanvasElement.height / viewportScale;
+    
+    // Convert to minimap coordinates with centering
+    const minimapX = (mainX - minX) * scale + centerOffsetX;
+    const minimapY = (mainY - minY) * scale + centerOffsetY;
     const minimapWidth = viewWorldWidth * scale;
     const minimapHeight = viewWorldHeight * scale;
     
@@ -5331,13 +5377,9 @@ function importHexMap() {
             
             // Force bounds recalculation after import
             state.hexMap.boundsNeedRecalc = true;
-            
-            // FIXED: Mark minimap as needing update
-            minimapDirty = true;
-            minimapBoundsDirty = true;
-            
             updateHexCount();
             deselectHex();
+            minimapDirty = true;  // Force minimap to render
             
             // Multiple render passes to ensure everything draws
             renderHex();
@@ -5381,10 +5423,6 @@ function clearHexMap() {
         // Reset bounds cache
         state.hexMap.cachedBounds = null;
         state.hexMap.boundsNeedRecalc = true;
-        
-        // FIXED: Mark minimap as needing update
-        minimapDirty = true;
-        minimapBoundsDirty = true;
         
         // Clear the cached data
         clearMapCache().then(() => {
@@ -5443,10 +5481,6 @@ function createStarterMap() {
         }
     }
     
-    // FIXED: Mark minimap as needing update
-    minimapDirty = true;
-    minimapBoundsDirty = true;
-    
     updateHexCount();
     deselectHex();
     renderHex();
@@ -5454,12 +5488,14 @@ function createStarterMap() {
 
 function updateHexTopBar() {
     const actions = document.getElementById('topbarActions');
-    actions.innerHTML = `
-        <button class="btn btn-secondary" onclick="importHexMap()">📥 Import World</button>
-        <button class="btn btn-secondary" onclick="exportHexMap()">💾 Export JSON</button>
-        <button class="btn btn-secondary" onclick="exportHexMapAsImage()">🖼️ Export Image</button>
-        <button class="btn btn-danger" onclick="clearHexMap()">Clear Map</button>
-    `;
+    if (actions) {
+        actions.innerHTML = `
+            <button class="btn btn-secondary" onclick="importHexMap()">📥 Import World</button>
+            <button class="btn btn-secondary" onclick="exportHexMap()">💾 Export JSON</button>
+            <button class="btn btn-secondary" onclick="exportHexMapAsImage()">🖼️ Export Image</button>
+            <button class="btn btn-danger" onclick="clearHexMap()">Clear Map</button>
+        `;
+    }
 }
 
 // ===== INDEXEDDB AUTO-SAVE SYSTEM =====
@@ -5791,6 +5827,7 @@ async function restoreMapFromCache() {
         
         updateHexCount();
         deselectHex();
+        minimapDirty = true;  // Force minimap to render on load
         renderHex();
         
         console.log('Map restored from cache successfully');
@@ -5868,7 +5905,12 @@ async function init() {
     updateHexTopBar();
     
     // Initialize minimap
-    setTimeout(initializeMinimap, 100);
+    setTimeout(() => {
+        initializeMinimap();
+        // Force an immediate render after minimap is initialized
+        minimapDirty = true;
+        renderMinimap();
+    }, 100);
 }
 
 init();
@@ -7380,6 +7422,7 @@ async function loadExampleMap(mapType) {
         state.hexMap.boundsNeedRecalc = true;
         updateHexCount();
         deselectHex();
+        minimapDirty = true;  // Force minimap to render
         
         // Close modal first to avoid interference
         closeModal('examplesModal');
@@ -8166,3 +8209,65 @@ function togglePathRouting() {
 }
 
 console.log('Enhanced HexAtlas with modern path controls and tooltip system loaded!');
+// ============================================================================
+// MOBILE UI INTEGRATION HOOKS
+// ============================================================================
+
+// Hook into existing undo/redo system for mobile UI
+if (typeof undoRedoSystem !== 'undefined') {
+    const originalUndo = undoRedoSystem.undo;
+    const originalRedo = undoRedoSystem.redo;
+    
+    undoRedoSystem.undo = function() {
+        const result = originalUndo.call(this);
+        
+        // Update mobile UI buttons if mobile is active
+        if (window.MobileUI && MobileUI.state.isMobile) {
+            updateMobileUndoRedoButtons();
+        }
+        
+        return result;
+    };
+    
+    undoRedoSystem.redo = function() {
+        const result = originalRedo.call(this);
+        
+        // Update mobile UI buttons if mobile is active
+        if (window.MobileUI && MobileUI.state.isMobile) {
+            updateMobileUndoRedoButtons();
+        }
+        
+        return result;
+    };
+}
+
+// Function to update mobile undo/redo button states
+function updateMobileUndoRedoButtons() {
+    const undoBtn = document.getElementById('mobileUndoBtn');
+    const redoBtn = document.getElementById('mobileRedoBtn');
+    
+    if (undoBtn && typeof undoRedoSystem !== 'undefined') {
+        const canUndo = undoRedoSystem.canUndo();
+        undoBtn.disabled = !canUndo;
+        undoBtn.style.opacity = canUndo ? '1' : '0.3';
+    }
+    
+    if (redoBtn && typeof undoRedoSystem !== 'undefined') {
+        const canRedo = undoRedoSystem.canRedo();
+        redoBtn.disabled = !canRedo;
+        redoBtn.style.opacity = canRedo ? '1' : '0.3';
+    }
+}
+
+// Hook into render to update mobile UI state
+const originalRenderHex = renderHex;
+renderHex = function() {
+    originalRenderHex();
+    
+    // Update mobile undo/redo buttons after render
+    if (window.MobileUI && MobileUI.state.isMobile) {
+        updateMobileUndoRedoButtons();
+    }
+};
+
+console.log('✅ Mobile UI integration hooks installed');

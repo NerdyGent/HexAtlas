@@ -2,9 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f1419">
     <title>HexAtlas - Enhanced Hex Map Editor</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Mobile UI Enhancements -->
+    <link rel="stylesheet" href="mobile-styles.css">
 </head>
 <body>
     <!-- Tooltip Container -->
@@ -174,7 +179,7 @@
                     <div class="dropdown-menu" id="profileMenu">
                         <div class="dropdown-user-info">
                             <div class="name">John Doe</div>
-                            <div class="email">john@example.com</div>
+                            <div class="email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="97fdf8fff9d7f2eff6fae7fbf2b9f4f8fa">[email&#160;protected]</a></div>
                         </div>
                         <div class="dropdown-divider"></div>
                         <div class="dropdown-item">
@@ -815,9 +820,54 @@
     </div>
 
     <!-- Hidden file input for importing -->
-    <input type="file" id="importFileInput" accept=".json,image/*" style="display: none;" onchange="handleFileImport(event)">
-
-   
+    <input type="file" id="importFileInput" accept=".json,image/*" style="display: none;">
+    
+    <!-- Original Game Script -->
     <script src="game.js"></script>
+    
+    <!-- Mobile UI Enhancements -->
+    <script src="mobile-enhancements.js"></script>
+    
+    <!-- Initialize Mobile UI -->
+    <script>
+        // Mobile UI initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🎮 HexAtlas - Initializing...');
+            
+            // Initialize mobile UI if available
+            if (typeof initMobileUIEnhanced === 'function') {
+                // Small delay to ensure everything is loaded
+                setTimeout(() => {
+                    initMobileUIEnhanced();
+                    console.log('✅ Mobile UI initialized!');
+                }, 100);
+            } else {
+                console.log('ℹ️ Mobile UI not loaded - using desktop mode');
+            }
+        });
+        
+        // Prevent default touch behaviors that interfere with gestures
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gesturechange', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gestureend', function(e) {
+            e.preventDefault();
+        });
+        
+        // Prevent double-tap zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
 </body>
 </html>

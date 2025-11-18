@@ -2639,3 +2639,64 @@ textarea.form-input {
         font-size: 12px;
     }
 }
+/* ============================================================================
+   MOBILE INTEGRATION ENHANCEMENTS
+   ============================================================================ */
+
+/* Canvas full-screen optimization for mobile */
+@media (max-width: 768px) {
+    .canvas-container {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        z-index: 1 !important;
+    }
+    
+    #canvas {
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+}
+
+/* Prevent text selection and callouts on mobile */
+.is-mobile * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Allow text selection in modals and input fields */
+.is-mobile input,
+.is-mobile textarea,
+.is-mobile .modal-body,
+.is-mobile .sheet-content {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+/* Smooth scrolling for mobile */
+.is-mobile {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Hide scrollbars on mobile for cleaner look */
+@media (max-width: 768px) {
+    ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+    }
+}

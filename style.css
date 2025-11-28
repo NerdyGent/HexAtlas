@@ -190,6 +190,7 @@ body {
     font-size: 28px;
     background: var(--accent-gradient);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     line-height: 1;
 }
@@ -197,6 +198,7 @@ body {
 .logo-text {
     background: var(--accent-gradient);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -945,6 +947,7 @@ body.theme-light .modal {
 .slider {
     flex: 1;
     -webkit-appearance: none;
+    appearance: none;
     height: 6px;
     border-radius: 3px;
     background: var(--bg-elevated);
@@ -2285,6 +2288,7 @@ textarea.form-input {
     background: #3d4758;
     outline: none;
     -webkit-appearance: none;
+    appearance: none;
 }
 
 .slider::-webkit-slider-thumb {
@@ -2780,19 +2784,19 @@ textarea.form-input {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px);
 }
 
 .welcome-container {
     position: relative;
     width: 90%;
-    max-width: 900px;
+    max-width: 920px;
     max-height: 90vh;
-    background: var(--bg-secondary);
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 100%);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* No shadow - clean appearance */
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -2807,8 +2811,9 @@ textarea.form-input {
 
 /* Progress Bar */
 .welcome-progress {
-    height: 4px;
-    background: var(--bg-tertiary);
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
@@ -2816,10 +2821,24 @@ textarea.form-input {
 
 .welcome-progress-bar {
     height: 100%;
-    background: var(--accent-gradient);
-    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+    transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     width: 0%;
-    box-shadow: 0 0 20px var(--accent-alpha-60);
+    position: relative;
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+}
+
+.welcome-progress-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
 }
 
 /* Step Content */
@@ -2942,10 +2961,10 @@ textarea.form-input {
 }
 
 .welcome-choice-card {
-    background: var(--bg-tertiary);
-    border: 2px solid var(--border-color);
-    border-radius: 16px;
-    padding: 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 28px;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
     display: flex;
@@ -2968,9 +2987,9 @@ textarea.form-input {
 
 .welcome-choice-card:hover {
     transform: translateY(-4px);
-    border-color: var(--accent-primary);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
-    background: var(--bg-elevated);
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.08);
+    /* Removed all shadows - no floating effect */
 }
 
 .welcome-choice-card:hover::before {
@@ -3318,19 +3337,7 @@ textarea.form-input {
         background: rgba(0, 0, 0, 0.9);
     }
 }
-/* Scroll indicator for welcome modal */
-.welcome-step-content::after {
-    content: '';
-    position: sticky;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 40px;
-    background: linear-gradient(to top, var(--bg-secondary), transparent);
-    pointer-events: none;
-    display: block;
-    margin: -40px -32px 0;
-}
+/* Scroll indicator removed - was causing floating gradient issue */
 
 /* Better scrollbar for welcome modal */
 .welcome-step-content::-webkit-scrollbar {
@@ -3349,4 +3356,22 @@ textarea.form-input {
 
 .welcome-step-content::-webkit-scrollbar-thumb:hover {
     background: var(--accent-alpha-60);
+}
+/* Icon styles for tutorial */
+.icon {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+.icon-lg {
+    width: 40px;
+    height: 40px;
+}
+
+.tip-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    color: #3b82f6;
 }

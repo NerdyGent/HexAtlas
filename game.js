@@ -1,3 +1,8 @@
+// ============================================================================
+// POST-RENDER HOOK SYSTEM FOR EXTENSIONS
+// ============================================================================
+window.postRenderHooks = window.postRenderHooks || [];
+
 const TERRAINS = {
     plains: {
         name: 'Plains',
@@ -438,6 +443,8 @@ const state = {
         paintSpeed: 10,
         paintThrottle: 0,
         brushPreviewHexes: [],
+        shapePoints: [],  // Points defining the polygon
+        isDrawingShape: false,  // Whether currently drawing a shape
         // Cached bounds for performance
         //
         cachedBounds: null,
@@ -3075,6 +3082,8 @@ function loadSavedHexPack() {
 }
 
 function renderHex() {
+    console.log('🔄 renderHex called. Mode:', state.hexMap.mode, 'ShapePoints:', state.hexMap.shapePoints?.length || 0);
+    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const { minQ, maxQ, minR, maxR } = getVisibleHexRange();
     const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
@@ -3187,6 +3196,19 @@ function renderHex() {
     // updateMinimapViewport still updates every frame for smooth tracking
     renderMinimap();
     updateMinimapViewport();
+    
+    // ============================================================================
+    // CALL POST-RENDER HOOKS (for settlement integration, etc.)
+    // ============================================================================
+    if (window.postRenderHooks && window.postRenderHooks.length > 0) {
+        window.postRenderHooks.forEach(hook => {
+            try {
+                hook(ctx, state.hexMap.viewport.scale);
+            } catch (error) {
+                console.error('❌ Post-render hook error:', error);
+            }
+        });
+    }
 }
 
 function drawPathfindingRoute(token) {
@@ -3688,6 +3710,78 @@ function drawLandmark(landmark) {
         }
     }
     
+    // Draw shape tool preview
+    if (state.hexMap.mode === 'shape' && state.hexMap.shapePoints.length > 0) {
+        console.log('🎨 Drawing shape preview! Points:', state.hexMap.shapePoints.length, 'Mode:', state.hexMap.mode);
+        ctx.save();
+        
+        // Draw the polygon outline
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 3 / state.hexMap.viewport.scale;
+        ctx.setLineDash([10 / state.hexMap.viewport.scale, 5 / state.hexMap.viewport.scale]);
+        ctx.beginPath();
+        
+        state.hexMap.shapePoints.forEach((hex, i) => {
+            const point = hexToPixel(hex.q, hex.r);
+            if (i === 0) {
+                ctx.moveTo(point.x, point.y);
+            } else {
+                ctx.lineTo(point.x, point.y);
+            }
+        });
+        
+        // If we have mouse position and at least one point, draw line to mouse
+        if (state.hexMap.mouseHex && state.hexMap.isDrawingShape) {
+            const mousePoint = hexToPixel(state.hexMap.mouseHex.q, state.hexMap.mouseHex.r);
+            ctx.lineTo(mousePoint.x, mousePoint.y);
+            
+            // Close the shape preview if we have 3+ points
+            if (state.hexMap.shapePoints.length >= 2) {
+                const firstPoint = hexToPixel(state.hexMap.shapePoints[0].q, state.hexMap.shapePoints[0].r);
+                ctx.lineTo(firstPoint.x, firstPoint.y);
+            }
+        }
+        
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Draw points
+        state.hexMap.shapePoints.forEach((hex, i) => {
+            const point = hexToPixel(hex.q, hex.r);
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 8 / state.hexMap.viewport.scale, 0, Math.PI * 2);
+            ctx.fillStyle = i === 0 ? '#10b981' : '#3b82f6';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2 / state.hexMap.viewport.scale;
+            ctx.stroke();
+        });
+        
+        // Show preview of filled hexes if shape is valid
+        if (state.hexMap.shapePoints.length >= 3 && state.hexMap.mouseHex) {
+            const previewPoints = [...state.hexMap.shapePoints, state.hexMap.mouseHex];
+            const hexesInside = findHexesInPolygon(previewPoints);
+            
+            // Draw filled hexes preview
+            ctx.globalAlpha = 0.3;
+            hexesInside.forEach(hex => {
+                const corners = hexCorners(hex.q, hex.r);
+                ctx.fillStyle = state.hexMap.selectedTerrain && state.hexMap.selectedTerrain !== 'clear' ? 
+                    TERRAINS[state.hexMap.selectedTerrain].color : '#3b82f6';
+                ctx.beginPath();
+                corners.forEach((corner, i) => {
+                    if (i === 0) ctx.moveTo(corner.x, corner.y);
+                    else ctx.lineTo(corner.x, corner.y);
+                });
+                ctx.closePath();
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+        }
+        
+        ctx.restore();
+    }
+    
     ctx.restore();
 }
 
@@ -3788,11 +3882,143 @@ function setHexMode(mode) {
         pathSection.style.display = 'block';
         selectPathType(state.hexMap.pathType);
         selectPathStyle(state.hexMap.pathStyle);
-    } else if (mode === 'paint') {
-        brushSection.style.display = 'block';
+    } else if (mode === 'paint' || mode === 'shape') {
+        if (mode === 'paint') {
+            brushSection.style.display = 'block';
+        }
         terrainSection.style.display = 'block';
     }
     updateUI();
+}
+
+// ============================================================================
+// SHAPE/POLYGON TOOL FUNCTIONS
+// ============================================================================
+
+function handleShapeMode(clickedHex) {
+    if (!state.hexMap.isDrawingShape) {
+        // Start drawing shape
+        state.hexMap.isDrawingShape = true;
+        state.hexMap.shapePoints = [clickedHex];
+        console.log('Started shape at', clickedHex);
+    } else {
+        // Add point to shape
+        state.hexMap.shapePoints.push(clickedHex);
+        console.log('Added point', clickedHex, '- Total points:', state.hexMap.shapePoints.length);
+    }
+    
+    // Render the shape preview
+    renderHex();
+}
+
+function completeShape() {
+    if (!state.hexMap.isDrawingShape) {
+        return;
+    }
+    
+    if (state.hexMap.shapePoints.length < 3) {
+        alert('You need at least 3 points to create a shape!');
+        return;
+    }
+    
+    // Find all hexes inside the polygon
+    const hexesInside = findHexesInPolygon(state.hexMap.shapePoints);
+    
+    // Get current selected terrain
+    const selectedTerrain = state.hexMap.selectedTerrain;
+    
+    if (!selectedTerrain || selectedTerrain === 'clear') {
+        alert('Please select a terrain type first!');
+        return;
+    }
+    
+    // Start an undo batch
+    undoRedoSystem.startBatch();
+    
+    // Paint all hexes inside
+    hexesInside.forEach(hex => {
+        const hexKey = `${hex.q},${hex.r}`;
+        const oldTerrain = state.hexMap.hexes.get(hexKey)?.terrain;
+        
+        if (oldTerrain !== selectedTerrain) {
+            undoRedoSystem.recordChange({
+                type: 'terrain',
+                hexKey: hexKey,
+                oldValue: oldTerrain || null,
+                newValue: selectedTerrain
+            });
+            
+            state.hexMap.hexes.set(hexKey, {
+                q: hex.q,
+                r: hex.r,
+                terrain: selectedTerrain
+            });
+        }
+    });
+    
+    undoRedoSystem.endBatch();
+    
+    console.log(`Filled ${hexesInside.length} hexes with ${selectedTerrain}`);
+    
+    // Clear shape
+    state.hexMap.isDrawingShape = false;
+    state.hexMap.shapePoints = [];
+    
+    // Re-render
+    renderHex();
+}
+
+function cancelShape() {
+    console.log('Cancelling shape');
+    state.hexMap.isDrawingShape = false;
+    state.hexMap.shapePoints = [];
+    renderHex();
+}
+
+// Point-in-polygon algorithm (ray casting)
+function isPointInPolygon(point, polygon) {
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        const xi = polygon[i].x, yi = polygon[i].y;
+        const xj = polygon[j].x, yj = polygon[j].y;
+        
+        const intersect = ((yi > point.y) !== (yj > point.y))
+            && (point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+    }
+    return inside;
+}
+
+// Find all hexes inside the polygon
+function findHexesInPolygon(shapePoints) {
+    if (shapePoints.length < 3) return [];
+    
+    // Convert hex coordinates to pixel coordinates for the polygon
+    const polygonPixels = shapePoints.map(hex => {
+        const point = hexToPixel(hex.q, hex.r);
+        return { x: point.x, y: point.y };
+    });
+    
+    // Find bounding box of the polygon
+    const minQ = Math.min(...shapePoints.map(h => h.q));
+    const maxQ = Math.max(...shapePoints.map(h => h.q));
+    const minR = Math.min(...shapePoints.map(h => h.r));
+    const maxR = Math.max(...shapePoints.map(h => h.r));
+    
+    // Check all hexes in the bounding box
+    const hexesInside = [];
+    for (let q = minQ - 2; q <= maxQ + 2; q++) {
+        for (let r = minR - 2; r <= maxR + 2; r++) {
+            const hexCenter = hexToPixel(q, r);
+            
+            // Check if hex center is inside polygon
+            if (isPointInPolygon({ x: hexCenter.x, y: hexCenter.y }, polygonPixels)) {
+                hexesInside.push({ q, r });
+            }
+        }
+    }
+    
+    return hexesInside;
 }
 
 function selectTerrain(terrain) {
@@ -3842,7 +4068,8 @@ function updateUI() {
         paint: 'crosshair',
         token: 'crosshair',
         path: 'crosshair',
-        landmark: 'crosshair'
+        landmark: 'crosshair',
+        shape: 'crosshair'
     };
     
     const instructions = {
@@ -3851,7 +4078,8 @@ function updateUI() {
         landmark: 'Click hex to instantly place landmark · Shift+Click to select',
         path: state.hexMap.pathEditMode ? 'Drag points to move · Click + to insert · Click × to delete · Right-click to pan' : 
               state.hexMap.currentPath ? 'Click to add waypoints · Double-click to finish · ESC to cancel' : 
-              'Click to draw new path · Shift+Click path to select/edit'
+              'Click to draw new path · Shift+Click path to select/edit',
+        shape: 'Click to add points to polygon · Press ENTER to fill hexes inside · ESC to cancel'
     };
     
     canvas.style.cursor = cursorMap[state.hexMap.mode] || 'default';
@@ -3888,6 +4116,15 @@ function handlePointerDown(x, y, button, isTouch, shiftKey = false, detail = 1) 
     
     // Left click / single touch
     if (button === 0 || isTouch) {
+        console.log('🖱️ Click detected! Mode:', state.hexMap.mode, 'Hex:', hex);
+        
+        // Handle shape mode
+        if (state.hexMap.mode === 'shape' && hex) {
+            console.log('✅ Shape mode detected, calling handleShapeMode');
+            handleShapeMode(hex);
+            return;
+        }
+        
         // EXPLORER MODE
         if (state.hexMap.viewMode === 'explorer') {
             const clickedToken = findTokenAtPixel(canvasX, canvasY);
@@ -4205,6 +4442,9 @@ canvas.addEventListener('mousemove', (e) => {
     const y = e.clientY - rect.top;
     const hex = pixelToHex(x, y);
     
+    // Track mouse hex for shape tool preview
+    state.hexMap.mouseHex = hex;
+    
     if (state.hexMap.isPanning) {
         const dx = x - state.hexMap.lastPanPos.x;
         const dy = y - state.hexMap.lastPanPos.y;
@@ -4289,6 +4529,11 @@ canvas.addEventListener('mousemove', (e) => {
         if (!state.hexMap.isPainting) {
             renderHex();
         }
+    }
+    
+    // Re-render for shape tool preview
+    if (state.hexMap.mode === 'shape' && state.hexMap.isDrawingShape) {
+        renderHex();
     }
     
     if (state.hexMap.mode === 'token' && !state.hexMap.draggingToken) {
@@ -4434,7 +4679,8 @@ canvas.addEventListener('mouseup', () => {
         paint: 'crosshair',
         token: 'crosshair',
         path: 'crosshair',
-        landmark: 'crosshair'
+        landmark: 'crosshair',
+        shape: 'crosshair'
     };
     canvas.style.cursor = state.hexMap.viewMode === 'explorer' ? 'default' : (cursorMap[state.hexMap.mode] || 'default');
 });
@@ -4501,7 +4747,8 @@ canvas.addEventListener('wheel', (e) => {
     
     // Calculate new scale
     const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
-    const newScale = Math.max(0.1, Math.min(3, oldScale * zoomFactor));
+    // Allow zoom up to 10000% for settlement view
+    const newScale = Math.max(0.1, Math.min(100, oldScale * zoomFactor));
     
     // Calculate mouse position in world coordinates (before zoom)
     // Must account for canvas center offset like the rest of the coordinate system
@@ -4516,8 +4763,15 @@ canvas.addEventListener('wheel', (e) => {
     state.hexMap.viewport.offsetY = mouseY - canvas.height / 2 - worldY * newScale;
     
     renderHex();
-    document.getElementById('zoomLevel').textContent = Math.round(state.hexMap.viewport.scale * 100) + '%';
+    
+    // Update zoom display - settlement-integration will override this if loaded
+    if (!window.settlementIntegrationLoaded) {
+        document.getElementById('zoomLevel').textContent = Math.round(state.hexMap.viewport.scale * 100) + '%';
+    }
 }, { passive: false });
+
+// Also expose renderHex globally so settlement-integration can patch it
+window.renderHex = renderHex;
 
 document.addEventListener('keydown', (e) => {
     // Don't trigger shortcuts when typing in input fields
@@ -4567,11 +4821,27 @@ document.addEventListener('keydown', (e) => {
     }
     
     if (e.key === 'Escape') {
+        // Shape tool cancellation
+        if (state.hexMap.mode === 'shape' && state.hexMap.isDrawingShape) {
+            e.preventDefault();
+            cancelShape();
+            return;
+        }
+        
         if (state.hexMap.currentPath) {
             cancelPath();
             updateUI();
         } else if (state.hexMap.selectedPath) {
             deselectPath();
+        }
+    }
+    
+    // Enter key to complete shape
+    if (e.key === 'Enter') {
+        if (state.hexMap.mode === 'shape' && state.hexMap.isDrawingShape) {
+            e.preventDefault();
+            completeShape();
+            return;
         }
     }
 });
@@ -8703,6 +8973,18 @@ const TOOLTIPS = {
             'Landmarks show on top of terrain'
         ]
     },
+    'shape-mode': {
+        title: 'Shape Mode',
+        icon: '<path d="M15 21h-2v-2h2v2zm-2-7h-2v5h2v-5zm8-2h-2v4h2v-4zm-2-2h-2v2h2v-2zM7 12H5v2h2v-2zm-2-2H3v2h2v-2zm7-5h2V3h-2v2z"/>',
+        content: 'Draw a polygon shape to fill multiple hexes at once with the selected terrain type.',
+        tips: [
+            'Select a terrain type first',
+            'Click at least 3 points to create a polygon',
+            'First point is shown in green',
+            'Press ENTER to complete and fill',
+            'Press ESC to cancel'
+        ]
+    },
     'path-mode': {
         title: 'Path Mode',
         icon: '<path d="M12 2l-5.5 9h11L12 2zm5.5 10h-11l5.5 9 5.5-9z"/>',
@@ -9075,16 +9357,20 @@ console.log('✅ Mobile UI integration hooks installed');
 // WELCOME TUTORIAL SYSTEM
 // ============================================================================
 
+// ============================================================================
+// UPDATED WELCOME_STEPS - Replace the existing WELCOME_STEPS array with this
+// ============================================================================
+
 const WELCOME_STEPS = [
     {
-        title: '👋 Welcome to HexWorld!',
+        title: 'Welcome to HexAtlas!',
         subtitle: 'Your browser-based hex map editor for tabletop RPG campaigns',
-        description: 'HexWorld is a powerful map editor perfect for game masters and world builders. Let\'s get you started with your first map!',
+        description: 'HexAtlas is a powerful map editor perfect for game masters and world builders. Let\'s get you started with your first map!',
         isChoiceStep: true,
         choices: [
             {
                 id: 'example',
-                icon: '🗺️',
+                icon: '<svg class="icon-lg" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM10 5.47l4 1.4v11.66l-4-1.4V5.47zm-5 .99l3-1.01v11.7l-3 1.16V6.46zm14 11.08l-3 1.01V6.86l3-1.16v11.84z"/></svg>',
                 title: 'Load Example Map',
                 subtitle: 'Explore the Fablewoods',
                 description: 'Start with a complete fantasy realm featuring forests, mountains, towns, and roads. Perfect for learning the tools and getting inspired!',
@@ -9092,7 +9378,7 @@ const WELCOME_STEPS = [
             },
             {
                 id: 'blank',
-                icon: '✨',
+                icon: '<svg class="icon-lg" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>',
                 title: 'Start Fresh',
                 subtitle: 'Create from scratch',
                 description: 'Begin with a blank canvas and build your world from the ground up. Ideal if you have a clear vision and want full creative control.',
@@ -9101,58 +9387,88 @@ const WELCOME_STEPS = [
         ]
     },
     {
-        title: '🎨 What is HexWorld?',
+        title: 'What is HexAtlas?',
         subtitle: 'A complete toolkit for campaign mapping',
-        description: 'HexWorld gives you everything you need to design, track, and share your campaign worlds. All in your browser, no installation required.',
+        description: 'HexAtlas gives you everything you need to design, track, and share your campaign worlds. All in your browser, no installation required.',
         features: [
             {
-                icon: '🎨',
+                icon: '<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34c-.39-.39-1.02-.39-1.41 0L9 12.25 11.75 15l8.96-8.96c.39-.39.39-1.02 0-1.41z"/></svg>',
                 title: 'Paint Terrain',
                 description: 'Choose from 10+ terrain types and paint your world with intuitive tools'
             },
             {
-                icon: '🎭',
+                icon: '<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
                 title: 'Add Tokens',
                 description: 'Place characters, monsters, and markers to track your campaign'
             },
             {
-                icon: '🛤️',
+                icon: '<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12l-4-4v3H3v2h15v3z"/></svg>',
                 title: 'Draw Paths',
                 description: 'Create roads, rivers, and trails connecting your locations'
             },
             {
-                icon: '📍',
+                icon: '<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>',
                 title: 'Mark Landmarks',
                 description: 'Add towns, dungeons, and points of interest with custom icons'
             }
         ]
     },
     {
-        title: '🖌️ Paint Your World',
+        title: 'Paint Your World',
         subtitle: 'The basics of terrain painting',
         description: 'Select a terrain type from the palette on the left and start painting. You can paint individual hexes or drag to paint multiple hexes at once.',
         tips: [
-            { icon: '👆', text: 'Click to paint single hexes' },
-            { icon: '🖱️', text: 'Click and drag to paint multiple hexes quickly' },
-            { icon: '⌨️', text: 'Use keys 1-5 to change brush size on the fly' },
-            { icon: '🪣', text: 'Try Fill Mode to paint large connected areas instantly' },
-            { icon: '🎨', text: 'Select "Clear Hex" to remove terrain from hexes' }
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13 1.07V9h7c0-4.08-3.05-7.44-7-7.93zM4 15c0 4.42 3.58 8 8 8s8-3.58 8-8v-4H4v4zm7-13.93C7.05 1.56 4 4.92 4 9h7V1.07z"/></svg>', 
+                text: 'Click to paint single hexes' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M23 8c0 1.1-.9 2-2 2-.18 0-.35-.02-.51-.07l-3.56 3.55c.05.16.07.34.07.52 0 1.1-.9 2-2 2s-2-.9-2-2c0-.18.02-.36.07-.52l-2.55-2.55c-.16.05-.34.07-.52.07s-.36-.02-.52-.07l-4.55 4.56c.05.16.07.33.07.51 0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2c.18 0 .35.02.51.07l4.56-4.55C8.02 9.36 8 9.18 8 9c0-1.1.9-2 2-2s2 .9 2 2c0 .18-.02.36-.07.52l2.55 2.55c.16-.05.34-.07.52-.07s.36.02.52.07l3.55-3.56C19.02 8.35 19 8.18 19 8c0-1.1.9-2 2-2s2 .9 2 2z"/></svg>', 
+                text: 'Click and drag to paint multiple hexes quickly' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/></svg>', 
+                text: 'Use keys 1-5 to change brush size on the fly' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15c-.59.59-.59 1.54 0 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z"/></svg>', 
+                text: 'Try Fill Mode to paint large connected areas instantly' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0zM4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0l3.53-3.53-4.95-4.95-4.95 4.95z"/></svg>', 
+                text: 'Select "Clear Hex" to remove terrain from hexes' 
+            }
         ]
     },
     {
-        title: '🎭 Characters & Tokens',
+        title: 'Characters & Tokens',
         subtitle: 'Track your party and NPCs',
         description: 'Tokens represent characters, monsters, towns, or any markers you need on your map. You can customize their appearance, move them around, and add notes.',
         tips: [
-            { icon: '➕', text: 'Click "Token Mode" then "New Token" to create a token' },
-            { icon: '👆', text: 'Click a hex to place your token' },
-            { icon: '🖱️', text: 'Drag tokens to move them around the map' },
-            { icon: '✏️', text: 'Click a token to edit its name, color, and notes' },
-            { icon: '👁️', text: 'Toggle token visibility to hide/show them' }
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>', 
+                text: 'Click "Token Mode" then "New Token" to create a token' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74l-3.43-.72c-.08-.01-.15-.03-.24-.03-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>', 
+                text: 'Click a hex to place your token' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>', 
+                text: 'Drag tokens to move them around the map' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>', 
+                text: 'Click a token to edit its name, color, and notes' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>', 
+                text: 'Toggle token visibility to hide/show them' 
+            }
         ]
     },
     {
-        title: '🗺️ Navigation & Controls',
+        title: 'Navigation & Controls',
         subtitle: 'Master the interface',
         shortcuts: [
             { label: 'Pan the map', keys: ['Right Click + Drag'] },
@@ -9163,25 +9479,48 @@ const WELCOME_STEPS = [
             { label: 'Brush size', keys: ['1', '2', '3', '4', '5'] }
         ],
         tips: [
-            { icon: '🔍', text: 'Use the minimap (bottom-right) to navigate large maps' },
-            { icon: '💾', text: 'Your work is auto-saved every 3 seconds' },
-            { icon: '📤', text: 'Export your map as JSON to back it up or share it' }
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg>', 
+                text: 'Use the minimap (bottom-right) to navigate large maps' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>', 
+                text: 'Your work is auto-saved every 3 seconds' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"/></svg>', 
+                text: 'Export your map as JSON to back it up or share it' 
+            }
         ]
     },
     {
-        title: '✨ You\'re Ready!',
+        title: 'You\'re Ready!',
         subtitle: 'Start creating your campaign world',
         description: 'You now have everything you need to build amazing hex maps. Remember, all your work is automatically saved, and you can always export your maps to keep them safe.',
         tips: [
-            { icon: '✏️', text: 'Use File → New Map anytime to start a fresh project' },
-            { icon: '📚', text: 'Hover over tools for quick tips and reminders' },
-            { icon: '💡', text: 'Use Help → Reset Tutorial to see this guide again' },
-            { icon: '🎮', text: 'Check File → Example Maps to load pre-made worlds' },
-            { icon: '❤️', text: 'Have fun and create something amazing!' }
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z"/></svg>', 
+                text: 'Use File → New Map anytime to start a fresh project' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>', 
+                text: 'Hover over tools for quick tips and reminders' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>', 
+                text: 'Use Help → Reset Tutorial to see this guide again' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>', 
+                text: 'Check File → Example Maps to load pre-made worlds' 
+            },
+            { 
+                icon: '<svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>', 
+                text: 'Have fun and create something amazing!' 
+            }
         ]
     }
 ];
-
 class WelcomeTutorial {
     constructor() {
         this.currentStep = 0;
@@ -9261,7 +9600,7 @@ class WelcomeTutorial {
                         <p class="welcome-choice-subtitle">${choice.subtitle}</p>
                         <p class="welcome-choice-description">${choice.description}</p>
                         <ul class="welcome-choice-features">
-                            ${choice.features.map(f => `<li>✓ ${f}</li>`).join('')}
+                            ${choice.features.map(f => `<li>${f}</li>`).join('')}
                         </ul>
                         <button class="welcome-choice-btn" data-choice="${choice.id}">
                             ${choice.id === 'example' ? 'Load Fablewoods' : 'Start Blank'}

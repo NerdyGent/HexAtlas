@@ -3108,7 +3108,8 @@ function renderHex() {
         for (let q = minQ; q <= maxQ; q++) {
             const hex = getHex(q, r);
             if (hex) {
-                drawHexTile(hex);
+                // Use window.drawHexTile to support patching by settlement integration
+                (window.drawHexTile || drawHexTile)(hex);
             }
         }
     }
@@ -3299,6 +3300,27 @@ function drawHexTile(hex) {
     const { x, y } = hexToPixel(hex.q, hex.r);
     const size = state.hexMap.hexSize * state.hexMap.viewport.scale;
     
+    // Calculate icon opacity for settlement mode transition
+    // Uses smooth easing and overlaps with settlement fade-in for smooth crossfade
+    const scale = state.hexMap.viewport.scale;
+    let iconOpacity = 1.0;
+    if (window.getIconOpacity) {
+        // Use the function from settlement-integration for synchronized crossfade
+        iconOpacity = window.getIconOpacity(scale);
+    } else {
+        // Fallback: Icons fade from 200% to 350% zoom with cubic easing
+        const ICON_START = 2.0;
+        const ICON_END = 3.5;
+        if (scale > ICON_START && scale < ICON_END) {
+            const t = (scale - ICON_START) / (ICON_END - ICON_START);
+            // Cubic ease-in-out for smooth transition
+            const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            iconOpacity = 1.0 - eased;
+        } else if (scale >= ICON_END) {
+            iconOpacity = 0.0;
+        }
+    }
+    
     // Check if we're using an image-based hex pack
     const hexPack = HEX_PACKS[currentHexPack];
     if (hexPack.useImages) {
@@ -3356,33 +3378,39 @@ function drawHexTile(hex) {
         const shouldHideTerrainIcon = landmark && landmark.hideTerrainIcon !== false;
         
         // Draw terrain icon for basic pack (unless a landmark is hiding it)
-        if (!shouldHideTerrainIcon) {
+        if (!shouldHideTerrainIcon && iconOpacity > 0) {
             const icon = hexIconCache.get(hex.terrain);
             if (icon && size > 15) {
                 const iconSize = size * 0.8;
+                ctx.save();
+                ctx.globalAlpha = iconOpacity;
                 ctx.drawImage(icon, x - iconSize/2, y - iconSize/2, iconSize, iconSize);
+                ctx.restore();
             }
         }
     }
     
     // Draw landmark icon if it exists and is in 'icon' mode (regardless of hideTerrainIcon setting)
     const landmark = getLandmark(hex.q, hex.r);
-    if (landmark && landmark.style === 'icon' && landmark.icon && size > 8) {
+    if (landmark && landmark.style === 'icon' && landmark.icon && size > 8 && iconOpacity > 0) {
         const icon = landmarkIconCache.get(landmark.icon);
         if (icon) {
             const iconSize = size * 0.8 * (landmark.size || 1.0);
             ctx.save();
-            ctx.globalAlpha = 1.0;
+            ctx.globalAlpha = iconOpacity;
             ctx.drawImage(icon, x - iconSize/2, y - iconSize/2, iconSize, iconSize);
             ctx.restore();
         }
     }
     
-    if (hex.dungeon) {
+    if (hex.dungeon && iconOpacity > 0) {
+        ctx.save();
+        ctx.globalAlpha = iconOpacity;
         ctx.fillStyle = '#f59e0b';
         ctx.beginPath();
         ctx.arc(x + size * 0.4, y - size * 0.4, size * 0.15, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
     }
 }
 
@@ -4106,6 +4134,14 @@ function handlePointerDown(x, y, button, isTouch, shiftKey = false, detail = 1) 
     const canvasY = y - rect.top;
     const hex = pixelToHex(canvasX, canvasY);
     
+    // SETTLEMENT MODE HOOK - let settlement integration handle clicks first
+    if (window.settlementClickHandler && state.hexMap.viewport.scale >= 4.0) {
+        console.log('🏰 Calling settlementClickHandler, scale:', state.hexMap.viewport.scale);
+        const handled = window.settlementClickHandler(canvasX, canvasY, hex, button);
+        console.log('🏰 Handler returned:', handled);
+        if (handled) return;
+    }
+    
     // Right click or two-finger touch = pan
     if (button === 2 || button === 1 || (isTouch && touchState.touches.length >= 2)) {
         state.hexMap.isPanning = true;
@@ -4391,33 +4427,9 @@ canvas.addEventListener('touchstart', (e) => {
         const rect = canvas.getBoundingClientRect();
         const x = touch.clientX - rect.left;
         const y = touch.clientY - rect.top;
-        const hex = pixelToHex(x, y);
-        
-        // Start long-press timer for context menu
-        mobileState.longPressTriggered = false;
-        mobileState.longPressTimer = setTimeout(() => {
-            // Long press detected
-            const existingHex = getHex(hex.q, hex.r);
-            if (existingHex && isMobile) {
-                mobileState.longPressTriggered = true;
-                
-                // Haptic feedback if available
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-                
-                showContextMenu(touch.clientX, touch.clientY, existingHex);
-            }
-        }, 500); // 500ms long press
         
         handlePointerDown(touch.clientX, touch.clientY, 0, true);
     } else if (e.touches.length === 2) {
-        // Cancel long press timer
-        if (mobileState.longPressTimer) {
-            clearTimeout(mobileState.longPressTimer);
-            mobileState.longPressTimer = null;
-        }
-        
         // Two finger touch - start pinch or pan
         touchState.isPinching = true;
         const touch1 = e.touches[0];
@@ -4441,6 +4453,13 @@ canvas.addEventListener('mousemove', (e) => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const hex = pixelToHex(x, y);
+    
+    // Settlement mode drag handling
+    if (window.settlementMouseMoveHandler && state.hexMap.viewport.scale >= 4.0) {
+        if (window.settlementMouseMoveHandler(x, y)) {
+            return; // Settlement handled it
+        }
+    }
     
     // Track mouse hex for shape tool preview
     state.hexMap.mouseHex = hex;
@@ -4572,12 +4591,6 @@ canvas.addEventListener('touchmove', (e) => {
     e.preventDefault();
     touchState.touches = Array.from(e.touches);
     
-    // Cancel long-press if finger moves
-    if (mobileState.longPressTimer) {
-        clearTimeout(mobileState.longPressTimer);
-        mobileState.longPressTimer = null;
-    }
-    
     if (e.touches.length === 2 && touchState.isPinching) {
         // Pinch zoom
         const touch1 = e.touches[0];
@@ -4596,7 +4609,7 @@ canvas.addEventListener('touchmove', (e) => {
             const worldY = (midY - canvas.height / 2 - state.hexMap.viewport.offsetY) / state.hexMap.viewport.scale;
             
             const zoomFactor = distance / touchState.lastPinchDistance;
-            const newScale = Math.max(0.1, Math.min(3, state.hexMap.viewport.scale * zoomFactor));
+            const newScale = Math.max(0.1, Math.min(50, state.hexMap.viewport.scale * zoomFactor));
             
             state.hexMap.viewport.offsetX = midX - canvas.width / 2 - worldX * newScale;
             state.hexMap.viewport.offsetY = midY - canvas.height / 2 - worldY * newScale;
@@ -4653,6 +4666,11 @@ canvas.addEventListener('touchmove', (e) => {
 }, { passive: false });
 
 canvas.addEventListener('mouseup', () => {
+    // Settlement mode drag end
+    if (window.settlementMouseUpHandler && state.hexMap.viewport.scale >= 4.0) {
+        window.settlementMouseUpHandler();
+    }
+    
     // Capture undo state when finishing painting/erasing
     if (state.hexMap.isPainting && (state.hexMap.mode === 'paint' || state.hexMap.mode === 'erase')) {
         undoRedoSystem.captureState();
@@ -4688,18 +4706,6 @@ canvas.addEventListener('mouseup', () => {
 canvas.addEventListener('touchend', (e) => {
     e.preventDefault();
     touchState.touches = Array.from(e.touches);
-    
-    // Cancel long-press timer
-    if (mobileState.longPressTimer) {
-        clearTimeout(mobileState.longPressTimer);
-        mobileState.longPressTimer = null;
-    }
-    
-    // If long press was triggered, don't process normal touch action
-    if (mobileState.longPressTriggered) {
-        mobileState.longPressTriggered = false;
-        return;
-    }
     
     if (e.touches.length === 0) {
         // All fingers lifted
@@ -4747,8 +4753,8 @@ canvas.addEventListener('wheel', (e) => {
     
     // Calculate new scale
     const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
-    // Allow zoom up to 10000% for settlement view
-    const newScale = Math.max(0.1, Math.min(100, oldScale * zoomFactor));
+    // Allow zoom up to 50000% for settlement view
+    const newScale = Math.max(0.1, Math.min(500, oldScale * zoomFactor));
     
     // Calculate mouse position in world coordinates (before zoom)
     // Must account for canvas center offset like the rest of the coordinate system
@@ -4772,6 +4778,42 @@ canvas.addEventListener('wheel', (e) => {
 
 // Also expose renderHex globally so settlement-integration can patch it
 window.renderHex = renderHex;
+
+// ============================================================================
+// EXPOSE FUNCTIONS FOR SETTLEMENT INTEGRATION
+// ============================================================================
+window.hexToPixel = hexToPixel;
+window.pixelToHex = pixelToHex;
+window.getHex = getHex;
+window.setHex = setHex;
+window.state = state;
+window.getVisibleHexRange = getVisibleHexRange;
+window.drawHexagon = drawHexagon;
+window.TERRAINS = TERRAINS;
+window.ctx = ctx;
+window.canvas = canvas;
+window.currentHexPack = currentHexPack;
+Object.defineProperty(window, 'currentHexPack', {
+    get: function() { return currentHexPack; },
+    set: function(val) { currentHexPack = val; }
+});
+window.HEX_PACKS = HEX_PACKS;
+window.hexPackImageCache = hexPackImageCache;
+window.hexIconCache = hexIconCache;
+window.landmarkIconCache = landmarkIconCache;
+window.getLandmark = getLandmark;
+window.PATH_STYLES = PATH_STYLES;
+
+// Image scale constants for hex packs
+window.HEX_IMAGE_WIDTH_SCALE = HEX_IMAGE_WIDTH_SCALE;
+window.HEX_IMAGE_HEIGHT_SCALE = HEX_IMAGE_HEIGHT_SCALE;
+window.HEX_IMAGE_Y_OFFSET = HEX_IMAGE_Y_OFFSET;
+window.HEX_IMAGE_X_OFFSET = HEX_IMAGE_X_OFFSET;
+
+// Expose drawHexTile for patching
+window.drawHexTile = drawHexTile;
+
+console.log('✅ Global functions exposed for settlement integration');
 
 document.addEventListener('keydown', (e) => {
     // Don't trigger shortcuts when typing in input fields
@@ -4856,7 +4898,7 @@ document.addEventListener('keydown', (e) => {
     const worldY = (centerY - canvas.height / 2 - state.hexMap.viewport.offsetY) / state.hexMap.viewport.scale;
     
     // Apply zoom
-    const newScale = Math.min(3, state.hexMap.viewport.scale * 1.2);
+    const newScale = Math.min(50, state.hexMap.viewport.scale * 1.2);
     
     // Calculate new offset to keep world position at center
     state.hexMap.viewport.offsetX = centerX - canvas.width / 2 - worldX * newScale;
@@ -6926,809 +6968,7 @@ async function init() {
 }
 
 init();
-// ============================================================================
-// MOBILE RESPONSIVE SYSTEM
-// ============================================================================
 
-let isMobile = false;
-let mobileState = {
-    sheetExpanded: false,
-    currentTab: 'tools',
-    touchStartY: 0,
-    touchCurrentY: 0,
-    longPressTimer: null,
-    longPressTriggered: false,
-    contextMenuOpen: false,
-    minimapFullscreen: false
-};
-
-function detectMobile() {
-    isMobile = window.innerWidth <= 768 || 
-               ('ontouchstart' in window) || 
-               (navigator.maxTouchPoints > 0);
-    return isMobile;
-}
-
-function initMobileUI() {
-    if (!detectMobile()) return;
-
-    console.log('Mobile device detected - initializing mobile UI');
-
-    // Create mobile bottom sheet
-    createMobileBottomSheet();
-
-    // Create mobile minimap
-    createMobileMinimap();
-
-    // Update canvas overlay for mobile
-    updateMobileOverlay();
-
-    // Set initial mode
-    setHexMode('paint');
-    selectTerrain('plains');
-}
-
-function createMobileBottomSheet() {
-    const main = document.querySelector('.main');
-    
-    const sheet = document.createElement('div');
-    sheet.className = 'mobile-bottom-sheet collapsed';
-    sheet.id = 'mobileBottomSheet';
-    
-    sheet.innerHTML = `
-        <div class="mobile-sheet-handle" id="mobileSheetHandle"></div>
-        
-        <div class="mobile-tabs">
-            <button class="mobile-tab active" data-tab="tools">🎨 Tools</button>
-            <button class="mobile-tab" data-tab="path">🛤️ Paths</button>
-            <button class="mobile-tab" data-tab="token">🎭 Tokens</button>
-        </div>
-
-        <div class="mobile-content">
-            <!-- Tools Tab -->
-            <div class="mobile-tab-content" id="mobileToolsTab">
-                <div class="mobile-section-header">Select Tool</div>
-                
-                <div class="mobile-tool-grid">
-                    <div class="mobile-tool-card active" data-mode="paint" onclick="switchMobileTool('paint')">
-                        <div class="mode-icon">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M7,14C5.9,14 5,13.1 5,12C5,10.9 5.9,10 7,10C8.1,10 9,10.9 9,12C9,13.1 8.1,14 7,14M12.6,10C11.8,7.7 9.6,6 7,6C3.7,6 1,8.7 1,12C1,15.3 3.7,18 7,18C9.6,18 11.8,16.3 12.6,14H16V18H20V14H23V10H12.6Z"/>
-                            </svg>
-                        </div>
-                        <span class="mobile-tool-label">Paint</span>
-                    </div>
-                    <div class="mobile-tool-card" data-mode="select" onclick="switchMobileTool('select')">
-                        <div class="mode-icon">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z"/>
-                            </svg>
-                        </div>
-                        <span class="mobile-tool-label">Select</span>
-                    </div>
-                    <div class="mobile-tool-card" data-mode="path" onclick="switchMobileTool('path')">
-                        <div class="mode-icon">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M14,16.94L8.58,11.5L14,6.06L15.06,7.12L11.18,11L19,11V13H11.18L15.06,16.88L14,16.94M2,11V13H8V11H2Z"/>
-                            </svg>
-                        </div>
-                        <span class="mobile-tool-label">Path</span>
-                    </div>
-                    <div class="mobile-tool-card" data-mode="token" onclick="switchMobileTool('token')">
-                        <div class="mode-icon">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/>
-                            </svg>
-                        </div>
-                        <span class="mobile-tool-label">Token</span>
-                    </div>
-                </div>
-
-                <!-- Dynamic Tool Options -->
-                <div id="mobileToolOptions" style="margin-top: 20px;">
-                    <!-- Brush Size (for Paint tool) -->
-                    <div id="mobileBrushSize" style="display: block;">
-                        <div class="mobile-section-header">Brush Size</div>
-                        <div class="mobile-brush-control">
-                            <div class="mobile-slider-control">
-                                <input type="range" class="slider" min="1" max="5" value="1" 
-                                       oninput="updateBrushSize(this.value); document.getElementById('mobileBrushSizeValue').textContent = this.value">
-                                <span class="slider-value" id="mobileBrushSizeValue">1</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Terrain Selection (for Paint tool) -->
-                    <div id="mobileTerrainPicker" style="display: block;">
-                        <div class="mobile-section-header">Select Terrain</div>
-                        <div class="mobile-terrain-scroll" id="mobileTerrainScrollInTools">
-                            <!-- Will be populated dynamically -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Path Tab -->
-            <div class="mobile-tab-content" id="mobilePathTab" style="display: none;">
-                <div class="mobile-section-header">Path Tools</div>
-                <div class="mobile-info-card">
-                    <strong style="color: #667eea;">🛤️ Path Mode:</strong><br>
-                    • Tap hexes to create waypoints<br>
-                    • Double-tap to finish path<br>
-                    • Paths coming soon!
-                </div>
-            </div>
-
-            <!-- Token Tab -->
-            <div class="mobile-tab-content" id="mobileTokenTab" style="display: none;">
-                <div class="mobile-section-header">Token Tools</div>
-                <div class="mobile-info-card">
-                    <strong style="color: #667eea;">🎭 Token Mode:</strong><br>
-                    • Tap to place tokens<br>
-                    • Drag to move tokens<br>
-                    • Full UI coming soon!
-                </div>
-            </div>
-        </div>
-    `;
-    
-    main.appendChild(sheet);
-
-    // Populate terrain scroll
-    populateMobileTerrainScroll();
-
-    // Add touch handlers
-    setupMobileSheetHandlers();
-
-    // Add tab switchers
-    setupMobileTabSwitchers();
-}
-
-function populateMobileTerrainScroll(scrollId = 'mobileTerrainScroll') {
-    const scroll = document.getElementById(scrollId);
-    if (!scroll) return;
-
-    Object.entries(TERRAINS).forEach(([key, terrain]) => {
-        const card = document.createElement('div');
-        card.className = `mobile-terrain-card ${key === 'plains' ? 'active' : ''}`;
-        card.dataset.terrain = key;
-        card.onclick = () => {
-            selectTerrain(key);
-            updateMobileTerrainSelection(key);
-        };
-        
-        card.innerHTML = `
-            <div class="mobile-terrain-icon" style="background: ${terrain.color}">
-                <img src="${terrain.icon}" alt="${terrain.name}">
-            </div>
-            <span class="mobile-terrain-name">${terrain.name}</span>
-        `;
-        
-        scroll.appendChild(card);
-    });
-}
-
-function updateMobileTerrainSelection(terrain) {
-    document.querySelectorAll('.mobile-terrain-card').forEach(card => {
-        card.classList.toggle('active', card.dataset.terrain === terrain);
-    });
-}
-
-function setupMobileSheetHandlers() {
-    const handle = document.getElementById('mobileSheetHandle');
-    const sheet = document.getElementById('mobileBottomSheet');
-    const tabs = document.querySelector('.mobile-tabs');
-    
-    if (!handle || !sheet) return;
-
-    let startY = 0;
-    let currentY = 0;
-    let startTime = 0;
-    let isDragging = false;
-    let initialTransform = 0;
-
-    // Make entire tab bar draggable
-    const dragElements = [handle, tabs];
-    
-    dragElements.forEach(element => {
-        element.addEventListener('touchstart', (e) => {
-            startY = e.touches[0].clientY;
-            startTime = Date.now();
-            isDragging = false;
-            
-            // Get current transform value
-            const style = window.getComputedStyle(sheet);
-            const matrix = new DOMMatrix(style.transform);
-            initialTransform = matrix.m42; // translateY value
-            
-            e.preventDefault();
-        }, { passive: false });
-
-        element.addEventListener('touchmove', (e) => {
-            if (!startY) return;
-            
-            currentY = e.touches[0].clientY;
-            const diff = currentY - startY;
-            
-            // Start dragging after 5px movement
-            if (Math.abs(diff) > 5) {
-                isDragging = true;
-                sheet.classList.add('mobile-sheet-dragging');
-                
-                // Calculate new position
-                const sheetHeight = sheet.offsetHeight;
-                const collapsedHeight = 52;
-                const maxDrag = sheetHeight - collapsedHeight;
-                
-                let newTransform = initialTransform + diff;
-                
-                // Clamp between fully expanded (0) and collapsed
-                newTransform = Math.max(0, Math.min(maxDrag, newTransform));
-                
-                sheet.style.transform = `translateY(${newTransform}px)`;
-            }
-            
-            e.preventDefault();
-        }, { passive: false });
-
-        element.addEventListener('touchend', (e) => {
-            if (!isDragging) {
-                // Just a tap, toggle
-                toggleMobileSheet();
-            } else {
-                // Drag ended, determine final position based on velocity
-                const dragDuration = Date.now() - startTime;
-                const dragDistance = currentY - startY;
-                const velocity = dragDistance / dragDuration; // px/ms
-                
-                const style = window.getComputedStyle(sheet);
-                const matrix = new DOMMatrix(style.transform);
-                const currentTransform = matrix.m42;
-                
-                const sheetHeight = sheet.offsetHeight;
-                const collapsedHeight = 52;
-                const threshold = (sheetHeight - collapsedHeight) / 2;
-                
-                // Fast swipe detection
-                const isFastSwipe = Math.abs(velocity) > 0.5;
-                
-                if (isFastSwipe) {
-                    // Fast swipe overrides position
-                    if (velocity > 0) {
-                        collapseMobileSheet();
-                    } else {
-                        expandMobileSheet();
-                    }
-                } else {
-                    // Slow drag, snap to nearest position
-                    if (currentTransform > threshold) {
-                        collapseMobileSheet();
-                    } else {
-                        expandMobileSheet();
-                    }
-                }
-                
-                // Re-enable transition
-                sheet.classList.remove('mobile-sheet-dragging');
-                sheet.style.transform = '';
-            }
-            
-            startY = 0;
-            currentY = 0;
-            isDragging = false;
-            
-            e.preventDefault();
-        }, { passive: false });
-    });
-
-    // Click on handle still toggles
-    handle.addEventListener('click', (e) => {
-        if (!isDragging) {
-            toggleMobileSheet();
-        }
-    });
-}
-
-function setupMobileTabSwitchers() {
-    document.querySelectorAll('.mobile-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabName = tab.dataset.tab;
-            switchMobileTab(tabName);
-        });
-    });
-}
-
-function switchMobileTab(tabName) {
-    // Update tab buttons
-    document.querySelectorAll('.mobile-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.tab === tabName);
-    });
-
-    // Update tab content
-    document.querySelectorAll('.mobile-tab-content').forEach(content => {
-        content.style.display = 'none';
-    });
-    
-    const targetTab = document.getElementById(`mobile${tabName.charAt(0).toUpperCase() + tabName.slice(1)}Tab`);
-    if (targetTab) {
-        targetTab.style.display = 'block';
-    }
-
-    mobileState.currentTab = tabName;
-
-    // Expand sheet when switching tabs
-    if (!mobileState.sheetExpanded) {
-        expandMobileSheet();
-    }
-}
-
-function toggleMobileSheet() {
-    if (mobileState.sheetExpanded) {
-        collapseMobileSheet();
-    } else {
-        expandMobileSheet();
-    }
-}
-
-function expandMobileSheet() {
-    const sheet = document.getElementById('mobileBottomSheet');
-    if (sheet) {
-        sheet.classList.remove('collapsed');
-        sheet.classList.add('expanded');
-        mobileState.sheetExpanded = true;
-    }
-}
-
-function collapseMobileSheet() {
-    const sheet = document.getElementById('mobileBottomSheet');
-    if (sheet) {
-        sheet.classList.remove('expanded');
-        sheet.classList.add('collapsed');
-        mobileState.sheetExpanded = false;
-    }
-}
-
-function createMobileMinimap() {
-    const canvasContainer = document.querySelector('.canvas-container');
-    
-    const minimap = document.createElement('div');
-    minimap.className = 'mobile-minimap-float';
-    minimap.id = 'mobileMinimap';
-    
-    const minimapCanvas = document.createElement('canvas');
-    minimapCanvas.id = 'mobileMinimapCanvas';
-    minimap.appendChild(minimapCanvas);
-    
-    canvasContainer.appendChild(minimap);
-    
-    // Click to open fullscreen
-    minimap.addEventListener('click', () => {
-        openFullscreenMinimap();
-    });
-    
-    // Render minimap periodically
-    setInterval(() => {
-        if (isMobile && state.hexMap.hexes.size > 0) {
-            renderMobileMinimap();
-        }
-    }, 1000);
-}
-
-function renderMobileMinimap() {
-    const canvas = document.getElementById('mobileMinimapCanvas');
-    if (!canvas || state.hexMap.hexes.size === 0) return;
-
-    const ctx = canvas.getContext('2d');
-    canvas.width = 100;
-    canvas.height = 100;
-
-    ctx.fillStyle = '#0a0d11';
-    ctx.fillRect(0, 0, 100, 100);
-
-    const bounds = getMapBounds();
-    const scale = getMinimapScale(bounds, 100);
-
-    state.hexMap.hexes.forEach(hex => {
-        const x = ((hex.q * state.hexMap.hexSize * 1.5) - bounds.minX) * scale;
-        const y = (((hex.r * state.hexMap.hexSize * Math.sqrt(3)) + (hex.q * state.hexMap.hexSize * Math.sqrt(3) / 2)) - bounds.minY) * scale;
-        
-        ctx.fillStyle = TERRAINS[hex.terrain].color;
-        ctx.fillRect(Math.floor(x), Math.floor(y), Math.max(2, 3 * scale), Math.max(2, 3 * scale));
-    });
-}
-
-function updateMobileOverlay() {
-    const overlay = document.querySelector('.canvas-overlay');
-    if (overlay && isMobile) {
-        // Simplify overlay for mobile
-        overlay.style.width = 'auto';
-        overlay.style.maxWidth = '80%';
-    }
-}
-
-// Update existing setHexMode to work with mobile
-const originalSetHexMode = setHexMode;
-setHexMode = function(mode) {
-    originalSetHexMode(mode);
-    
-    if (isMobile) {
-        // Update mobile tool cards
-        document.querySelectorAll('.mobile-tool-card').forEach(card => {
-            card.classList.toggle('active', card.dataset.mode === mode);
-        });
-    }
-};
-
-// ============================================================================
-// CONTEXT MENU SYSTEM
-// ============================================================================
-
-function showContextMenu(x, y, hex) {
-    // Remove existing context menu
-    const existing = document.querySelector('.context-menu');
-    if (existing) existing.remove();
-    
-    const menu = document.createElement('div');
-    menu.className = 'context-menu';
-    menu.style.left = x + 'px';
-    menu.style.top = y + 'px';
-    
-    const menuItems = [
-        { icon: '🎨', label: 'Paint with...', action: () => {
-            mobileState.sheetExpanded = false;
-            switchMobileTab('tools');
-            expandMobileSheet();
-            closeContextMenu();
-        }},
-        { icon: '📍', label: 'Place Token', action: () => {
-            switchMobileTab('token');
-            closeContextMenu();
-            showTokenCreator();
-        }},
-        { icon: '🛤️', label: 'Start Path Here', action: () => {
-            switchMobileTab('path');
-            closeContextMenu();
-            addPathPoint(hex.q, hex.r);
-        }},
-        { icon: '👁️', label: 'View Details', action: () => {
-            selectHex(hex);
-            closeContextMenu();
-        }},
-        { icon: '🗑️', label: 'Clear Hex', danger: true, action: () => {
-            deleteHex(hex.q, hex.r);
-            closeContextMenu();
-            renderHex();
-        }}
-    ];
-    
-    menuItems.forEach(item => {
-        const menuItem = document.createElement('div');
-        menuItem.className = 'context-menu-item' + (item.danger ? ' danger' : '');
-        menuItem.innerHTML = `
-            <span class="context-menu-icon">${item.icon}</span>
-            <span>${item.label}</span>
-        `;
-        menuItem.addEventListener('click', item.action);
-        menu.appendChild(menuItem);
-    });
-    
-    document.body.appendChild(menu);
-    mobileState.contextMenuOpen = true;
-    
-    // Close on outside click
-    setTimeout(() => {
-        document.addEventListener('click', handleContextMenuOutsideClick);
-        canvas.addEventListener('touchstart', handleContextMenuOutsideClick);
-    }, 100);
-    
-    // Adjust position if off-screen
-    const rect = menu.getBoundingClientRect();
-    if (rect.right > window.innerWidth) {
-        menu.style.left = (window.innerWidth - rect.width - 10) + 'px';
-    }
-    if (rect.bottom > window.innerHeight) {
-        menu.style.top = (window.innerHeight - rect.height - 10) + 'px';
-    }
-}
-
-function handleContextMenuOutsideClick(e) {
-    const menu = document.querySelector('.context-menu');
-    if (menu && !menu.contains(e.target)) {
-        closeContextMenu();
-    }
-}
-
-function closeContextMenu() {
-    const menu = document.querySelector('.context-menu');
-    if (menu) {
-        menu.remove();
-        mobileState.contextMenuOpen = false;
-        document.removeEventListener('click', handleContextMenuOutsideClick);
-        canvas.removeEventListener('touchstart', handleContextMenuOutsideClick);
-    }
-}
-
-// ============================================================================
-// FULLSCREEN MINIMAP
-// ============================================================================
-
-function openFullscreenMinimap() {
-    if (mobileState.minimapFullscreen) return;
-    
-    const overlay = document.createElement('div');
-    overlay.className = 'minimap-fullscreen';
-    overlay.id = 'minimapFullscreen';
-    
-    overlay.innerHTML = `
-        <div class="minimap-fullscreen-header">
-            <h3>📍 Map Overview</h3>
-            <button class="minimap-fullscreen-close" onclick="closeFullscreenMinimap()">✕</button>
-        </div>
-        <div class="minimap-fullscreen-canvas">
-            <canvas id="fullscreenMinimapCanvas"></canvas>
-            <div class="minimap-viewport-box" id="minimapViewportBox"></div>
-        </div>
-        <div class="minimap-fullscreen-actions">
-            <button class="minimap-action-btn" onclick="jumpToMapCenter()">
-                🎯 Center Map
-            </button>
-            <button class="minimap-action-btn" onclick="jumpToLastEdit()">
-                📍 Last Edit
-            </button>
-        </div>
-    `;
-    
-    document.body.appendChild(overlay);
-    mobileState.minimapFullscreen = true;
-    
-    // Render fullscreen minimap
-    setTimeout(() => {
-        renderFullscreenMinimap();
-        setupFullscreenMinimapInteraction();
-    }, 50);
-}
-
-function closeFullscreenMinimap() {
-    const overlay = document.getElementById('minimapFullscreen');
-    if (overlay) {
-        overlay.classList.add('closing');
-        setTimeout(() => {
-            overlay.remove();
-            mobileState.minimapFullscreen = false;
-        }, 300); // Match animation duration
-    }
-}
-
-function renderFullscreenMinimap() {
-    const canvas = document.getElementById('fullscreenMinimapCanvas');
-    if (!canvas || state.hexMap.hexes.size === 0) return;
-    
-    const container = canvas.parentElement;
-    const ctx = canvas.getContext('2d');
-    
-    // Set canvas size to container
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight;
-    
-    ctx.fillStyle = '#0a0d11';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    const bounds = getMapBounds();
-    const scaleX = (canvas.width - 40) / (bounds.maxX - bounds.minX || 1);
-    const scaleY = (canvas.height - 40) / (bounds.maxY - bounds.minY || 1);
-    const scale = Math.min(scaleX, scaleY);
-    
-    const offsetX = (canvas.width - (bounds.maxX - bounds.minX) * scale) / 2;
-    const offsetY = (canvas.height - (bounds.maxY - bounds.minY) * scale) / 2;
-    
-    // Draw hexes with better visibility
-    state.hexMap.hexes.forEach(hex => {
-        const x = ((hex.q * state.hexMap.hexSize * 1.5) - bounds.minX) * scale + offsetX;
-        const y = (((hex.r * state.hexMap.hexSize * Math.sqrt(3)) + (hex.q * state.hexMap.hexSize * Math.sqrt(3) / 2)) - bounds.minY) * scale + offsetY;
-        
-        // Draw hex as circle with glow
-        const hexSize = Math.max(4, 8 * scale);
-        
-        // Glow effect
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = TERRAINS[hex.terrain].color;
-        
-        // Main hex
-        ctx.fillStyle = TERRAINS[hex.terrain].color;
-        ctx.beginPath();
-        ctx.arc(x, y, hexSize, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Border for contrast
-        ctx.shadowBlur = 0;
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    });
-    
-    // Reset shadow for tokens
-    ctx.shadowBlur = 0;
-    
-    // Draw tokens
-    state.hexMap.tokens.forEach(token => {
-        const x = ((token.q * state.hexMap.hexSize * 1.5) - bounds.minX) * scale + offsetX;
-        const y = (((token.r * state.hexMap.hexSize * Math.sqrt(3)) + (token.q * state.hexMap.hexSize * Math.sqrt(3) / 2)) - bounds.minY) * scale + offsetY;
-        
-        ctx.fillStyle = token.color;
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(x, y, Math.max(5, 8 * scale), 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-    });
-    
-    // Draw viewport box
-    updateViewportBox(scale, offsetX, offsetY, bounds);
-}
-
-function updateViewportBox(scale, offsetX, offsetY, bounds) {
-    const box = document.getElementById('minimapViewportBox');
-    const canvas = document.getElementById('hexCanvas');
-    if (!box || !canvas) return;
-    
-    // Calculate viewport corners in world space
-    const viewportWidth = canvas.width / state.hexMap.viewport.scale;
-    const viewportHeight = canvas.height / state.hexMap.viewport.scale;
-    
-    const worldCenterX = (canvas.width / 2 - state.hexMap.viewport.offsetX) / state.hexMap.viewport.scale;
-    const worldCenterY = (canvas.height / 2 - state.hexMap.viewport.offsetY) / state.hexMap.viewport.scale;
-    
-    const worldLeft = worldCenterX - viewportWidth / 2;
-    const worldTop = worldCenterY - viewportHeight / 2;
-    
-    // Convert to minimap coordinates
-    const minimapLeft = (worldLeft - bounds.minX) * scale + offsetX;
-    const minimapTop = (worldTop - bounds.minY) * scale + offsetY;
-    const minimapWidth = viewportWidth * scale;
-    const minimapHeight = viewportHeight * scale;
-    
-    box.style.left = minimapLeft + 'px';
-    box.style.top = minimapTop + 'px';
-    box.style.width = minimapWidth + 'px';
-    box.style.height = minimapHeight + 'px';
-}
-
-function setupFullscreenMinimapInteraction() {
-    const canvas = document.getElementById('fullscreenMinimapCanvas');
-    if (!canvas) return;
-    
-    canvas.addEventListener('click', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        jumpToMinimapPosition(x, y, canvas);
-    });
-}
-
-function jumpToMinimapPosition(x, y, canvas) {
-    const bounds = getMapBounds();
-    const scaleX = (canvas.width - 40) / (bounds.maxX - bounds.minX || 1);
-    const scaleY = (canvas.height - 40) / (bounds.maxY - bounds.minY || 1);
-    const scale = Math.min(scaleX, scaleY);
-    
-    const offsetX = (canvas.width - (bounds.maxX - bounds.minX) * scale) / 2;
-    const offsetY = (canvas.height - (bounds.maxY - bounds.minY) * scale) / 2;
-    
-    // Convert minimap coordinates to world coordinates
-    const worldX = (x - offsetX) / scale + bounds.minX;
-    const worldY = (y - offsetY) / scale + bounds.minY;
-    
-    // Center viewport on this position
-    const hexCanvas = document.getElementById('hexCanvas');
-    state.hexMap.viewport.offsetX = hexCanvas.width / 2 - worldX * state.hexMap.viewport.scale;
-    state.hexMap.viewport.offsetY = hexCanvas.height / 2 - worldY * state.hexMap.viewport.scale;
-    
-    renderHex();
-    renderFullscreenMinimap();
-}
-
-function jumpToMapCenter() {
-    const bounds = getMapBounds();
-    const centerX = (bounds.minX + bounds.maxX) / 2;
-    const centerY = (bounds.minY + bounds.maxY) / 2;
-    
-    const hexCanvas = document.getElementById('hexCanvas');
-    state.hexMap.viewport.offsetX = hexCanvas.width / 2 - centerX * state.hexMap.viewport.scale;
-    state.hexMap.viewport.offsetY = hexCanvas.height / 2 - centerY * state.hexMap.viewport.scale;
-    
-    renderHex();
-    if (mobileState.minimapFullscreen) {
-        renderFullscreenMinimap();
-    }
-}
-
-function jumpToLastEdit() {
-    // Jump to last painted hex
-    if (state.hexMap.lastPaintPos) {
-        const hex = state.hexMap.lastPaintPos;
-        const worldX = hex.q * state.hexMap.hexSize * 1.5;
-        const worldY = (hex.r * state.hexMap.hexSize * Math.sqrt(3)) + (hex.q * state.hexMap.hexSize * Math.sqrt(3) / 2);
-        
-        const hexCanvas = document.getElementById('hexCanvas');
-        state.hexMap.viewport.offsetX = hexCanvas.width / 2 - worldX * state.hexMap.viewport.scale;
-        state.hexMap.viewport.offsetY = hexCanvas.height / 2 - worldY * state.hexMap.viewport.scale;
-        
-        renderHex();
-        if (mobileState.minimapFullscreen) {
-            renderFullscreenMinimap();
-        }
-    }
-}
-
-// Initialize mobile UI on load
-window.addEventListener('load', () => {
-    if (detectMobile()) {
-        setTimeout(initMobileUI, 100);
-    }
-});
-
-// Handle orientation changes
-window.addEventListener('orientationchange', () => {
-    setTimeout(() => {
-        resizeCanvas();
-        if (isMobile) {
-            renderMobileMinimap();
-        }
-    }, 100);
-});
-
-// Handle window resize
-let resizeTimeout;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-        const wasMobile = isMobile;
-        detectMobile();
-        
-        if (wasMobile !== isMobile) {
-            // Device type changed, reload
-            location.reload();
-        }
-    }, 250);
-});
-// ============================================================================
-// MOBILE TOOL SWITCHING
-// ============================================================================
-
-function switchMobileTool(mode) {
-    // Update mode
-    setHexMode(mode);
-    
-    // Update tool cards
-    document.querySelectorAll('.mobile-tool-card').forEach(card => {
-        card.classList.toggle('active', card.dataset.mode === mode);
-    });
-    
-    // Show/hide relevant tool options
-    const brushSize = document.getElementById('mobileBrushSize');
-    const terrainPicker = document.getElementById('mobileTerrainPicker');
-    
-    if (mode === 'paint') {
-        // Show brush size and terrain for paint tool
-        brushSize.style.display = 'block';
-        terrainPicker.style.display = 'block';
-    } else if (mode === 'select') {
-        // Hide everything for select
-        brushSize.style.display = 'none';
-        terrainPicker.style.display = 'none';
-    } else if (mode === 'path') {
-        // Hide for path
-        brushSize.style.display = 'none';
-        terrainPicker.style.display = 'none';
-    } else if (mode === 'token') {
-        // Hide for token
-        brushSize.style.display = 'none';
-        terrainPicker.style.display = 'none';
-    }
-}
 // ============================================================================
 // HEADER MENU FUNCTIONALITY
 // ============================================================================
@@ -9290,68 +8530,6 @@ function togglePathRouting() {
 }
 
 console.log('Enhanced HexAtlas with modern path controls and tooltip system loaded!');
-// ============================================================================
-// MOBILE UI INTEGRATION HOOKS
-// ============================================================================
-
-// Hook into existing undo/redo system for mobile UI
-if (typeof undoRedoSystem !== 'undefined') {
-    const originalUndo = undoRedoSystem.undo;
-    const originalRedo = undoRedoSystem.redo;
-    
-    undoRedoSystem.undo = function() {
-        const result = originalUndo.call(this);
-        
-        // Update mobile UI buttons if mobile is active
-        if (window.MobileUI && MobileUI.state.isMobile) {
-            updateMobileUndoRedoButtons();
-        }
-        
-        return result;
-    };
-    
-    undoRedoSystem.redo = function() {
-        const result = originalRedo.call(this);
-        
-        // Update mobile UI buttons if mobile is active
-        if (window.MobileUI && MobileUI.state.isMobile) {
-            updateMobileUndoRedoButtons();
-        }
-        
-        return result;
-    };
-}
-
-// Function to update mobile undo/redo button states
-function updateMobileUndoRedoButtons() {
-    const undoBtn = document.getElementById('mobileUndoBtn');
-    const redoBtn = document.getElementById('mobileRedoBtn');
-    
-    if (undoBtn && typeof undoRedoSystem !== 'undefined') {
-        const canUndo = undoRedoSystem.canUndo();
-        undoBtn.disabled = !canUndo;
-        undoBtn.style.opacity = canUndo ? '1' : '0.3';
-    }
-    
-    if (redoBtn && typeof undoRedoSystem !== 'undefined') {
-        const canRedo = undoRedoSystem.canRedo();
-        redoBtn.disabled = !canRedo;
-        redoBtn.style.opacity = canRedo ? '1' : '0.3';
-    }
-}
-
-// Hook into render to update mobile UI state
-const originalRenderHex = renderHex;
-renderHex = function() {
-    originalRenderHex();
-    
-    // Update mobile undo/redo buttons after render
-    if (window.MobileUI && MobileUI.state.isMobile) {
-        updateMobileUndoRedoButtons();
-    }
-};
-
-console.log('✅ Mobile UI integration hooks installed');
 
 // ============================================================================
 // WELCOME TUTORIAL SYSTEM
